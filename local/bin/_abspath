@@ -1,0 +1,55 @@
+#!/usr/bin/env perl
+# Clean up a path to be absolute and (if desired) canonical
+# wren gayle romano <wren@cpan.org>                 ~ 2008.08.08
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# See also _shell_quote for handling spaces
+
+use warnings;
+use strict;
+use File::Spec;
+use Cwd;
+
+$0 =~ s{.*/}{};
+$0 =~ s{\s+$}{};
+
+my $check = 0; # By default, don't verify against the file system
+$check    = 1
+	if  @ARGV
+	and $ARGV[0] eq '-k'
+	and shift
+	;
+
+die "Usage: $0 [-k] path\n"
+	unless 1 == @ARGV;
+my $path = shift;
+
+
+# ~~~~~ Neither module handles this Bash-ism, so we'll do it manually
+if ($^O =~ m/^(?:darwin|linux|freebsd|solaris)$/) {
+	my @homes = File::Spec->splitdir($ENV{'HOME'});
+	pop @homes;
+	$path =~ s{^~([^/]*)(/|$)}{
+		($1
+			? File::Spec->catdir(@homes, $1)
+			: $ENV{'HOME'}
+		) . $2
+	}xe;
+}
+
+# ~~~~~ Canonicalize the path
+if ($check) {
+	# N.B. manually follows symlinks to resolve X/../Y
+	# N.B. (by design) does not give error if the trailing filename is invalid
+	my $abspath = Cwd::realpath($path);
+	if (defined $abspath) {
+		print $abspath;
+	} else {
+		die "$0: path to file is not real: $path\n";
+	}
+} else {
+	# N.B. by design does not do X/../Y --> Y
+	print File::Spec->rel2abs( File::Spec->canonpath($path) );
+}
+print "\n";
+exit 0;
+__END__

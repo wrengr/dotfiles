@@ -1,0 +1,70 @@
+#!/usr/bin/env perl
+# cs466, hw4, wren gayle romano + Ariya Rastrow
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# This program extracts all the links from the web page given on
+# the command line and prints them to STDOUT. N.B. it intentionally
+# only lists links within the same domain as the page being scraped.
+#
+# BUG: This seems to have some issues with the use of ".." in urls. 
+
+use strict;
+use warnings;
+
+use HTML::LinkExtor;
+use HTTP::Request;
+use HTTP::Response;
+use LWP::UserAgent;
+use URI::URL;
+
+
+my $url = shift
+	or die "Usage: $0 url\n\n";
+
+my ($host) = $url =~ m,^\w+:/*([^/]+),;
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+my @links; # really we should use a hash instead...
+my $extor = HTML::LinkExtor->new(sub { my ($tag, %attributes) = @_;
+	return
+		unless $tag eq 'a';
+	
+	my $src = eval { URI::URL->new_abs($attributes{'href'} => $url) };
+	return
+		if $@;
+	
+	$src =~ s,#.*,,;
+	return
+		if $src !~ m,^\w+:/*$host,o # N.B. www.foo.com !~ foo.com
+		or $src eq $url;
+	
+    push @links, $src;
+});
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# N.B. LWP::UserAgent sucks and the helper methods `agent`, `from`,
+#      etc don't return an LWP::UserAgent object so you can't chain
+#      them (but at least we can pass these to `new`)
+my $response = LWP::UserAgent
+	->new
+		( 'agent' => 'link_scrape/1.0'
+		, 'from'  => 'wren@example.edu'
+		)
+	->request
+		( HTTP::Request->new('GET' => $url)
+		, sub { $extor->parse($_[0]) }
+		)
+	;
+
+
+# Using push/print-foreach instead of map for continuous streaming
+my $base = $response->base();
+print URI::URL->new_abs($_ => $base), "\n"
+	foreach
+	sort
+	keys %{{ map {($_=>1)} @links }}; # Uniq in a oneliner
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ fin.
+__END__

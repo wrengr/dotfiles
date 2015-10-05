@@ -1,0 +1,316 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"
+            "http://www.w3.org/TR/REC-html40/loose.dtd">
+<HTML>
+<HEAD>
+<TITLE>Sending 
+Answers to Exercises 
+(or Proofs of Theorems) 
+to appendices 
+(Version 1.1.2, last modified 2007/08/28)
+</TITLE>
+
+<META http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<META name="GENERATOR" content="hevea 1.10">
+<LINK rel="stylesheet" type="text/css" href="exercise.css">
+</HEAD>
+<BODY >
+<!--HEVEA command line is: hevea -o exercise.html exercise.tex -->
+<!--HACHA command line is: hacha ../exercise.html -->
+<TABLE CLASS="title"><TR><TD><H1 CLASS="titlemain">Sending<BR>
+Answers to Exercises<BR>
+(or Proofs of Theorems)<BR>
+to appendices<BR>
+(Version 1.1.2, last modified 2007/08/28)</H1><H3 CLASS="titlerest">Didier R&#XE9;my</H3></TD></TR>
+</TABLE><BLOCKQUOTE CLASS="abstract"><B>Abstract: </B>
+This package provides macros for writing exercises and answers to
+exercises. Then, the same document can be run in several modes, for
+instance, the answers may be hidden, inserted on place, or just collected 
+in an auxilliary file to be inserted later in an appendix for instance. 
+(Then hyperref can be used to make questions and answers point to one
+another.) <P>The package can also be used to send proofs of theorems to appendices. </P><P>The package also comes with a version for H<FONT SIZE=2><sup>E</sup></FONT>V<FONT SIZE=2><sup>E</sup></FONT>A.
+</P></BLOCKQUOTE><P>This document is also available in
+../exercise.dviDVI, 
+../exercise.ps.gzPostscript, and
+../exercise.pdfPDF.</P><P>The source of this file,
+<A HREF="../exercise.tex">exercise.tex</A>
+may serve as an example.
+</P><H2 CLASS="section"><A NAME="htoc1">1</A>&#XA0;&#XA0;The exercise and answer environment</H2><P>The <CODE>exercise</CODE> environment is used to separate and number exercises. 
+The environment contains an optional parameter meant to be a short
+description of the exercise that will then appear as the title of the
+exercise, when refered to from another position.</P><P>The <CODE>answer</CODE> environment is normally used within the <CODE>exercice</CODE>
+environment, in which case the exercise number is captured and used to refer
+to the exercise from another position. There may be several answers within
+a single exercise environment. Answers are numbered internally (<EM>ie.</EM>
+independently of any question and subsection structure that the author could
+introduce) and its number refers to the <I>n</I>-th answer envrionment from the
+beginning of the exercise.</P><H3 CLASS="subsection"><A NAME="htoc2">1.1</A>&#XA0;&#XA0;Collecting answers into an answer-file (default mode)</H3><P>The default behavior of the <CODE>answer</CODE> environment is to copy
+the contend of the answer (the region of text between <CODE>\begin{answer}</CODE>
+and <CODE>\end{answer}</CODE> verbatim to the answer file
+<CODE>\ExerciseAnswerFile.ans</CODE>
+(by default <CODE>\ExerciseAnswerFile</CODE> is equal to <CODE>\jobname</CODE>)</P><P>The <CODE>answer</CODE> environment can also be used outside of the
+<CODE>exercise</CODE> environment, in which case the text is inserted verbatim in
+the answer file, but without any title and any other side effect. For
+instance, this may be used to insert in the answer files some headers or
+notes that are global to several exercises.</P><P>The fragile command <CODE>\fragileanswer</CODE> is an alternative to the use 
+of the use of the <CODE>answer</CODE> environment. However, since it evaluates
+its arguments, commands and such must be quoted. The advantage is that it
+can be used inside other macros.</P><P>The command <CODE>\inputanswers</CODE> normally insert all answers to
+exercises. It takes the title of the answer section as a mandatory
+argument. The base file name of the answer file, may be given as an optional
+argument; this allows to load answers generated from another file.</P><H3 CLASS="subsection"><A NAME="htoc3">1.2</A>&#XA0;&#XA0;Customizing answer placements</H3><P>Customization of answer placement uses the <CODE>keyval</CODE> package.
+The command <CODE>\setanswer</CODE> can be used with the following keys:</P><P><BR>
+<CODE>noanchors</CODE>
+</P><BLOCKQUOTE CLASS="quote">
+This will remove hyperref anchors to exercises (which are set by default).
+</BLOCKQUOTE><P><BR>
+<CODE>anchors</CODE>
+</P><BLOCKQUOTE CLASS="quote">
+This will attached hyperref anchors to exercises (if previously removed). 
+</BLOCKQUOTE><P><BR>
+<CODE>hide</CODE>
+</P><BLOCKQUOTE CLASS="quote">
+Answers will be hidden. 
+</BLOCKQUOTE><P><BR>
+<CODE>show</CODE>
+</P><BLOCKQUOTE CLASS="quote">
+Answers will be shown. 
+</BLOCKQUOTE><P><BR>
+<CODE>later</CODE>
+</P><BLOCKQUOTE CLASS="quote">
+If shown, answers will appear later. 
+</BLOCKQUOTE><P><BR>
+<CODE>inline</CODE>
+</P><BLOCKQUOTE CLASS="quote">
+If shown, answers will appear immediately. 
+</BLOCKQUOTE><P><BR>
+<CODE>file=</CODE><TT><EM>filename</EM></TT>
+</P><BLOCKQUOTE CLASS="quote">
+This will use filename as the base name for the answer file. 
+By default <CODE>\jobname</CODE> is used. The suffix <CODE>.ans</CODE> will be appended
+to the basename. This command key can only be set in the preamble. 
+</BLOCKQUOTE><P>The command <CODE>\inputanswers</CODE> can be used to insert answers that have been
+postponed. The command takes one argument which is used as the title of the
+answer section before answers are inserted. The command also takes an
+optional argument which is the name of the answer file. 
+By default the filename if the same one as the one in which answers were
+collected. If answers are ignore (as set by the <CODE>hide</CODE> key) or
+immediate (as set by the <CODE>inline</CODE> key) at the time
+<CODE>\inputanswers</CODE> is executed, then the command is ignored (hence, the
+answer section is not created). </P><P>These keys can be set globally with the command <CODE>\setanswers</CODE>. 
+The can also be modified globally anywhere or locally in the scope of
+grouping parens. Furthermore, they can be set locally to an exercise 
+by appearing in an optional argument to the exercise environment. </P><H3 CLASS="subsection"><A NAME="htoc4">1.3</A>&#XA0;&#XA0;Package options</H3><P>The keys <CODE>noanchors</CODE>, <CODE>hide</CODE>, and
+<CODE>now</CODE> are also recognized as package options. 
+Any other package option is interpreted as the argument to the key
+<CODE>file</CODE>. </P><H3 CLASS="subsection"><A NAME="htoc5">1.4</A>&#XA0;&#XA0;Example</H3><DIV CLASS="theorem"><A NAME="Exo-1"><B>Exercise</B></A><B>&#XA0;1</B>&#XA0;&#XA0;<EM>
+What would be the effect of the following declaration?
+</EM><PRE CLASS="verbatim"><EM>\let \oldsection \section
+\renewcommand {\section}[1]
+  {\oldsection {#1}\fragileanswer
+     {\string \subsection* {Section \thesection\space (#1)}}}
+</EM></PRE><DIV CLASS="flushright"><A HREF="exercise001.html#Rep-1.1"><B>Answer</B></A></DIV><EM>
+(Of course the code need improvement to take the optional arguments sections
+into account)
+</EM></DIV><DIV CLASS="theorem"><A NAME="Exo-2"><B>Exercise</B></A><B>&#XA0;2</B>&#XA0;&#XA0;<EM>
+Note that this exercise has no title.
+</EM><P><EM>1. what will you see at this place in the main body of the
+document?
+</EM></P><DIV CLASS="flushright"><A HREF="exercise002.html#Rep-2.1"><B>Answer</B></A></DIV><P><EM>
+2. Where will I see the answer to the previous question and to this
+one. 
+</EM></P><DIV CLASS="flushright"><A HREF="exercise003.html#Rep-2.2"><B>Answer</B></A></DIV></DIV><DIV CLASS="theorem"><A NAME="Exo-3"><B>Exercise</B></A><B>&#XA0;3</B>&#XA0;<B>(Hiding answers)</B>&#XA0;&#XA0;<EM>
+What would happen if I type </EM><CODE><EM>\setanswer{noanchor}</EM></CODE><EM> in the body of this
+exercise? 
+</EM><DIV CLASS="flushright"><A HREF="exercise004.html#Rep-3.1"><B>Answer</B></A></DIV><EM>
+And what will happen if I now type </EM><CODE><EM>\setanswer{hide}</EM></CODE><EM> in the body of
+this exercise?
+</EM><DIV CLASS="flushright"><A HREF="exercise005.html#Rep-3.2"><B>Answer</B></A></DIV><EM>
+</EM></DIV><DIV CLASS="theorem"><A NAME="Exo-4"><B>Exercise</B></A><B>&#XA0;4</B>&#XA0;<B>(Input Answers)</B>&#XA0;&#XA0;<EM>
+What will happen if the command </EM><CODE><EM>\inputanswers</EM></CODE><EM> is never included?
+</EM><DIV CLASS="flushright"><A HREF="exercise006.html#Rep-4.1"><B>Answer</B></A></DIV><EM>
+Note that the file </EM><CODE><EM>\jobname.ans</EM></CODE><EM> is only created if non empty.
+Thus, if you load the package but do not create any exercise it is not
+created. Then, you will simply get a warning if you attempt to load answers
+of exercises. 
+</EM></DIV><H3 CLASS="subsection"><A NAME="htoc6">1.5</A>&#XA0;&#XA0;Customizing the appearance of answers</H3><P>This can be done by redefining the following commands:</P><P><BR>
+<CODE>\AnswerSection</CODE>
+</P><BLOCKQUOTE CLASS="quote">
+The name of the command to print the title of answer section (the argument
+of <CODE>\inputanswers</CODE>. 
+</BLOCKQUOTE><P><BR>
+<CODE>\ExerciseName</CODE>
+</P><BLOCKQUOTE CLASS="quote">
+The identifier used to name exercises (often need to be changed according to
+languages). Default value is <TT>Exercise</TT>, except if
+<CODE>\languagename</CODE> is <TT>frenchb</TT> where the value is
+<TT>Exercice</TT>. 
+</BLOCKQUOTE><P><BR>
+<CODE>\AnswerName</CODE>
+</P><BLOCKQUOTE CLASS="quote">
+The identifier used to point to answers. Default value is <TT>Answer</TT>,
+except if <CODE>\languagename</CODE> is <TT>frenchb</TT> where the value is
+<TT>R</TT><TT>&#XE9;</TT><TT>ponse</TT>. 
+</BLOCKQUOTE><P><CODE>\AnswerNew</CODE>
+</P><BLOCKQUOTE CLASS="quote">
+The title of an answer to a new exercise. It receives 3 arguments: the exercise
+number, the answer number, and the page number. 
+</BLOCKQUOTE><P><CODE>\AnswerContinued</CODE>
+</P><BLOCKQUOTE CLASS="quote">
+Idem, but when the answer is not the first one.
+</BLOCKQUOTE><P><CODE>AnswerNow</CODE> 
+</P><BLOCKQUOTE CLASS="quote">
+This environment can be redefined to change the typesetting
+immediate answers (when answers are immediate, Answer will act as AnswerNow).
+</BLOCKQUOTE><H2 CLASS="section"><A NAME="htoc7">2</A>&#XA0;&#XA0;Creating new answer environments</H2><P>In addition to customization of the answer environment, the user can defined
+its own answer environment. For instance, an environment <CODE>myanswer</CODE>
+similar to the default <CODE>answer</CODE> of this package can be defined with the
+following definition: 
+</P><PRE CLASS="verbatim">\newanswer {myanswer}{Answer}
+  {\em \AnswerNiceLink}
+  {}
+  {\AnswerNow}
+  {\endAnswerNow}
+  {{\thepage}}
+  [1]
+  {\ifnum \theQuestion=1\relax 
+     \subsection* 
+        {\ExerciseLink {Exercise \theExercise, page #1}}%
+   \else
+     \subsubsection* 
+        {\ExerciseLink {Exercice \theExercise\space (continued)}}%
+   \fi}
+  {}
+</PRE><P>The command <CODE>\newanwer</CODE> takes at least 8 arguments, with two possible
+optional arguments after the fourth one. 
+</P><UL CLASS="itemize"><LI CLASS="li-itemize">
+<B>#1:</B>
+The first argument is the name of the answer environment being defined. </LI><LI CLASS="li-itemize"><B>#2:</B>
+The second argument is the title of the answer environment to appear in 
+the document.</LI><LI CLASS="li-itemize"><B>#3, 4:</B>
+This are will be executed respectively before and after processing the
+answer. Typically, they are used to insert a pointer to the exercise in the
+appendix.</LI><LI CLASS="li-itemize"><B>#5, 6:</B>
+These define the environment that should be used in case the answer is
+inserted locally, <EM>ie.</EM> if <CODE>\AnswerLaterfalse</CODE> is set.
+Two optional arguments may be used between mandatory arguments 4 and 5
+and will act as in the <TT>\newenvironment</TT> command. </LI><LI CLASS="li-itemize"><B>#7:</B>
+This is used to pass information between the place
+where the answer environment occurs and the time when the answer will be
+reread again. This argument is passed to the <CODE>\fragileanswer</CODE>, <EM>ie.</EM>
+it is evaluated in the local context but inserted in the answer file. </LI><LI CLASS="li-itemize"><B>#8, 9:</B>
+The remaining arguments are used to define the behavior of the answer 
+when reread from the answer file. They are passed to the command
+<TT>\newenvironment</TT><CODE>{ans-name}</CODE> (where <CODE>name</CODE> is the name
+of the answer-environment being defined) hence the two optional arguments in
+case this command used arguments (possibly with default values). </LI></UL><P>
+Additionally, the so-created <CODE>myanswer</CODE> environment that is 
+immediately passed to <CODE>\setanswer</CODE> for local customization. 
+This is evaluated first, so that it act as if it <CODE>\setanswer</CODE>
+were executed outside of the exercise environement, except that the setting
+if local to the environment. </P><P>More precisely, at every of the follow code in the source file:
+</P><BLOCKQUOTE CLASS="quote">
+<PRE CLASS="verbatim">\begin{myanswer}[&lt;args&gt;]
+&lt;Any text&gt;
+\end{myanswer}
+</PRE></BLOCKQUOTE><P>
+The following steps are executed in order (<TT>#</TT><I>k</I> refers to the k&#X2019;s
+argument of the <TT>myanswer</TT> environment definition): 
+</P><OL CLASS="enumerate" type=1><LI CLASS="li-enumerate">
+
+As at the beginning of any environment, a new group (scope) is opened</LI><LI CLASS="li-enumerate">
+The optional argument <CODE>&lt;args&gt;</CODE> of the environment is passed to
+<CODE>\setanswer</CODE>. Unless the answer is hidden or immediate, the following
+steps continues as folllow (otherwise, the environment is ignore or inlined 
+according to arguments <TT>#4</TT> and <TT>#5</TT>).</LI><LI CLASS="li-enumerate">
+<CODE>\begin{ans-myanswer}</CODE> is inserted in the answer file.</LI><LI CLASS="li-enumerate">
+The argument <TT>#6</TT> is inserted into the answer file. </LI><LI CLASS="li-enumerate">The argument <TT>#2</TT> is evaluated. </LI><LI CLASS="li-enumerate">
+The body of the answer <CODE>&lt;Any text&gt;</CODE> is inserted verbatim into the answer
+file. </LI><LI CLASS="li-enumerate">
+The argument <TT>#3</TT> is evaluated.</LI><LI CLASS="li-enumerate">
+<CODE>\end{ans-myanswer}</CODE> is inserted in the answer file.</LI><LI CLASS="li-enumerate">
+The group (scope) of the environment is closed.</LI></OL><P>
+In addition, two commands are available for manipulating anchors:
+<CODE>\AnswerLink</CODE> can be used in the text to point to the corresponding 
+answer in the answer section and, conversely, <CODE>\ExerciseLink</CODE> can be
+used to point to the exercise from the answer section. Both commands take 
+one argument (the text where to anchor the link). 
+A more elaborated version <CODE>\AnswerNiceLink</CODE> provides
+a default typesetting of the answer link. It takes an optional parameter
+&#X2014;the text of the anchor&#X2014; equal to <CODE>\AnswerName</CODE> by default. </P><P>The environment also adjusts the counters <CODE>\Exercise</CODE> and
+<CODE>\Question</CODE> so that their values while reading the answer file is
+identical to the value they had when the corresponding answer was processed.
+Other counters (such as pages, sections, etc.) must be passed explicitly 
+using the fourth argument, as described above. </P><P>These steps only applies is the answer appears within an exercise, 
+and if answers are not hidden. Otherwise, the environment behaves as 
+in the default case. </P><H2 CLASS="section"><A NAME="htoc8">3</A>&#XA0;&#XA0;Sending proofs to an appendix</H2><P>This package can also be used to typeset proofs locally right after 
+the claims, and have them appear in an appendix.</P><P>For instance this can be realized with the following declaration:
+</P><PRE CLASS="verbatim">\def \capitalize #1{\uppercase {#1}}
+\newanswer {proof}{Proof}
+  {\def \theExercise {\ThmName}\def \theQuestion {\ThmLabel}%
+   \if@answer@later
+       \if@answer@anchor \AnswerLink{\hbox {(See proof in the Appendix)}}\fi%
+   \else \def \AnswerName {Proof}\fi
+   \pdf@hypertarget {Thm-\ThmName.\ThmLabel}{}}
+  {}
+  {\trivlist \item [\hskip \labelsep {\underline {Proof}:}]}
+  {\penalty 100\hfill\rule{2mm}{2mm}\endtrivlist\@doendpe}
+  {{\ThmName}{\ThmLabel}}
+  [2]
+  {\subsection* 
+        {\pdf@hypertarget {Ans-#1.#2}{Proof} of 
+         \pdf@hyperlink {Thm-#1.#2}{\capitalize #1 #2}}%
+   \nobreak
+   }
+  {}
+</PRE><P>Note the use of <CODE>\ThmName</CODE> and <CODE>\ThmLabel</CODE>, which refer to the
+name and counters of the last theorem-like environment. They can be
+retrieved automatically will the following little hack.
+</P><PRE CLASS="verbatim">\def \@thm #1#2{%
+  \refstepcounter {#1}
+  \xdef \ThmName {\@currenvir}%
+  \xdef \ThmLabel {\@currentlabel}%
+  \@ifnextchar [{\@ythm {#1}{#2}}{\@xthm{#1}{#2}}%
+}
+</PRE><P>Then, proofs will be recalled by 
+</P><PRE CLASS="verbatim">\inputanswers {Proof of main results}
+</PRE><H5 CLASS="paragraph">Warning!</H5><P>
+Although the package can be used to pospone several kinds of material to an
+appendix using a temporary file, it uses a single file so far. So combining
+solutions to exercises and proofs to appendices will not work together 
+(material would be interlaced). Sometimes interlacing may be desired, but
+usually not. In the future, the command should offer the possibility to
+send different kind of material to different files. </P><P>When, <CODE>\inputanswers</CODE> is called, all pending answers are inserted. 
+If other (exercises and) answers occur after <CODE>\inputanswers</CODE>, 
+the file will be reopened as an empty file and new answers will be </P><H2 CLASS="section"><A NAME="htoc9">4</A>&#XA0;&#XA0;Implementation notes</H2><P>The implementation is quite simple and short. 
+The only trick is to undo the active catcodes that might have been done by the
+<CODE>inputencoding</CODE> package before copying answers to 
+<CODE>\ExerciseAnswerFile.ans</CODE>.</P><H4 CLASS="subsubsection">Beware!</H4><P>However, I found out, that to make it work you also need to tell latex to
+recognize 8-bit characters, i.e. to treat &#X201C;&#XE9;&#X201D; as such, and not as
+&#X201C;<CODE>^^e9</CODE>&#X201D;. On my redhat 6.1 linux machine, it is sufficient
+to set the environment variable <CODE>LC_ALL=en_US</CODE>. I do not know any
+otherway of making latex print 8-bit characters. 
+Of course, printing &#X201C;<CODE>^^e9</CODE>&#X201D; instead of &#X201C;&#XE9;&#X201D; is quite problematic
+with with verbatim code, where the &#X201C;<CODE>^^</CODE>&#X201D; will be taken verbatim and
+not as an encoding of an 8-bit character. The solution would them
+be to pacth the verbatim mode to keep the meaning of &#X201C;<CODE>^^</CODE>&#X201D; as 
+encoding of 8-bit charaters. </P><P><EM>Another, probably simpler, solution would then be to post-process the
+answer file to recode 7-bit charaters into 8-bit characters. However, one
+cannot reread the reshly created answer file. Instead two different names
+for the output and input answer files should be used. </EM></P><H2 CLASS="section"><A NAME="htoc10">5</A>&#XA0;&#XA0;HeVeA compatibility</H2><P>The package also comes with some H<FONT SIZE=2><sup>E</sup></FONT>V<FONT SIZE=2><sup>E</sup></FONT>A version. 
+H<FONT SIZE=2><sup>E</sup></FONT>V<FONT SIZE=2><sup>E</sup></FONT>A asumes that the file has first been processed by tex so that
+<CODE>\jobname.ans</CODE> already exists. </P><P>However, H<FONT SIZE=2><sup>E</sup></FONT>V<FONT SIZE=2><sup>E</sup></FONT>A does not currently interpret package options. 
+So, you must set the corresponding flags by hand, instead, to ensure
+H<FONT SIZE=2><sup>E</sup></FONT>V<FONT SIZE=2><sup>E</sup></FONT>A compatibility.</P><P>to change
+the name of <CODE>\jobname</CODE> does not currently work in H<FONT SIZE=2><sup>E</sup></FONT>V<FONT SIZE=2><sup>E</sup></FONT>A, so you
+will have to do the appropriate renaming by hand (or in a Makefile). </P><P>The H<FONT SIZE=2><sup>E</sup></FONT>V<FONT SIZE=2><sup>E</sup></FONT>A version is designed to be combined with hacha:
+in addition to pointing to answers, the answers are also included 
+immediately, but in a separate cutting unit, so that hacha will put them in
+an auxilliary file. </P><H2 CLASS="section"><A NAME="htoc11">6</A>&#XA0;&#XA0;We continue, and may include more exercises</H2><DIV CLASS="theorem"><A NAME="Exo-5"><B>Exercise</B></A><B>&#XA0;5</B>&#XA0;<B>(This is an additional optional exercise)</B>&#XA0;&#XA0;<EM>
+Where the answer to this exercise will go?
+</EM><DIV CLASS="flushright"><A HREF="exercise007.html#Rep-5.1"><B>Answer</B></A></DIV><EM>
+How can we include answers of these additional exercises? 
+</EM><DIV CLASS="flushright"><A HREF="exercise008.html#Rep-5.2"><B>Answer</B></A></DIV><EM>
+</EM></DIV><!--FOOTER-->
+<HR SIZE=2><BLOCKQUOTE CLASS="quote"><EM>This document was translated from L<sup>A</sup>T<sub>E</sub>X by
+</EM><A HREF="http://hevea.inria.fr/index.html"><EM>H</EM><EM><FONT SIZE=2><sup>E</sup></FONT></EM><EM>V</EM><EM><FONT SIZE=2><sup>E</sup></FONT></EM><EM>A</EM></A><EM>.</EM></BLOCKQUOTE></BODY>
+</HTML>

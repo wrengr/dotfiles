@@ -1,0 +1,36 @@
+#!/usr/bin/env perl
+# Sort dot-delimited hosts as if in reverse order
+# wren gayle romano <wren@cpan.org>                 ~ 2008.05.09
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+# Yes, this was deliberately written to be a magical one-liner.
+# Yes, that's generally bad style.
+#
+# The original, mostly-magical almost-one liner. In light of perl's
+# inefficiency with `map` I've reverted back to this version. It's
+# even simpler on the cli instead of in a script:
+#
+# perl -nle 's/^\s*(.*?)\s*$/$1/o; push @ls, join ".", reverse split /\./;
+#            END {print join ".", reverse split /\./ foreach sort @ls}'
+
+use warnings;
+use strict;
+
+foreach (<>) { s/^\s*(.*?)\s*$/$1/o; push @_, join '.', reverse split /\./ }
+print '', (join '.', reverse split /\./), "\n" foreach sort @_;
+
+exit 0;
+__END__
+
+# This is the nearly points-free functional version, which is
+# interesting to see though less efficient since perl fails at `map`
+
+print
+	map { (join '.', reverse split /\./)
+		. "\n" # Because doing ``join "\n", map...`` misses the last one
+		}
+	sort
+	map { s/^\s*(.*?)\s*$/$1/o  # A bit more robust than chomp
+		; join '.', reverse split /\./
+		}
+	<>;

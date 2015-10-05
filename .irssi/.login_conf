@@ -1,0 +1,10 @@
+# Attempting to set locales to match OSX defaults
+# Note that the setenv "capability" must be done all on one line.
+# Also note that using quotes might break things (not sure).
+#
+# cf <http://www.freebsd.org/doc/en_US.ISO8859-1/books/handbook/using-localization.html>
+# cf <http://www.b1c1l1.com/blog/2011/05/09/using-utf-8-unicode-on-freebsd/>
+me:\
+    :lang=en_US.UTF-8:\
+    :charset=UTF-8:\
+    :setenv=LC_COLLATE=C,LC_CTYPE=en_US.UTF-8,LC_MESSAGES=en_US.UTF-8,LC_MONETARY=en_US.UTF-8,LC_NUMERIC=en_US.UTF-8,LC_TIME=en_US.UTF-8:

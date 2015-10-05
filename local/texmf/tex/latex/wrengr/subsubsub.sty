@@ -1,0 +1,98 @@
+\NeedsTeXFormat{LaTeX2e} 
+\ProvidesPackage{subsubsub}
+	[2011/11/28 Activate ridiculous section depths]
+
+% see <http://www.physics.smu.edu/vega/research/nu_gamma/repko.sty> re \@dottedtocline
+% see <http://ctan.mackichan.com/info/latex-doc-ptr/latex-doc-ptr.sty> re \@startsection
+
+%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%% <http://www.tex.ac.uk/cgi-bin/texfaq2html?label=subsubsub>
+\setcounter{tocdepth}{7}
+\setcounter{secnumdepth}{7}
+%\part{}          % level -1
+%\chapter{}       % level 0
+%\section{}       % level 1
+%\subsection{}    % level 2
+%\subsubsection{} % level 3 -- The default section depth
+%\paragraph{}     % level 4 -- Because of Lamport's design decisions.
+%\subparagraph{}  % level 5
+
+%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%% <http://vpatrinica.blogspot.com/2009/05/latex-subsubsubsection.html>
+%% This hackery gives the section head as inline at the beginning of the paragraph, if that's what you want.
+%%
+%%\newcommand{\mypar}{\subsubparagraph}
+%%\makeatletter
+%%\renewcommand\mypar{\@startsection{paragraph}{4}{0ex}{-3.25ex plus -1ex minus -0.2ex}{1.5ex plus 0.2ex}{\normalfont\normalsize\bfseries}}
+%%\makeatother
+%%\stepcounter{secnumdepth}
+%%\stepcounter{tocdepth}
+%%\renewcommand{\paragraph}{\subparagraph}
+%%\newcommand{\subsubsubsection}[1]{\paragraph{#1}}
+
+%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%% <http://stackoverflow.com/questions/1288166/technical-documentation-with-deeply-nested-enumerated-lists>
+%% BUG: this doesn't play nice with hyperref's toc sidebar; and \phantomsection doesn't seem to help...
+\makeatletter
+
+\newcounter{subsubsubsection}[subsubsection]
+\def\subsubsubsectionmark#1{}
+\def\thesubsubsubsection{\thesubsubsection.\arabic{subsubsubsection}}
+\def\subsubsubsection{%
+    \@startsection{subsubsubsection}{4}{\z@}
+    {-3.25ex plus -1ex minus -.2ex}{1.5ex plus .2ex}{\normalsize\bf}%
+}
+% mj02r: original:
+\def\l@subsubsubsection{\@dottedtocline{4}{4.8em}{4.2em}}
+%% mj02r: for VCE reports:
+%\def\l@subsubsubsection{\@dottedtocline{4}{7em}{3.8em}}
+%% mj02r, for thesis
+%\def\l@subsubsubsection{\@dottedtocline{4}{11.1em}{4.6em}}
+
+
+\newcounter{subsubsubsubsection}[subsubsubsection]
+\def\subsubsubsubsectionmark#1{}
+\def\thesubsubsubsubsection {\thesubsubsubsection.\arabic{subsubsubsubsection}}
+\def\subsubsubsubsection{%
+    \@startsection{subsubsubsubsection}{5}{\z@}
+    {-3.25ex plus -1ex minus -.2ex}{1.5ex plus .2ex}{\normalsize\sf}%
+}
+% mj02r: original:
+\def\l@subsubsubsubsection{\@dottedtocline{5}{5.8em}{5.2em}}
+%% mj02r: for VCE reports:
+%\def\l@subsubsubsubsection{\@dottedtocline{5}{10.7em}{4.5em}}
+
+
+\newcounter{subsubsubsubsubsection}[subsubsubsubsection]
+\def\subsubsubsubsubsectionmark#1{}
+\def\thesubsubsubsubsubsection{%
+    \thesubsubsubsubsection.\arabic{subsubsubsubsubsection}%
+}
+\def\subsubsubsubsubsection{%
+    \@startsection{subsubsubsubsubsection}{6}{\z@}
+    {-3.25ex plus -1ex minus -.2ex}{1.5ex plus .2ex}{\normalsize\sf}%
+}
+% mj02r: original:
+\def\l@subsubsubsubsubsection{\@dottedtocline{6}{5.8em}{5.2em}}
+%%% mj02r: for VCE reports:
+%%\def\l@subsubsubsubsubsection{\@dottedtocline{6}{10.7em}{4.5em}}
+
+
+\newcounter{subsubsubsubsubsubsection}[subsubsubsubsubsection]
+\def\subsubsubsubsubsubsectionmark#1{}
+\def\thesubsubsubsubsubsubsection{%
+    \thesubsubsubsubsubsection.\arabic{subsubsubsubsubsubsection}%
+}
+\def\subsubsubsubsubsubsection{%
+    \@startsection{subsubsubsubsubsubsection}{7}{\z@}
+    {-3.25ex plus -1ex minus -.2ex}{1.5ex plus .2ex}{\normalsize\sf}%
+}
+%% mj02r: original:
+\def\l@subsubsubsubsubsubsection{\@dottedtocline{7}{5.8em}{5.2em}}
+%% mj02r: for VCE reports:
+%\def\l@subsubsubsubsubsubsection{\@dottedtocline{7}{10.7em}{4.5em}}
+
+\makeatother
+
+%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ fin.

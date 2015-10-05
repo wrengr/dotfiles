@@ -1,0 +1,25 @@
+#!/usr/bin/env perl
+# Get the HTTP header for a URL
+# wren gayle romano <wren@cpan.org>                 ~ 2009.12.19
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+use warnings;
+use strict;
+
+use HTTP::Request;
+use LWP;
+
+unless (1 == @ARGV) {
+	print 'Usage: ', $0 =~ m/.*\/(.*)/, " url\n";
+	exit 1;
+}
+
+print
+	LWP::UserAgent->new()->request(
+		HTTP::Request->new(
+			HEAD => $ARGV[0]
+		)
+	)->as_string();
+
+exit 0;
+__END__

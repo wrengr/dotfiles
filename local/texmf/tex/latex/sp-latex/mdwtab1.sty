@@ -1,0 +1,65 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{mdwtab1}[2007/02/05 Improved mdwtab by ccshan]
+\RequirePackageWithOptions{mdwtab}
+
+% Stop revtex4 from overriding array and tabular from mdwtab.
+\ifx\undefined\class@documenthook\else
+    \let\save@endtabular\endtabular
+    \let\save@endarray  \endarray
+    \let\save@@tabular  \@tabular
+    \let\@tabular       \@tabular@array
+    \let\switch@tabular \relax
+    \let\switch@array   \relax
+    \appdef\class@documenthook{%
+    \let\endtabular\save@endtabular
+    \let\endarray  \save@endarray
+    \let\@tabular  \save@@tabular}%
+\fi
+
+% Typeset unboxed tabulars as display haligns and compatibly with tabularx.
+\let\tab@setposn@\tab@setposn
+% Intercept \tab@setposn defined by the mdwtab package, which takes
+% a position-arg (one of [tcbLCR]) as argument.  Rename this original
+% version of \tab@setposn to \tab@setposn@.
+\def\tab@setposn#1{%
+  % Set \if@tempswa to whether this tabular is unboxed.
+  \@tempswafalse
+  \if#1L\@tempswatrue\fi
+  \if#1C\@tempswatrue\fi
+  \if#1R\@tempswatrue\fi
+  % Because we want an unboxed tabular to result in a display halign, stop
+  % \tab@setposn@ from ending the current paragraph if the tabular is unboxed.
+  \if@tempswa\let\par\@empty\fi
+  % If we are in the trial phase for tabularx, then make a boxed rather than
+  % unboxed tabular.
+  \ifx\@footnotetext\TX@trial@ftn
+    \ifx\undefined\measuring@true\else\measuring@true\fi
+  \else
+    \@tempswafalse
+  \fi
+  \if@tempswa\tab@setposn@{t}\else\tab@setposn@{#1}\fi
+  % If we are actually making an unboxed tabular, then we need to override
+  % \tab@setposn@'s setting of \tab@left and \tab@right (and \tab@initread's
+  % setting of \tab@startpause and \tab@endpause) to make a display halign
+  % instead.  We also change \tab@penalty to follow \interdisplaylinepenalty and
+  % amsmath's \displaybreak.  Finally, we need to stop \@array from zeroing out
+  % \lineskip and \baselineskip, and do it inside the display math instead, so
+  % that the current paragraph's lines won't get all bunched together.
+  \if@tempswa
+    \def\dsp@penalty##1{% For \tab@right, \tab@startpause, \tab@penalty below
+        \ifx\undefined\dspbrk@lvl ##1%
+        \else \ifnum\dspbrk@lvl <\z@ ##1%
+        \else -\@getpen\dspbrk@lvl \global\dspbrk@lvl\m@ne \fi\fi}%
+    \def\tab@left{$$\displayindent\z@\lineskip\z@\baselineskip\z@
+        \ifx\undefined\dspbrk@context \else \chardef\dspbrk@context\z@ \fi
+        \ifx\undefined\dspbrk@lvl \else \global\dspbrk@lvl\m@ne \fi}%
+    \def\tab@right{\postdisplaypenalty\dsp@penalty\postdisplaypenalty
+        $$\global\@ignoretrue}%
+    \def\tab@startpause{\penalty\dsp@penalty\postdisplaypenalty
+        \vskip\belowdisplayskip}%
+    \def\tab@endpause{\penalty\predisplaypenalty\vskip\abovedisplayskip}%
+    \def\tab@penalty{\penalty\dsp@penalty\interdisplaylinepenalty}%
+    \let\lineskip@save\lineskip
+    \def\lineskip\z@\baselineskip\z@{\let\lineskip\lineskip@save}%
+  \fi}
+

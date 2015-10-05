@@ -1,0 +1,30 @@
+#!/bin/sh
+
+LHS2TEX_FLAGS="-v --poly"
+LATEXMK_FLAGS="$1"
+DIR="`dirname "$2"`"
+BASE="`basename "$2" .tex`"
+
+cd "$DIR" || exit 1
+
+if [ -e "$BASE.lhs" ]; then
+	lhs2TeX $LHS2TEX_FLAGS "$BASE.lhs" -o ".$BASE.tex" || exit 2
+elif [ ! -e ".$BASE.tex" ]; then
+	ln -s "$BASE.tex" ".$BASE.tex" || exit 3
+fi
+
+if [ "$LATEXMK_FLAGS" = "-c" ]; then
+	latexmk -c ".$BASE.tex" || exit 5
+elif [ "$LATEXMK_FLAGS" = "-C" ]; then # TODO: also handle the obsolete -CA
+	latexmk -C ".$BASE.tex" || exit 5
+	rm -f ".$BASE.tex" "$BASE.pdf" missfont.log || exit 6
+else
+	rm -f "$BASE.pdf"                   || exit 4
+	latexmk \
+		$LATEXMK_FLAGS \
+		--pdflatex='xelatex -file-line-error -halt-on-error %O %S' \
+		".$BASE.tex" || exit 5
+	if [ -e ".$BASE.pdf" ]; then
+		ln -f ".$BASE.pdf" "$BASE.pdf"  || exit 6
+	fi
+fi

@@ -1,0 +1,8 @@
+# Display list for tab-completion with single tab only
+set show-all-if-ambiguous On
+
+# Enable unicode input
+set meta-flag on
+set input-meta on
+set output-meta on
+set convert-meta off

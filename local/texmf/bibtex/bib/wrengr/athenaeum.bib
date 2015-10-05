@@ -1,0 +1,147 @@
+% wren ng thornton, <wren -at- cpan.org>            ~ 2008.05.26
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+% This file only captures the remnants not broken out into my Papers
+% directory, eventually this too will be broken out there. In time
+% I might recombine them if I can find/create a nice tool for entity
+% tracking in order to simplify the names of journals, authors,
+% etc.  Apparently BibTeX offers some small amount of support for
+% doing this for InBook and InProceedings, but nowhere else.
+%
+% We can use braces to group and collapse things since anything
+% not in an entry is considered a comment (so we don't really need
+% the %s) But remember, no -at- symbols anywhere except for entries
+%
+% To include this file and use good style:
+% 0.  `export BSTINPUTS=.:~/local/latex/:` to find *.bst files
+% 0.5 `export BIBINPUTS=.:~/local/latex/:` to find *.bib files
+% 1. Have \usepackage{lsalike} in the preamble, or \...{natref}
+% 2. Cite things somewhere
+% 3. Have \bibliographystyle{lsalike} \bibliography{athenaeum} in
+%    the end
+% 4. And run `pdflatex $_ && bibtex $_ && pdflatex $_ && pdflatex
+%    $_` where $_ is the file name sans extension (bibtex chokes
+%    on the extension) Should only need to rerun bibtex if/when we
+%    cite different things.
+
+
+{ % All the stuff from my undergraduate thesis (will eventually fill in)
+
+    % Not a master's, using the `type' to override calling it that
+    @MastersThesis{ Thornton2003,
+        author = "Wren N.~G. Thornton",
+        title  = "Performative Differences of Gender on the Prosody of {A}merican {E}nglish Speech",
+        school = "Reed College",
+        type   = "Undergraduate Thesis",
+        month  = may,
+        year   = 2003,
+    }
+}
+
+{ % Japanese language and linguistics
+
+    % Too bad we can't set up some kind of inheritance hierarchy
+    % for these. N.B. The comma in the name is essential for
+    % things to work right N.B. I'm not using `volume' or
+    % `number' because they don't print right
+    @Book{ jsl1,
+        author    = "Eleanor Hartz Jorden, with Mari Noda",
+        title     = "Japanese: the Spoken Language, Part 1",
+        series    = "Yale Language Series",
+        publisher = "Yale University Press",
+        address   = "New Haven and London",
+        year      = 1987,
+        isbn      = "0-300-03834-8",
+    }
+    
+    @Book{ jsl2,
+        author    = "Eleanor Hartz Jorden, with Mari Noda",
+        title     = "Japanese: the Spoken Language, Part 2",
+        series    = "Yale Language Series",
+        publisher = "Yale University Press",
+        address   = "New Haven and London",
+        year      = 1988,
+        isbn      = "0-300-04188-8",
+    }
+    
+    @Article{ MSaito92,
+        author    = "Mamoru Saito",
+        title     = "Long Distance Scrambling in {J}apanese",
+        journal   = "Journal of {E}ast {A}sian Linguistics",
+        editor    = "C.-T. James Huang, and S.-Y. Kuroda",
+        volume    = 1,
+        number    = 1,
+        month     = jan,
+        year      = 1992,
+        publisher = "Kluwer Academic Publishers",
+        address   = "Dordrecht, Boston, London",
+        isbn      = "0925-8558",
+    }
+}
+
+{ % Morphophonology
+    @Article{ Krott2001,
+        author  = "Andrea A. Krott and R.~Harald Baayen and Robert Schreuder",
+        title   = "Analogy in morphology: modeling the choice of linking morphemes in {D}utch",
+        pages   = "51--93",
+        journal = "Linguistics",
+        volume  = 39,
+        number  = 1,
+        year    = 2001,
+    }
+    
+    % I don't know what the hell this is, just currying the reference
+    @Misc{ Daelmans1999,
+        author    = "Walter Daelemans and Jakub Zavrel and Ko van der Sloot and Antal van den Bosch",
+        title     = "{TiMBL}: {T}ilburg {M}emory {B}ased {L}earner Reference Guide 2.0",
+        year      = 1999,
+        note      = "Report 99--01. Tilbury:Computational Linguistics, Tilberg University.",
+        address   = "Tilbury",
+        publisher = "Computational Linguistics, Tilberg University",
+        url       = "citeseer.ist.psu.edu/article/daelemans99timbl.html",
+    }
+    
+    % I don't know what the hell this is, just currying the reference
+    @Article{ Schreuder1998,
+        author  = "Robert Schreuder and Anneke Neijt and F. Van der Weide and R.~Harald Baayen",
+        title   = "Regular plurals in {D}utch compounds: linking graphemes or morphemes?",
+        pages   = "551--573",
+        journal = "Language and Cognitive Process",
+        volume  = 13,
+        year    = 1998,
+    }
+    
+    % I don't know what the hell this is, just currying the reference
+    @Unpublished{ NeijtND,
+        author = "Anneke Neijt and R.~Harald Baayen and Robert Schreuder",
+        title  = "Reading relicts of the past: the semantics of linking elements in present-day {D}utch orthography",
+        note   = "Unpublished manuscript",
+        year   = "n.d.",
+    }
+    
+}
+
+{ % Combinatorial Categorial Grammar
+    @Book{ Steedman2000,
+        author    = "Mark Steedman",
+        title     = "The Syntactic Process",
+        series    = "Language, Speech, and Communication",
+        publisher = "The MIT Press",
+        address   = "Cambridge, Massachusetts",
+        year      = 2000,
+        isbn      = "0-262-69268-6 (pb)",
+    }
+    
+    % author = "Christiaan Leonardus Joachim Maria Cremers"
+    @PhdThesis{ Cremers1993,
+        author    = "Crit Cremers",
+        title     = "On Parsing Coordination Categorially",
+        school    = "Holland Institute of Generative Linguistics",
+        publisher = "ICG Printing",
+        address   = "Dordrecht",
+        year      = 1993,
+        isbn      = "90-74537-04-9",
+    }
+}
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ fin.

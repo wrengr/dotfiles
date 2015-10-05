@@ -1,0 +1,37 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{cmd-latin}[2009/10/06 Latin declarative formatting]
+
+\RequirePackage{xperiod} % Local: provides \. for punctuation-gobbled periods
+\RequirePackage{xspace}  % provides \xspace for punctuation-gobbled spaces
+
+%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%% ~~~~~ Declarative formatting for Latin 
+
+% According to common style guides we should not italicize common
+% Latin, since it needlessly draws attention to unimportant text.
+% For declarativity we specify this command so that clients can
+% choose to italicize as desired.
+\newcommand{\latin}[1]{#1}
+
+
+% N.B. something in one of linguex,qtree,semantic clashes with \eg
+% N.B. the \. from xperiod is a bit buggy...
+\newcommand{\Cf}{\latin{Cf}\.}
+\newcommand{\cf}{\latin{cf}\.}
+\newcommand{\Eg}{\latin{E.g}\.}
+\newcommand{\eg}{\latin{e.g}\.}
+\newcommand{\Ie}{\latin{I.e}\.}
+\newcommand{\ie}{\latin{i.e}\.}
+\newcommand{\etc}{\latin{etc}\.}
+\newcommand{\Ibid}{\latin{Ibid}\.}
+\newcommand{\ibid}{\latin{ibid}\.}
+\newcommand{\etal}{\latin{et al}\.}
+\newcommand{\NB}{\latin{N.B}\.}
+\newcommand{\apriori}{\latin{a priori}\xspace}
+\newcommand{\aposteriori}{\latin{a posteriori}\xspace}
+\newcommand{\perse}{\latin{per se}\xspace}
+
+% Others: viz., pace, loc. cit., op. cit., q.v.
+
+%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ fin.

@@ -1,0 +1,66 @@
+#!/usr/bin/env perl
+# Sort (size in bytes) args by size despite human-readability
+# wren gayle romano <wren@cpan.org>                 ~ 2006.04.02
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+use warnings;
+use strict;
+use vars qw($k $m $g %metric);
+
+
+# ~~~~~ Get decimal vs binary for suffixes ~~~~~~~~~~~~~~~~~~~~~
+
+unless (@ARGV and $ARGV[0] =~ m/^-/) { # cleans up the logic a bit
+	push @ARGV, '-d'; # decimal by default
+}
+
+if ($ARGV[0] eq '-b') {
+	shift @ARGV;
+	$k = 2**10;
+	$m = 2**20;
+	$g = 2**30;
+} elsif ($ARGV[0] eq '-d') {
+	shift @ARGV;
+	$k = 10**3;
+	$m = 10**6;
+	$g = 10**9;
+} else {
+	print 'Usage: ', $0 =~ m/.*\/(.*)/, " [-d|-b] [args...]\n";
+	exit 1;
+}
+
+
+# ~~~~~ Duplicate entries so we don't need to uc()/lc() ~~~~~~~~
+
+%metric = (
+	'B' => 1, 'K' => $k, 'M' => $m, 'G' => $g,
+	'b' => 1, 'k' => $k, 'm' => $m, 'g' => $g,
+);
+
+
+# ~~~~~ Get sortable size value ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+sub sz ($) {
+	my ($a) = @_;
+	if ($a =~ m/^\s*(\d*\.?\d*)([BbKkMmGg])/) {
+		return $1 * $metric{$2};
+	} else {
+		print STDERR $0 =~ m/.*\/(.*)/, ": '$a' not valid input\n";
+		return 0;
+	}
+}
+
+
+# ~~~~~ Get stdin if no commandline ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+unless (@ARGV) {
+	@ARGV = <>;
+	# clean up newlines since commandline lacks them
+	chomp foreach @ARGV;
+}
+
+print join "\n", sort {sz $a <=> sz $b} @ARGV;
+print "\n";
+
+exit 0;
+__END__

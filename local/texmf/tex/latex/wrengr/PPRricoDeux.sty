@@ -1,0 +1,249 @@
+%==============================================================================
+% ricoDeux Prosper style (vs rico 2000/09/08, cvs:1.1.1.1 2000/11/28)
+%     Copyright (c) 2009 wren ng thornton <wren@cpan.org>
+%     Same rights as below.
+%
+%     Changes:
+%     * Fixed some positioning bugs with the title.
+%     * Added new \ocean and \wine colors
+%     * Turned off the Glitter transition
+%     * Moved the title and la-barre-horizontale up to make more room
+%     * Moved the start of the main text box up, to use the room
+%     * TODO: Move footer up so it's not falling off the page
+%     * TODO: Enlarge footer so it's legible
+%==============================================================================
+% Prosper -- (PPRrico.sty) Style file
+% A LaTeX class for creating slides
+% Author: Eric Languénou (Eric.Languenou@irin.univ-nantes.fr)
+%         Institut de Recherche en Informatique de Nantes
+%         University of Nantes, France
+%
+% Copyright (c) 2000 Eric Languénou
+% All rights reserved.
+% 
+% Permission is hereby granted, without written agreement and without
+% license or royalty fees, to use, copy, modify, and distribute this
+% software and its documentation for any purpose, provided that the
+% above copyright notice and the following two paragraphs appear in
+% all copies of this software.
+% 
+% IN NO EVENT SHALL THE AUTHOR BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, 
+% SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OF 
+% THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF THE AUTHOR HAS BEEN ADVISED 
+% OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
+% 
+% THE AUTHOR SPECIFICALLY DISCLAIMS ANY WARRANTIES,
+% INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+% AND FITNESS FOR A PARTICULAR PURPOSE.  THE SOFTWARE PROVIDED HEREUNDER IS
+% ON AN "AS IS" BASIS, AND THE AUTHOR HAS NO OBLIGATION TO
+% PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+%
+% CVSId : $Id: PPRrico.sty,v 1.1.1.1 2000/11/28 11:15:20 exupery Exp $
+%==============================================================================
+\NeedsTeXFormat{LaTeX2e}[1995/12/01]
+\ProvidesPackage{PPRricoDeux}[2009/02/28]
+\typeout{`RicoDeux'  style for prosper ---}
+\typeout{(c) 2000 Eric Languénou (for original `Rico' style)}
+\typeout{(c) 2009 wren ng thornton}
+\typeout{ }
+
+\RequirePackage{semhelv}
+
+% Chargement des fichiers de pstricks (on teste les noms en vigueur pour
+% gérer les différentes versions de pstricks).
+\IfFileExists{pst-grad}{\RequirePackage{pst-grad}}{\RequirePackage{gradient}}
+
+%==============================================================================
+\newgray{gris1}{.40}
+\newgray{gris2}{.85}
+\newgray{gris3}{.30}
+\newgray{gris4}{.25}
+\newgray{gris5}{.90}
+
+%% New colors 0x01,99,97 and 0x52,01,55
+\newrgbcolor{ocean}{0.00392156863 0.6 0.592156863}
+\newrgbcolor{wine}{0.321568627 0.00392156863 0.333333333}
+% Or if your LaTeX allows longer numbers...
+%\newrgbcolor{ocean}{0.00392156862745098 0.6 0.592156862745098}
+%\newrgbcolor{wine}{0.32156862745098 0.00392156862745098 0.333333333333333}
+
+
+%==============================================================================
+% The two arguments to the \Font commands are for color and bw respectively.
+
+%% Changed from {sl} to {it}
+\FontTitle{%
+	\usefont{T1}{phv}{b}{it}\fontsize{14.4pt}{12pt}\selectfont}{%
+	\usefont{T1}{phv}{b}{it}\fontsize{14.4pt}{12pt}\selectfont}
+
+%% Make the subtitle a little smaller.
+%% FIXME: But is 13pt the right median between 14.4 and 12?
+\FontSubtitle{%
+	\usefont{T1}{phv}{b}{it}\fontsize{13pt}{12pt}\selectfont}{%
+	\usefont{T1}{phv}{b}{it}\fontsize{13pt}{12pt}\selectfont}
+
+\FontText{%
+	\usefont{T1}{phv}{m}{n}\fontsize{12pt}{10.95pt}\selectfont}{%
+	\usefont{T1}{phv}{m}{n}\fontsize{12pt}{10.95pt}\selectfont}
+
+% To adjust the line separation for the title page
+%\titleSpacing{\vspace*{10pt}}
+
+\newcommand{\slidetitle}[1]{%
+	%% Moved up and left from (11.6,3.6)
+	%% BUGFIX: Original rico puts the titles too far to the right for {sl}
+	\rput[rb](11.4,3.9){%
+		\parbox{10cm}{%
+			\begin{flushright}%
+			\fontTitle{#1}%
+			%% BUGFIX: the parbox is bottom-aligned,
+			%% therefore if no descenders are in the
+			%% text, then the text will overlap with
+			%% la-barre-horizontale. The \vphantom fixes
+			%% this; though it's a TeX holdover so it
+			%% can do strange things about beginning
+			%% and ending paragraphs. This is the proper
+			%% place for it.
+			%% cf. <http://newsgroups.derkeiler.com/Archive/Comp/comp.text.tex/2008-01/msg01041.html>
+			\vphantom{gl}%
+			\end{flushright}%
+			}}}
+
+%==============================================================================
+%% Copy&pasted from prosper.cls cvs:1.24 2002/11/25
+%% We want to adjust the spacing and Prosper gives no default good way
+
+%% FIXME: Spacing is good enough for styleGuidance.tex, but needs
+%% generalizing so users can set their own spacing.
+
+%% BUG: The \maketitle and \part are being overwritten by Prosper,
+%% which includes this file before setting them
+%% cf <http://www.math.utah.edu/tex-archive/macros/latex/contrib/prosper/prosper.cls>
+%%
+%% Users must call \renewRicoDeux in order to fix things
+\newcommand{\renewRicoDeux}{%
+\renewcommand{\maketitle}{%
+	%% Tests whether the 'french' style from B. Gaulle is loaded
+	\expandafter\ifx\csname frenchTeXmods\endcsname\relax%
+	\else%
+	%% Is it an old version affected by the bug.
+	\ifx\@soORI\undefined%
+	\PackageWarning{prosper}{This page is intentionally left blank to overcome an incompatibility bug in the seminar class with the old (< 1999/11/23) B. Gaulle's 'french' package.}
+	\begin{center}
+		{\black\small
+	\textsf{prosper} class: page intentionally left blank to overcome an incompatibility bug between B. Gaulle 'french' package and the seminar class.}%
+	\end{center}
+	\clearpage \setcounter{page}{0}%
+	\fi\fi
+	\begin{slide}{}%
+		\ptsize{10}%
+		\begin{center}%
+		\@titleSpacing\par
+		\normalfont
+		\vskip 2em
+		{\ifinColor\@fontTitleColor\else\@fontTitleBW\fi\@Title\par}%
+		\ifx\@Subtitle\@empty\else
+
+		{\ifinColor\@fontSubtitleColor\else\@fontSubtitleBW\fi\@Subtitle\par}
+		\fi
+
+		\vskip 8em
+		\@Author
+
+		\ifx\@email\@empty\else
+		\vskip-5pt
+		{\fontsize{7}{7}\selectfont\texttt{\@email}}
+		\fi
+		\ifx\@institution\@empty%
+		\else
+		\vskip.8em
+		\@institution
+		\fi
+		\vfill
+		\end{center}
+	\end{slide}
+}
+
+%% N.B. Remember to double-depth the parameter numbers
+\renewcommand{\part}[2][\@defaultTransition]{%
+	\begin{slide}[##1]{}%
+		\vspace*{2.5cm}\@addBookmarkOnSlide{0}{##2}%
+		\begin{center}%
+			\fontTitle{##2}%
+		\end{center}
+	\end{slide}
+}}
+
+%==============================================================================
+
+\myitem{1}{\includegraphics[width=.4cm]{rico_bullet1.ps}}
+\myitem{2}{\includegraphics[width=.3cm]{rico_bullet2.ps}}
+\myitem{3}{\includegraphics[width=.3cm]{rico_bullet3.ps}}
+
+\newcommand{\theRICODeuxStyle}[1]{% 
+% la barre horizontale
+%% Moved up from (2cm,6cm)
+	\rput[lb](2cm,7cm){\includegraphics[width=10cm,height=1cm]{barre-rico.ps}}
+	
+% le coin bas gauche
+	\rput[lb](-1cm,-1cm)%
+		{\includegraphics[width=0.5cm,height=0.5cm]{angleHG.ps}}
+% le coin haut gauche
+	\rput[lb](-1cm,8cm){\rotatebox[origin=c]{270}%
+		{\includegraphics[width=0.5cm,height=0.5cm]{angleHG.ps}}}
+% le coin bas droit
+	\rput[lb](11.3cm,-1cm){\rotatebox[origin=c]{90}%
+		{\includegraphics[width=0.5cm,height=0.5cm]{angleHG.ps}}}
+% le coin haut droit
+	\rput[lb](11.3cm,8cm){\rotatebox[origin=c]{180}%
+		{\includegraphics[width=0.5cm,height=0.5cm]{angleHG.ps}}}
+
+% Mandatory finishing touch
+	\PutLogo{#1}}
+
+%% Turn off rico's Glitter which takes way too much CPU and time
+\DefaultTransition{Replace}
+
+%% Made text area taller from {6,2.4}. Can now support ~14 line items
+%% BUG: If we make it wider (<6) then the title page will be off-center
+%% Starting from 5 still looks good, but starting from 6 means
+%%     shorter lines --> good for presentation
+%% BUG: Vertical centering of \part{} is now too high
+\NewSlideStyle{t}{6,3.4}{theRICODeuxStyle}
+\PDFCroppingBox{10 40 594 820}
+
+
+
+%==============================================================================
+%% another C&P, necessary for resizing the caption "cartouche"
+%% N.B. \NewSlideStyle (above) does \slidepagestyle{GenericPageStyle}
+%% This particular nonsense is defined by Seminar, not Prosper.
+
+% This fixes falling off the page
+\renewcommand{\slidebottommargin}{2cm}
+
+% This fixes the illegible \tiny
+%% FIXME: also needs generalizing for font size and shape
+%% FIXME: remove for \maketitle and \part
+%% FIXME: also define the \ifisDraft, \ifshowVersion, \else spans so we can reuse them in fancyhdr and elsewhere
+%
+%\newpagestyle{RicoDeuxPageStyle}%
+%	{\hfill}% Header
+%	{%        Footer
+%	\vspace{-5em}%
+%	\ifnoFooter\else\hfill%
+%	\ifisDraft
+%	{\@colorFoot\small \textbf{\jobname.tex}~--~\@Title~--~\@Author~--~\number\day/\number\month/\number\year~--~\timenow~--~p.~\thepage\ifallPages/\realpageref{last@page}\fi}%
+%	\else
+%	\ifshowVersion
+%	{\@colorFoot\small \textbf{\jobname.tex}~--~\@Title~--~\@Author~--~\number\day/\number\month/\number\year~--~\timenow~--~p.~\thepage\ifallPages/\realpageref{last@page}\fi}%
+%	\else
+%	{\@colorFoot\small \@cartouche~--~p.~\thepage\ifallPages/\realpageref{last@page}\fi}%
+%	\fi\fi\fi
+%}
+%\slidepagestyle{RicoDeuxPageStyle}
+
+%==============================================================================
+%==============================================================================
+\endinput

@@ -1,0 +1,23 @@
+% ~~~~~ All the preamble for doing OT tableaux
+\NeedsTeXFormat{LaTeX2e} 
+\ProvidesPackage{tableaux}[2007/09/25 Optimality Theory Tableaux]
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+% ~~~~~ Add the pointing hand character
+\RequirePackage{pifont}
+\newcommand{\hand}{\ding{43}}
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+% ~~~~~ Add tabular dashed lines with : and \hdashline etc
+\RequirePackage{arydshln}
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+% ~~~~~ Add greying out of cells in tabulars
+%\RequirePackage{array,color,colortbl}
+%\newcommand{\grey}{\cellcolor[gray]{.8}}
+% Can't get it to work right, i.e. not overlap the lines
+% Also, doesn't interact well with :
+%\setlength{\tabcolsep}{1em}
+%\setlength{\arrayrulewidth}{0.5pt}
+

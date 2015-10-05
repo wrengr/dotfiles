@@ -1,0 +1,47 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{xperiod}
+	[2008/08/23 Period after abbreviations (or not)]
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+% ~~~~~ The \. macro is a dot followed by a thin space, except when
+% it's gobbled up by following punctuation. The spacing after
+% gobbling punctuation will be double or french as normal for the
+% document.
+%
+% This version based off xspace in tetex-texmf 3.0-1,
+% texlive/2007/texmf-dist has a vastly more complicated version.
+
+\DeclareRobustCommand\.{\futurelet\@let@token\@xperiod}
+
+%% BUG: This has issues when there's a trailing \. at the end of
+%% certain things like the body of an \item or just before $. This
+%% can be avoided by adding the explicit period for the end of the
+%% sentences, but you need to add .\, when preceding $ which defeats
+%% the purpose of \.
+\newcommand{\@xperiod}{%
+	\ifx\@let@token.\else%          Drop extra periods
+	\ifx\@let@token!.\else%         Period but no space
+	\ifx\@let@token:.\else%         =''=
+	\ifx\@let@token;.\else%         =''=
+	\ifx\@let@token?.\else%         =''=                            #5
+	\ifx\@let@token,.\else%         =''=
+	\ifx\@let@token'.\else%         =''= (captures '' as well)
+	\ifx\@let@token/.\else%         =''=
+	\ifx\@let@token).\else%         =''=
+	\ifx\@let@token-.\else%         =''= (but you really shouldn't) #10
+	\ifx\@let@token\bgroup.\else%   BUG: er, should we drop our space or what?
+	\ifx\@let@token\egroup.\else%   =''=
+	\ifx\@let@token\/.\else%        =''=
+	\ifx\@let@token\ .\else%        =''=
+	\ifx\@let@token~.\else%         =''=                            #15
+	\ifx\@let@token\@xobeysp.\else% =''=
+	\ifx\@let@token\space.\else%    =''=
+	\ifx\@let@token\@sptoken.\else% =''=
+		.\,%                        Thin space is best after an abbreviation
+	\fi\fi\fi%
+	\fi\fi\fi\fi\fi%
+	\fi\fi\fi\fi\fi%
+	\fi\fi\fi\fi\fi}
+
+\endinput
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ fin.

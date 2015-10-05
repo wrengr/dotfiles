@@ -1,0 +1,28 @@
+#!/bin/sh
+# Wrapper around cal in order to highlight today
+# wren gayle romano <wren@cpan.org>                 ~ 2006.04.02
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# N.B. Solaris' xterm severely dislikes tput, we could use color instead
+
+cal=/usr/bin/cal
+
+# Pass any arguments to disable (including the new noop -! )
+if [ $# -gt 0 ]; then
+	if [ "X$1" = "X-!" ]; then
+		shift # remove the noop flag
+	fi
+	$cal "$@"
+else
+	date=`date +%e`
+	
+	if tty >> /dev/null ; then
+		d2=" `tput smso && printf "$date" && tput rmso` "
+	else
+		d2="[$date]"
+	fi
+	
+	# The first sed is so the second catches the first and last columns
+	$cal | sed "s/\(.*\)/ \1 /; s/ $date /$d2/"
+fi
+
+exit 0

@@ -1,0 +1,78 @@
+#!/usr/bin/env perl
+# Convert seconds since epoch to W3C in local timezone or UTC
+# wren gayle romano <wren@cpan.org>                 ~ 2007.05.29
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+use warnings;
+use strict;
+
+# ~~~~~ Preamble  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+sub usage () {
+	print "Usage: w3ctime [-nz] [seconds_since_epoch]\n";
+	exit 1;
+}
+
+my %flags = (
+	'n' => 0, # suppress newline (for easier scripting)
+	'z' => 0, # use Z-zone time (GMT/UTC)
+);
+my $sse = $^T; # $^T is marginally better than time(), will be reset later if need be
+
+
+# ~~~~~ Process command line ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+while (@ARGV) {
+	if ($ARGV[0] =~ s/^-//) {
+		foreach (split //, shift @ARGV) {
+			usage() if (not exists $flags{$_} or $flags{$_} == 1);
+			$flags{$_} = 1;
+		}
+		
+	} elsif ($ARGV[0] =~ m/^[0-9]+$/) {
+		$sse = shift @ARGV;
+		usage() if (@ARGV);
+		
+	} else {
+		usage();
+	}
+}
+
+
+# ~~~~~ Get the time ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+my @t;  # time array
+my $tz; # timezone string value
+
+#  0    1    2     3     4    5     6     7     8
+# ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst)
+
+if ($flags{'z'}) {
+	@t = gmtime($sse);
+	$tz = 'Z';
+	
+} else {
+	@t = localtime($sse);
+	my @g = gmtime($sse);
+	# Test: circa month roll-over, e.g. 1177997254sse.
+	#    The fix: [3] -> [7]
+	# BUG: circa year roll-over, e.g. <= 28800sse.
+	#    The fix ...? no fixed length (though generally 365)
+	$tz = sprintf('%+03d:%02d',
+		24 * ($t[7] - $g[7]) + $t[2] - $g[2],
+		$t[1] - $g[1]
+	);
+}
+
+
+# ~~~~~ Print output ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+printf('%4d-%02d-%02dT%02d:%02d:%02d%s%s',
+	$t[5] + 1900, $t[4] + 1, $t[3], # YYYY-MM-DD
+	$t[2], $t[1], $t[0],            # HH:NN:SS
+	$tz, ($flags{'n'} ? '' : "\n")  # TZ NL
+);
+
+
+exit 0;
+__END__

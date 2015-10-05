@@ -1,0 +1,209 @@
+#!/usr/bin/env perl
+# Run a program's output through sed/perl filters.
+# Returning the same exit code as the child program.
+# (Interleaving of output not guaranteed.)
+
+use warnings;
+use strict;
+use IPC::Open3 qw(open3);
+use Symbol     qw(gensym);
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~ Parse ARGV
+
+my %Filters = (
+	'-1' => [],
+	'-2' => [],
+);
+my $ExchangePipes = 0;
+
+while (@ARGV) { 
+	if ($ARGV[0] =~ m/^-[12]$/) {
+		my $pipe = shift @ARGV;
+		die "psed: Missing filter\n"
+			unless @ARGV;
+		my $filter = shift @ARGV
+			or die "psed: Vacuous filter\n";
+		
+		push @{$Filters{$pipe}}, $filter;
+		
+	} elsif ($ARGV[0] eq '-x') {
+		$ExchangePipes = 1;
+		shift @ARGV;
+		
+	} elsif ($ARGV[0] eq '-?') {
+		@ARGV = ();
+		
+	} else {
+		last;
+	}
+}
+
+my ($PARENT_OUT, $PARENT_ERR)
+	= $ExchangePipes
+	? (*STDERR, *STDOUT)
+	: (*STDOUT, *STDERR)
+	;
+
+
+die <<__USAGE__ unless @ARGV;
+
+Usage: psed [options] command args
+
+    -1 filter  Apply filter to stdout     (as defined by command)
+    -2 filter  Apply filter to stderr     (as defined by command)
+    -x         Exchange stdout and stderr (after filtering)
+    -?         Display this message
+
+    Each filter is a Perl code block which is eval()ed, with the
+    current line stored in \$_. Thus simple sed-like filters are
+    easy to write, though more complex transformations are possible
+    as well. If multiple filters are given for a pipe, they are
+    applied in order. Because of the slowness of processing and
+    buffering, there may be less interleaving of stderr and stdout
+    than usual when they are directed to the same pipe.
+
+__USAGE__
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~ Open child process and filter its outputs
+my $CHILD_OUT;
+my $CHILD_ERR = gensym(); # Create a symbol because open3 won't do it for us
+my $pid;
+eval { $pid = open3(*STDIN, $CHILD_OUT, $CHILD_ERR, @ARGV); };
+die "psed: open3: $@\n" if $@;
+die "psed: open3: Couldn't autovivify file handles\n"
+	unless $CHILD_OUT and $CHILD_ERR;
+
+
+sub AutoFlush { my ($fh) = @_;
+	my $oldFH = select $fh;
+	$| = 1;
+	select $oldFH;
+}
+AutoFlush($PARENT_OUT);
+AutoFlush($PARENT_ERR);
+AutoFlush($CHILD_OUT);
+AutoFlush($CHILD_ERR);
+
+
+sub RunFilters { my ($inFH, $eofR, $outFH, @filters) = @_;
+	unless ($$eofR) {
+		my @lines = NonblockingGetlines($inFH);
+		$$eofR    = NonblockingEOF($inFH);
+		foreach (@lines) { # use $_ implicitly in the filters
+			# Slow but certain interpretation
+			foreach my $filter (@filters) {
+				eval $filter;
+				die "psed: Bad filter: $filter\npsed: Couldn't eval: $@\n"
+					if $@;
+			}
+			print $outFH $_;
+		}
+	}
+}
+my $CHILD_OUT_finished = 0;
+my $CHILD_ERR_finished = 0;
+while (1) {
+	RunFilters
+		( $CHILD_OUT
+		, \$CHILD_OUT_finished
+		, $PARENT_OUT
+		, @{$Filters{'-1'}}
+		);
+	RunFilters
+		( $CHILD_ERR
+		, \$CHILD_ERR_finished
+		, $PARENT_ERR
+		, @{$Filters{'-2'}}
+		);
+	last if $CHILD_OUT_finished and $CHILD_ERR_finished;
+}
+
+my $deadPID = waitpid $pid, 0;
+die "psed: waitpid: No child!" if $deadPID == -1;
+my $exitCode     = ($? >> 8);
+my $killerSignal = ($? & 127);
+my $dumpedCore   = ($? & 128);
+exit $exitCode;
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# cf <http://www.perlmonks.org/?node_id=55241>
+BEGIN {
+	my $BlockSize = 1024 * 1024;
+	my $Timeout   = 0.001; # Wait time in seconds (0 == blocking)
+	my %Remainder = ();
+	my %Lines     = ();
+	my %EOF       = ();
+	
+	
+	# ~~~~~ Returns a single line, lazily calling NonblockingGetlines as needed
+	sub NonblockingGetline { my ($fh) = @_;
+		$Lines{$fh} = [] unless exists $Lines{$fh};
+		
+		# Read from $fh, unless we already have some buffered
+		unless (@{$Lines{$fh}}) {
+			my @lines = NonblockingGetlines($fh);
+			$Lines{$fh} = \@lines;
+		}
+		
+		# Return a line, if one exists
+		return
+			( @{$Lines{$fh}}
+			? shift @{$Lines{$fh}}
+			: undef
+			);
+	}
+	
+	
+	# ~~~~~ Returns a list of lines available (up to $BlockSize)
+	sub NonblockingGetlines { my ($fh) = @_;
+		die "psed: NonblockingGetlines: Bad file handle\n" unless $fh;
+		return if NonblockingEOF($fh);
+		$Remainder{$fh} = '' unless exists $Remainder{$fh};
+		
+		# Initialize (bitvector) string of file descriptors to watch
+		my $rfd = '';
+		vec($rfd, fileno($fh), 1) = 1; # parens needed for correct precedence
+		# Check for activity
+		return unless select($rfd, undef, undef, $Timeout) >= 0;
+		# Check that it's on the desired $fh
+		return unless vec($rfd, fileno($fh), 1);
+		
+		# Read a block in
+		my $buffer    = '';
+		my $bytesRead = sysread($fh, $buffer, $BlockSize);
+		if ($bytesRead) {
+			# Get the remainder too
+			$buffer = $Remainder{$fh} . $buffer;
+			# Store any new remainder
+			$Remainder{$fh} =
+				(substr($buffer,-1) !~ m/[\r\n]/
+					&& $buffer =~ s/([^\r\n]*)$//)
+				? $1
+				: ''
+				;
+			# Split lines and return (don't remove the newline)
+			return split /(?<=\n)/, $buffer;
+			
+		} else {
+			# we hit the EOF (because there was activity)
+			$EOF{$fh} = 1;
+			
+			# return remainder of line (from before)
+			my $line = $Remainder{$fh};
+			delete $Remainder{$fh};
+			return $line;
+		}
+	}
+	
+	
+	# ~~~~~ Returns whether an EOF was cached for the file handle
+	sub NonblockingEOF { my ($fh) = @_;
+		die "psed: NonblockingEOF: Bad file handle\n" unless $fh;
+		return $EOF{$fh} if exists $EOF{$fh};
+		return;
+	}
+}

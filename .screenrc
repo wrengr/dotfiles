@@ -1,0 +1,24 @@
+#
+# koninkje's screenrc (lifted from bkm, in turn from oroboros)
+#
+
+### Basic Configs ###
+defmonitor on			# monitor activity on all windows 
+autodetach on			# autodetach screen on hangup (saves running programs)
+shell $SHELL			# use my default shell (-$SHELL is a login shell)
+defscrollback 1500
+
+
+### Display Configs ###
+activity "Activity on %"	# show "Activity on <windownumber>"
+nethack on			# show "nethack-style" screen messages
+defutf8 on          # Enable UTF-8
+
+# always show this caption string as footer
+# 1) show window number, 2) title if it exists 
+# show 3) system load 4) 'hardstatus of window' if available
+# show 5) HH:MM 6) DAY date MONTH
+#               (1) (2)   (3)       (4)     (5)  (6)
+caption always "%3n %t%? %H: %l  %h%?     %0c  %D %d %M"
+
+### Keybindings ###

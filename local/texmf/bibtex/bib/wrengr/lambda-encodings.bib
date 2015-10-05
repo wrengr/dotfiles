@@ -1,0 +1,79 @@
+%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%% ~~~~~ Church / Boehm--Berarducci (catamorphism) encoding
+
+% encoding of strictly-positive algebraic data types in polymorphic lambda-calculus (System F). They showed how to *systematically*, automatically translate operations on data types -- construction and especially pattern-matching -- into the target language that has only applications and abstractions. They proved that the encoding is one-to-one and onto: it encodes all strictly-positive algebraic data types with no junk. Furthermore, the encoding commutes with operations on data types: it is an isomorphism. In modern terms, they showed how to construct an initial algebra of a strictly-positive functor using a set of System F terms as a carrier.
+%
+% Church encoding, which represents data types in an untyped lambda-calculus, is not tight. Without types, it is impossible to separate lambda-terms that encode some data type, from those that represent no data type. The main distinction between the two approaches is subtle. In a word, Church encoding only describes introductions whereas Boehm-Berarducci also define elimination, or pattern-matching, on encoded data types. [...] It is not clear how to extend [things like the predecessor/tail function] to the encodings of various trees and to make it automatic. Boehm and Berarducci were the first to show `the trick', the *systematic* method of writing pattern-matching functions on encodings of any algebraic data type.
+%
+% <http://okmij.org/ftp/tagless-final/course/Boehm-Berarducci.html>
+@Article{ BoehmBerarducci1985,
+	author    = "Boehm, Corrado and Berarducci, Alessandro",
+	title     = "Automatic Synthesis of Typed Lambda-Programs on Term Algebras",
+	journal   = "Theoretical Computer Science",
+	volume    = 39,
+	year      = 1985,
+	pages     = "135--154",
+}
+
+%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%% ~~~~~ Scott / Mogensen (case-eliminator) encoding
+
+% Dana Scott's encoding first appears in a set of unpublished lecture notes
+@Unpublished{ Scott1968,
+	author    = "Scott, Dana",
+	title     = "A system of functional abstraction",
+	year      = 1968,
+	note      = "Lectures delivered at University of California, Berkeley, 1962/63. Photocopy of a preliminary version, issued by Stanford University, September 1963, furnished by author in 1968.",
+}
+
+
+% Mogensen extends Scott to encode any untyped lambda term as data.
+% Also something about metaprogramming?
+@Article{ Mogensen1994,
+	author    = "Mogensen, Torben",
+	title     = "Efficient Self-Interpretation in Lambda Calculus",
+	journal   = "Journal of Functional Programming",
+	volume    = 2,
+	year      = 1994,
+	pages     = "345--364",
+}
+
+% <https://wiki.haskell.org/wikiupload/0/0a/TMR-Issue10.pdf> Naylor calls it "Jansen's encoding", which noone else uses; has a footnote about others calling it Scott encoding.
+
+%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%% ~~~~~ Parigot (paramorphism) encoding
+@InProceedings{ Parigot1988,
+	author    = "Parigot, Michel",
+	title     = "Programming with proofs: A second-order type theory",
+	booktitle = "ESOP '88",
+	series    = "LNCS 300",
+	year      = 1988,
+	pages     = "145--159",
+	url = {http://link.springer.com/chapter/10.1007%2F3-540-19027-9_10},
+}
+
+@Article{ Parigot1992,
+	author    = "Parigot, Michel",
+	title     = "Recursive programming with proofs",
+	journal   = "Theoretical Computer Science",
+	volume    = 94,
+	number    = 2,
+	year      = 1992,
+	pages     = "335--336",
+}
+
+% Geuvers extends Parigot to cover coinductive types as well.
+% Presented as a talk at "Types 2014", May 12-15, 2014, Paris.
+% Submitted for publication, but no information yet.
+@InProceedings{ Geuvers2014,
+	author    = "Geuvers, Herman",
+	title     = "The {C}hurch--{S}cott representation of inductive and coinductive data",
+	booktitle = "Types 2014",
+	month     = may,
+	year      = 2014,
+	location  = "Paris",
+	url = {http://www.cs.ru.nl/~herman/PUBS/ChurchScottDataTypes.pdf},
+}
+
+%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ fin.

@@ -1,0 +1,38 @@
+# For more alias ideas, see:
+# http://noamlewis.wordpress.com/2012/05/21/my-git-aliases/
+[alias]
+    lol  = log --graph --decorate --pretty=oneline --abbrev-commit
+    lola = log --graph --decorate --pretty=oneline --abbrev-commit --all
+	st   = status
+	ci   = commit -a
+	hw   = help -w
+	ff   = merge --ff-only
+	unpushed = log @{u}..
+# This will unrecord the most recent commit. Can also use "~1" instead of "^" at the end
+# <http://stackoverflow.com/questions/927358/how-to-undo-the-last-commit>
+	unrecord = reset --soft 'HEAD^'
+	amend = commit --amend -a
+# Revert all unstaged changes
+# * To revert staged files, use 'git reset -- .'
+# * To remove untracked files, use 'git clean -df'
+# * To revert only some chunks, use 'git checkout -p'
+# In all cases, you can give a specific file name instead of '.'
+# <http://stackoverflow.com/questions/52704/how-do-you-discard-unstaged-changes-in-git>
+	revert-all = checkout -- .
+[color]
+    branch = auto
+    diff = auto
+    interactive = auto
+    status = auto
+[user]
+	name = wren gayle romano
+	email = wren@community.haskell.org
+
+# Trying to solve this problem
+# <http://stackoverflow.com/questions/11403407/git-asks-for-username-everytime-i-push>
+# <http://stackoverflow.com/questions/6565357/git-push-requires-username-and-password/6565661#6565661>
+# <http://stackoverflow.com/questions/5343068/is-there-a-way-to-skip-password-typing-when-using-https-github/5343146#5343146>
+#[credential "https://github.iu.edu/"]
+#	username = wrengr
+[push]
+	default = simple

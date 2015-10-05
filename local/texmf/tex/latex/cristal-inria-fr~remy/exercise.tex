@@ -1,0 +1,594 @@
+%  Exercise
+%
+%  Copyright (C) 2001, 2002, 2003, 2007 Didier Rémy
+%
+%  Author         : Didier Remy 
+%  Version        : 1.1.2
+%  Bug Reports    : to author
+%  Web Site       : http://pauillac.inria.fr/~remy/latex/
+% 
+%  Exercise is free software; you can redistribute it and/or modify
+%  it under the terms of the GNU General Public License as published by
+%  the Free Software Foundation; either version 2, or (at your option)
+%  any later version.
+%  
+%  Exercise is distributed in the hope that it will be useful,
+%  but WITHOUT ANY WARRANTY; without even the implied warranty of
+%  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+%  GNU General Public License for more details 
+%  (http://pauillac.inria.fr/~remy/license/GPL).
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  File exercise.tex (LaTeX macros)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\def \Version {1.1.2}
+\def \Modified {2007/08/28}
+
+\documentclass[12pt] {article}
+\usepackage {fullpage}
+
+%\usepackage[USenglish,francais]{babel} 
+
+\usepackage {hevea}
+\def \cuttingunit {none}
+
+\usepackage{exercise} 
+
+
+
+%% The following line is possible in latex but would not be understood by hva
+% \usepackage [foo]{exercice}
+
+%% You may uncomment the following lines see my hyperref.hva package
+\usepackage {hyperref}
+
+
+\title {Sending \\
+Answers to Exercises \\
+(or Proofs of Theorems) \\ 
+to appendices \\[1em]
+\normalsize (Version {\Version}, last modified {\Modified})}
+\author {Didier R{\'{e}}my}
+
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This package provides macros for writing exercises and answers to
+exercises. Then, the same document can be run in several modes, for
+instance, the answers may be hidden, inserted on place, or just collected 
+in an auxilliary file to be inserted later in an appendix for instance. 
+(Then  hyperref can be used to make questions and answers point to one
+another.) 
+
+The package can also be used to send proofs of theorems to appendices. 
+
+The package also comes with a version for {\hevea}.
+\end{abstract}
+
+\ifhevea
+\def \basis {..}% {http://cristal.inria.fr/~remy/latex}
+This document is also available in
+\href {\basis/exercise.dvi}{DVI}, 
+\href {\basis/exercise.ps.gz}{Postscript}, and
+\href {\basis/exercise.pdf}{PDF}.
+
+The source of this file,
+\ahref {\basis/exercise.tex}{exercise.tex}
+may serve as an example.
+\fi
+
+
+%% This is an example of use of anser outside of exercises
+
+\begin{answer}
+\em Answers to exercises are intentionlly very brief.
+\end{answer}
+
+%% This is an interesting use of \fragileanswer (see the documentation)
+%% \let \oldsection \section
+%% \renewcommand {\section}[1]
+%%   {\oldsection {#1}\fragileanswer
+%%      {\string \subsection* {Section \thesection\space (#1)}}}
+
+%\AnswerLaterfalse
+%\Answersfalse
+
+\section {The exercise and answer environment}
+
+The \verb"exercise" environment is used to separate and number exercises. 
+The environment contains an optional parameter meant to be a short
+description of the exercise that will then appear as the title of the
+exercise, when refered to from another position.
+
+The \verb"answer" environment is normally used within the \verb"exercice"
+environment, in which case the exercise number is captured and used to refer
+to the exercise from another position.  There may be several answers within
+a single exercise environment.  Answers are numbered internally ({\em ie.}
+independently of any question and subsection structure that the author could
+introduce) and its number refers to the $n$-th answer envrionment from the
+beginning of the exercise.
+
+
+\subsection {Collecting answers into an answer-file (default mode)}
+
+The default behavior of the \verb"answer" environment is to copy
+the contend of the answer (the region of text between \verb"\begin{answer}"
+and \verb"\end{answer}" verbatim to the answer file
+\verb"\ExerciseAnswerFile.ans"
+(by default \verb"\ExerciseAnswerFile" is equal to \verb"\jobname")
+
+The \verb"answer" environment can also be used outside of the
+\verb"exercise" environment, in which case the text is inserted verbatim in
+the answer file, but without any title and any other side effect.  For
+instance, this may be used to insert in the answer files some headers or
+notes that are global to several exercises.
+
+The fragile command \verb"\fragileanswer" is an alternative to the use 
+of the use of the  \verb"answer" environment. However, since it evaluates
+its arguments, commands and such must be quoted. The advantage is that it
+can be used inside other macros.
+
+The command \verb"\inputanswers" normally insert all answers to
+exercises. It takes the title of the answer section as a mandatory
+argument. The base file name of the answer file, may be given as an optional
+argument; this allows to load answers generated from another file.
+
+
+\subsection {Customizing answer placements}
+
+Customization of answer placement uses the \verb"keyval" package.
+The command \verb"\setanswer" can be used with the following keys:
+
+\medskip\noindent%\hspace {-2em} 
+\verb"noanchors"
+\begin{quote}
+This will remove hyperref anchors to exercises (which are set by default).
+\end{quote}
+
+\medskip\noindent%\hspace {-2em} 
+\verb"anchors"
+\begin{quote}
+This will attached hyperref anchors to exercises (if previously removed). 
+\end{quote}
+
+\medskip\noindent%\hspace {-2em} 
+\verb"hide"
+\begin{quote}
+Answers will be hidden. 
+\end{quote}
+
+\medskip\noindent%\hspace {-2em} 
+\verb"show"
+\begin{quote}
+Answers will be shown. 
+\end{quote}
+
+\medskip\noindent%\hspace {-2em} 
+\verb"later"
+\begin{quote}
+If shown, answers will appear later. 
+\end{quote}
+
+\medskip\noindent%\hspace {-2em} 
+\verb"inline"
+\begin{quote}
+If shown, answers will appear immediately. 
+\end{quote}
+
+\medskip\noindent%\hspace {-2em} 
+\verb"file="{\tt \em filename}
+\begin{quote}
+This will use filename as the base name for the answer file. 
+By default \verb"\jobname" is used. The suffix \verb".ans" will be appended
+to the basename. This command key can only be set in the preamble. 
+\end{quote}
+
+The command \verb"\inputanswers" can be used to insert answers that have been
+postponed. The command takes one argument which is used as the title of the
+answer section before answers are inserted. The command also takes an
+optional argument which is the name of the answer file. 
+By default the filename if the same one as the one in which answers were
+collected. If answers are ignore (as set by the \verb"hide"  key) or
+immediate (as set by the \verb"inline" key) at the time
+\verb"\inputanswers" is executed, then the command is ignored (hence, the
+answer section is not created). 
+
+These keys can be set globally with the command \verb"\setanswers". 
+The can also be modified globally anywhere or locally in the scope of
+grouping parens. Furthermore, they can be set locally to an exercise 
+by appearing in an optional argument to the exercise environment. 
+
+\subsection {Package options}
+
+The keys \verb"noanchors", \verb"hide", and
+\verb"now" are also recognized as package options. 
+Any other package option is interpreted as the argument to the key
+\verb"file". 
+
+\subsection {Example}
+
+\begin{exercise}
+What would be the effect of the following declaration?
+\begin{verbatim}
+\let \oldsection \section
+\renewcommand {\section}[1]
+  {\oldsection {#1}\fragileanswer
+     {\string \subsection* {Section \thesection\space (#1)}}}
+\end{verbatim}
+\begin{answer}
+See the section information inserted above and below in the answer section.
+\end{answer}
+(Of course the code need improvement to take the optional arguments sections
+into account)
+\end{exercise}
+ 
+
+\begin{exercise}
+Note that this exercise has no title.
+\par \noindent
+1. what will you see at this place in the main body of the
+document?
+\begin{answer}
+The question above, but you will not see this.
+\end{answer}
+2. Where will I see the answer to the previous question and to this
+one. 
+\begin{answer}
+At the place where you insert \verb"\inputanswers"
+\end{answer}
+\end{exercise}
+ 
+\begin{exercise}[Hiding answers]
+What would happen if I type \verb"\setanswer{noanchor}" in the body of this
+exercise?  
+%\setanswer{noanchor}
+\begin{answer}
+The answer would be shown as usual in the list of answers, but there won't be
+an anchor from the exercise to its solution. 
+Note that this would also affect following answers of the same exercise. 
+\end{answer}
+And what will happen if I now type \verb"\setanswer{hide}" in the body of
+this exercise?
+%\setanswer{hide}
+\begin{answer}
+This answer would be invisible, as if removed from the file. 
+\end{answer}
+\end{exercise}
+
+\begin{exercise}[Input Answers]
+What will happen if the command \verb"\inputanswers" is never included?
+\begin{answer}
+The answer of exercises will just not be shown and (anchors to answers
+will be dandling pointers)
+\end{answer}
+Note that the file \verb"\jobname.ans" is only created if non empty.
+Thus, if you load the package but do not create any exercise it is not
+created. Then, you will simply get a warning if you attempt to load answers
+of exercises. 
+\end{exercise}
+
+\subsection {Customizing the appearance of answers}
+
+This can be done by redefining the following commands:
+
+\medskip\noindent%\hspace {-2em} 
+\verb"\AnswerSection"
+\begin{quote}
+The name of the command to print the title of answer section (the argument
+of \verb"\inputanswers". 
+\end{quote}
+
+\medskip\noindent%\hspace {-2em} 
+\verb"\ExerciseName"
+\begin{quote}
+The identifier used to name exercises (often need to be changed according to
+languages). Default value is {\tt Exercise}, except if
+\verb"\languagename" is {\tt frenchb} where the value is
+{\tt Exercice}. 
+\end{quote}
+
+\medskip\noindent%\hspace {-2em} 
+\verb"\AnswerName"
+\begin{quote}
+The identifier used to point to answers. Default value is {\tt Answer},
+except if \verb"\languagename" is {\tt frenchb} where the value is
+{\tt R{\'e}ponse}. 
+\end{quote}
+
+\noindent%\hspace {-2em} 
+\verb"\AnswerNew"
+\begin{quote}
+The title of an answer to a new exercise. It receives 3 arguments: the exercise
+number, the answer number, and the page number. 
+\end{quote}
+
+\noindent%\hspace {-2em} 
+\verb"\AnswerContinued"
+\begin{quote}
+Idem, but when the answer is not the first one.
+\end{quote}
+
+\noindent%\hspace {-2em} 
+\verb"AnswerNow" 
+\begin{quote}
+This environment can be redefined to change the typesetting
+immediate answers (when answers are immediate, Answer will act as AnswerNow).
+\end{quote}
+
+\section {Creating new answer environments}
+
+In addition to customization of the answer environment, the user can defined
+its own answer environment. For instance, an environment \verb"myanswer"
+similar to the default \verb"answer" of this package can be defined with the
+following definition: 
+\begin{verbatim}
+\newanswer {myanswer}{Answer}
+  {\em \AnswerNiceLink}
+  {}
+  {\AnswerNow}
+  {\endAnswerNow}
+  {{\thepage}}
+  [1]
+  {\ifnum \theQuestion=1\relax 
+     \subsection* 
+        {\ExerciseLink {Exercise \theExercise, page #1}}%
+   \else
+     \subsubsection* 
+        {\ExerciseLink {Exercice \theExercise\space (continued)}}%
+   \fi}
+  {}
+\end{verbatim}
+The command \verb"\newanwer" takes at least 8 arguments, with two possible
+optional arguments after the fourth one. 
+\begin{itemize}
+%HEVEA\let \Item \item\def \item[#1.]{\Item{}{\bf \##1:}}
+
+\item[1.]
+The first argument is the name of the answer environment being defined. 
+
+\item[2.]
+The second argument is the title of the answer environment to appear in 
+the document.
+
+\item[3, 4.]
+This are will be executed respectively before and after processing the
+answer.  Typically, they are used to insert a pointer to the exercise in the
+appendix.
+
+\item[5, 6.]
+These define the environment that should be used in case the answer is
+inserted locally, {\em ie.} if \verb"\AnswerLaterfalse" is set.
+Two optional arguments may be used between mandatory arguments 4 and 5
+and will act as in the {\tt\string\newenvironment} command. 
+
+\item[7.]
+This is  used to pass information between the place
+where the answer environment occurs and the time when the answer will be
+reread again. This argument is passed to the \verb"\fragileanswer", {\em ie.}
+it is evaluated in the local context but inserted in the answer file. 
+
+\item[8, 9.]
+The remaining arguments are used to define the behavior of the answer 
+when reread from the answer file. They are passed to the command
+{\tt \string \newenvironment}\verb"{ans-name}" (where \verb"name" is the name
+of the answer-environment being defined) hence the two optional arguments in
+case this command  used arguments (possibly with default values). 
+
+\end{itemize}
+Additionally, the so-created \verb"myanswer" environment that is 
+immediately passed to \verb"\setanswer" for local customization. 
+This is evaluated first, so that it act as if it \verb"\setanswer"
+were executed outside of the exercise environement, except that the setting
+if local to the environment. 
+
+% %%%%%%%%%%%%%%%% For use in this file.
+% \newanswer {myanswer}{Answer}
+%    {\em \AnswerNiceLink}
+%    {}
+%    {\AnswerNow}
+%    {\endAnswerNow}
+%    {{\thepage}}
+%    [1]
+%    {\ifnum \theQuestion=1\relax 
+%       \subsection* {\ExerciseLink {Exercise \theExercise, page #1}}%
+%     \else
+%       \subsubsection* 
+%          {\ExerciseLink {Exercice \theExercise\space (continued)}}%
+%     \fi}
+%    {}
+% %%%%%%%%%%%%%%%% 
+More precisely, at every of the follow code in the source file:
+\begin{quote}
+\begin{verbatim}
+\begin{myanswer}[<args>]
+<Any text>
+\end{myanswer}
+\end{verbatim}
+\end{quote}
+The following steps are executed in order ($\texttt{\#}k$ refers to the k's
+argument of the \texttt{myanswer} environment definition): 
+\begin {enumerate}
+\item{}
+As at the beginning of any environment, a new group (scope) is opened
+
+\item{}
+The optional argument \verb"<args>" of the environment is passed to
+\verb"\setanswer". Unless the answer is hidden or immediate, the following
+steps continues as folllow (otherwise, the environment is ignore or inlined 
+according to arguments {\tt \#4} and {\tt \#5}).
+
+\item{}
+\verb"\begin{ans-myanswer}" is inserted in the answer file.
+
+\item{}
+The argument \texttt{\#6} is inserted into the answer file. 
+
+\item
+The argument \texttt{\#2} is evaluated. 
+
+\item{}
+The body of the answer \verb"<Any text>" is inserted verbatim into the answer
+file. 
+
+\item{}
+The argument \texttt{\#3} is evaluated.
+
+\item{}
+\verb"\end{ans-myanswer}" is inserted in the answer file.
+
+\item{}
+The group (scope) of the environment is closed.
+
+\end {enumerate}
+In addition, two commands are available for manipulating anchors:
+\verb"\AnswerLink" can be used in the text to point to the corresponding 
+answer in the answer section and, conversely, \verb"\ExerciseLink" can be
+used to point to the exercise from the answer section. Both commands take 
+one argument (the text where to anchor the link). 
+A more elaborated version \verb"\AnswerNiceLink" provides
+a default typesetting of the answer link. It takes an optional parameter
+---the text of the anchor--- equal to \verb"\AnswerName" by default. 
+
+The environment also adjusts the counters \verb"\Exercise" and
+\verb"\Question" so that their values while reading the answer file is
+identical to the value they had when the corresponding answer was processed.
+Other counters (such as pages, sections, etc.) must be passed explicitly 
+using the fourth argument, as described above. 
+
+These steps only applies is the answer appears within an exercise, 
+and if answers are not hidden. Otherwise, the environment behaves as 
+in the default case. 
+
+% \paragraph*{Warning!} Immediate answers are inserted, 
+% as in the default environment; hence, any change of style made by the answer
+% envrironement is ignored in this situation and the typesetting may not
+% correspond to the one when the answer appears in an appendix.
+
+\section {Sending proofs to an appendix}
+
+This package can also be used to typeset proofs locally right after 
+the claims, and have them appear in an appendix.
+
+For instance this can be realized with the following declaration:
+\begin{verbatim}
+\def \capitalize #1{\uppercase {#1}}
+\newanswer {proof}{Proof}
+  {\def \theExercise {\ThmName}\def \theQuestion {\ThmLabel}%
+   \if@answer@later
+       \if@answer@anchor \AnswerLink{\hbox {(See proof in the Appendix)}}\fi%
+   \else \def \AnswerName {Proof}\fi
+   \pdf@hypertarget {Thm-\ThmName.\ThmLabel}{}}
+  {}
+  {\trivlist \item [\hskip \labelsep {\underline {Proof}:}]}
+  {\penalty 100\hfill\rule{2mm}{2mm}\endtrivlist\@doendpe}
+  {{\ThmName}{\ThmLabel}}
+  [2]
+  {\subsection* 
+        {\pdf@hypertarget {Ans-#1.#2}{Proof} of 
+         \pdf@hyperlink {Thm-#1.#2}{\capitalize #1 #2}}%
+   \nobreak
+   }
+  {}
+\end{verbatim}
+Note the use of \verb"\ThmName" and \verb"\ThmLabel", which refer to the
+name and counters of the last theorem-like environment.  They can be
+retrieved automatically will the following little hack.
+\begin{verbatim}
+\def \@thm #1#2{%
+  \refstepcounter {#1}
+  \xdef \ThmName {\@currenvir}%
+  \xdef \ThmLabel {\@currentlabel}%
+  \@ifnextchar [{\@ythm {#1}{#2}}{\@xthm{#1}{#2}}%
+}
+\end{verbatim}
+Then, proofs will be recalled by 
+\begin{verbatim}
+\inputanswers {Proof of main results}
+\end{verbatim}
+\paragraph {Warning!}
+Although the package can be used to pospone several kinds of material to an
+appendix using a temporary file, it uses a single file so far. So combining
+solutions to exercises and proofs to appendices will not work together 
+(material would be interlaced). Sometimes interlacing may be desired, but
+usually not. In the future, the command should offer the possibility to
+send different kind of material to different files. 
+
+When,  \verb"\inputanswers" is called, all pending answers are inserted. 
+If other (exercises and) answers occur after \verb"\inputanswers", 
+the file will be reopened as an empty file and new answers will be 
+
+
+\section {Implementation notes}
+
+The implementation is quite simple and short. 
+%
+The only trick is to undo the active catcodes that might have been done by the
+\verb"inputencoding" package before copying answers to 
+\verb"\ExerciseAnswerFile.ans".
+
+\subsubsection* {Beware!}
+
+However, I found out, that to make it work you also need to tell latex to
+recognize 8-bit characters, i.e. to treat ``\'{e}'' as such, and not as
+``\verb"^^e9"''. On my redhat 6.1 linux machine, it is sufficient
+to set the environment variable \verb$LC_ALL=en_US$.  I do not know any
+otherway of making latex print 8-bit characters. 
+Of course, printing ``\verb"^^e9"'' instead of ``\'e'' is quite problematic
+with with verbatim code, where the ``\verb"^^"'' will be taken verbatim and
+not as an encoding of an 8-bit character. The solution would them
+be to pacth the verbatim mode to keep the meaning of ``\verb"^^"'' as 
+encoding of 8-bit charaters. 
+
+{\em Another, probably simpler, solution would then be to post-process the
+answer file to recode 7-bit charaters into 8-bit characters. However, one
+cannot reread the reshly created answer file. Instead two different names
+for the output and input answer files should be used. }
+
+\section {HeVeA compatibility}
+
+The package also comes with some {\hevea} version. 
+{\hevea} asumes that the file has first been processed by tex so that
+\verb"\jobname.ans" already exists. 
+
+However, {\hevea} does not currently interpret package options. 
+So, you must set the corresponding flags by hand, instead, to ensure
+{\hevea} compatibility.
+
+ to change
+the name of \verb"\jobname" does not currently work in {\hevea}, so you
+will have to do the appropriate renaming by hand (or in a Makefile). 
+
+The {\hevea} version is designed to be combined with hacha:
+in addition to pointing to answers, the answers are also included 
+immediately, but in a separate cutting unit, so that hacha will put them in
+an auxilliary file. 
+
+
+
+%\let \section \oldsection 
+
+\inputanswers{Answers to exercises}
+
+\section{We continue, and may include more exercises}
+
+\begin{exercise}[This is an additional optional exercise]
+Where the answer to this exercise will go?
+\begin{answer}
+In a new file \verb"\jobname1.ans". 
+\end{answer}
+How can we include answers of these additional exercises? 
+\begin{answer}
+By just repeating the \verb"\inputanswers" command.
+\end{answer}
+\end{exercise}
+
+
+\inputanswers{Answers to additional exercises}
+
+\end{document}
+% LocalWords:  mathpar aa Yop bb dd ee ff cc Ocaml Foo leftskip rightskip vdots
+% LocalWords:  gg hh uu vv ww HeVeA escapechar

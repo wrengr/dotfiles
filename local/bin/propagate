@@ -1,0 +1,281 @@
+#!/usr/bin/env perl
+# Propagate preferences to many servers
+# wren gayle romano <wren@cpan.org>                 ~ 2015.09.10
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+use strict;
+use warnings;
+
+# ~~~~~ List all servers (with usernames)
+# to deal with indirect servers, list within {}s
+# to remove servers, comment the line out with #
+
+my $servers = '
+    wren@community.haskell.org
+    
+	# ~~~~~ IU
+	wren@cl.indiana.edu
+	wrnthorn@nlp.indiana.edu # TODO: username change
+	
+	# ~~~~~ The CAT
+	koninkje@cs.pdx.edu
+	koninkje@rita.cat.pdx.edu
+'; # End of Servers
+
+
+# ~~~~~ Files to copy (directories will be copied recursively)
+# To remove files, comment out the line with #
+# Don't put trailing slash!! Trailing slash equals '/*'
+my $files = '
+	#.bashrc # cat accounts severely dislike modifying this
+	.bash_profile
+	.bash_logout
+	#.cabal/config         # How to do this? As written they will copy into ~/.
+	.darcs_completion
+	.ghci
+	.gitconfig
+	.hgrc
+	.inputrc
+	.irssi    # dir
+	.latexmkrc
+	#.motd
+	.muttrc
+	.mutt     # dir
+	.screenrc
+	.vimrc
+	.vim      # dir
+	local     # dir, should be `rm -rf`ed occasionally because of moves
+	#.ssh/authorized_keys2 # How to do this? As written they will copy into ~/.
+'; # End of Files
+
+# ~~~~~ Files and directories to avoid copying
+my $exclude = join ''
+            , map { s/\s*\#.*$// # see to_tree()
+                  ; s/^\s*//
+                  ; ' --exclude=' . $_ if $_
+                  } split "\n"
+            ,'
+	.DS_Store
+	_darcs # Maybe not so good an idea to exclude repos?
+	dist   # for haskell builds
+	miette.tar.gz
+	biber-0.9.7
+'; # End of Excludes
+
+
+my $cp = 'rsync -lpvrWz --safe-links' . $exclude;
+
+# $0 will expand ~ to it's absolute path, here we're just contracting it again
+# Can't combine the two lines because $0 dislikes 'my' for some reason
+my $propagate = $0;
+$propagate =~ s/^$ENV{'HOME'}/~/;
+
+# ~~~~~ End user configurations
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# Go home so we can find the files
+chdir $ENV{'HOME'};
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~ Parse Commandline Arguments
+
+my ($dryrun, $noprop, $quiet, $color, $host) = (0,0,0,1,undef);
+{
+	my ($flags, @args) = ('', @ARGV);
+	foreach (@ARGV) { if (s/^-//) { $flags .= $_; shift @args; } else { last; } }
+	
+	foreach (split '', $flags) {
+		if ($_ eq '?') {
+			print join "\n",
+				'Usage: propagate [flags] [host]',
+				'Flags:',
+				'    -p  pretend / dryrun',
+				'    -n  no propegation',
+				'    -v  verbose         (default)',
+				'    -q  kinda quiet     (turn off scp progress)',
+				'    -Q  silent          (turn off [x/y] progress)',
+				'    -C  no color',
+				'    -c  color on        (default)',
+				'Host:',
+				'    Specifies parent of servers to propegate to',
+				'';
+			exit 0;
+		} elsif ($_ eq 'p') { $dryrun = 1;
+		} elsif ($_ eq 'n') { $noprop = 1;
+		} elsif ($_ eq 'v') { $quiet  = 0;
+		} elsif ($_ eq 'q') { $quiet  = 1;
+		} elsif ($_ eq 'Q') { $quiet  = 2;
+		} elsif ($_ eq 'C') { $color  = 0;
+		} elsif ($_ eq 'c') { $color  = 1;
+		} else {
+			print STDERR "* bad flag: -$_\n";
+			exit 1;
+		}
+	}
+	
+	if (@args > 1) {
+		shift @args; # to remove the one valid arg
+		print STDERR "* extra arguments: @args\n";
+		exit 1;
+	} elsif (@args == 1) {
+		$host = $args[0];
+	}
+}
+
+$cp .= ' -q' if $quiet; # tell $cp to be quiet too
+
+my ($c_on, $c_off) = $color ? ("\e[01;34m", "\e[00m") : ('','');
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~ Prepare for executing
+
+my $tree = find_in_tree($host, to_tree($servers));
+unless (defined $tree) {
+	print STDERR "* Couldn't find host '$host' in servers\n";
+	exit 2;
+}
+my @servers = server_sort(keys %$tree);
+# Not using tree_keys() because we need to go through intermediate servers
+
+
+my @files = sort keys %{ to_tree($files) }; # we're assuming this is flat
+
+my $flags = '';
+$flags .= 'p'  if $dryrun;
+# testing for noprop is silly
+$flags .= 'q'  if $quiet == 1;
+$flags .= 'Q'  if $quiet == 2;
+$flags .= 'C' if $quiet == 0;
+$flags = '-' . $flags if $flags;
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~ Execute for each server
+
+my $server_count = tree_keys($tree);
+my $i = 1;
+foreach my $s (@servers) {
+	my @descendents = tree_keys(find_in_tree($s, $tree));
+	
+	unless ($quiet == 2) {
+		print "\n$c_on", "[$i/$server_count] :$c_off $s\n";
+		$i += 1 + @descendents;
+	}
+
+	# So we don't try to propegate if copying fails
+	if ( edow("$cp @files $s:~", "Couldn't sync $s") ) {
+		
+		# Only recurse if we have children and haven't disabled recursion
+		if (@descendents and not $noprop) {
+			my $dr = $dryrun;
+			$dryrun = 0; # so prop fully propegates despite pretending
+			print "\n";  # just to give some space between rsync and ssh
+			edow("ssh $s '[ -x $propagate ] && $propagate $flags $s'", "Couldn't propegate to $s");
+			$dryrun = $dr;
+		}
+	}
+}
+
+exit 0;
+#__FIN__
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~ Subroutines
+
+sub edow { # echo, do, or-warn
+	my ($cmd, $msg) = @_;
+	
+	print "$c_on\$$c_off $cmd\n"
+		unless $quiet == 2;
+	
+	unless ($dryrun) {
+		if (system $cmd and $quiet < 2) {
+			print STDERR ($color ? "\e[01;31m*\e[00m" : '*'), " $msg\n";
+			return 0;
+		}
+	}
+	return 1;
+}
+
+sub server_sort {
+	return # Schwartzian transform
+		map  { $_->[0] }
+		sort { $a->[1] cmp $b->[1] }
+		map  { m/(.*)@(.*)/
+		     ; [ $_, (join '.', reverse(split /\./, $2), '', $1)]
+		     }
+		@_;
+}
+
+sub find_in_tree {
+	my ($k, $t) = @_;
+	if (defined $k) {
+		if (exists $$t{$k}) {
+			return $$t{$k};
+		} else {
+			foreach (keys %$t) {
+				my $v = find_in_tree($k, $$t{$_});
+				return $v if defined $v;
+			}
+			return undef;
+		}
+	} else {
+		return $t;
+	}
+}
+
+sub tree_keys {
+	my ($t) = @_;
+	my @k = keys %$t;
+	foreach (keys %$t) {
+		my @ks = tree_keys($$t{$_});
+		@k = (@k, @ks);
+	}
+	return @k;
+}
+
+sub to_tree {
+	my ($x) = @_;
+	$x =~ s/\#.*$//gm;			# remove comments
+	$x =~ s/\s+/ /gm;			# remove extra spaces
+	$x =~ s/^\s*(.*?)\s*$/$1/;	# --"--
+	return tok2tree(split /\s+/, $x);
+}
+
+sub tok2tree {
+	my (@tokens) = @_;
+	my %ret;
+	while (@tokens) {
+		my $tok = shift @tokens;
+		
+		if (@tokens and $tokens[0] eq '{') {
+				# Balanced takewhile (& dropwhile)
+				my ($count, @group);
+				while (@tokens) {
+					my $t = shift @tokens;
+					$count += 1 if ($t eq '{');
+					$count -= 1 if ($t eq '}');
+					push @group, $t;
+					last if ($count == 0);
+				}
+				
+				# Just making damn sure
+				if (@group and $group[0] eq '{' and $group[-1] eq '}') {
+					shift @group;
+					pop @group;
+				} else {
+					die "error: braces don't match in $tok >>> ",
+						join(' ', @group, '>>>', @tokens), "\n";
+				}
+				
+				$ret{$tok} = tok2tree(@group);
+		} else {
+			$ret{$tok} = {};
+		}
+	}
+	return \%ret;
+}
+
+1;
+__END__

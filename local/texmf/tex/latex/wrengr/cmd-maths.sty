@@ -1,0 +1,272 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{cmd-maths}%
+    [2013/09/03 wren's standard environment for mathematics]
+% See also:
+% http://www.math.leidenuniv.nl/~edix/public_html_rennes/sgahtml/typesetting_rules.html
+
+\newif\if@useStMaryRd
+\@useStMaryRdtrue
+\DeclareOption{stmaryrd}{\@useStMaryRdtrue}
+\DeclareOption{nostmaryrd}{\@useStMaryRdfalse}
+\ProcessOptions
+
+%% We will use stmaryrd for the extra symbols, unless told not to.
+%% And we will use the symbols from AMS LaTeX too. For other symbol
+%% and font adjustments you must do it on your own. I recommend
+%% using mathcal-fourier, and (if desired) mathptmx.
+
+%% Apparently latexsym isn't necessary if using amsfonts or amssymb
+%%     http://www.tug.org/texlive/devsrc/Master/texmf-dist/doc/latex/base/latexsym.pdf
+%% The commands defined by latexsym.sty are: \mho \Join \Box \Diamond
+%%     \leadsto \sqsubset \sqsupset \lhd \unlhd \rhd \unrhd.
+%%\RequirePackage{latexsym}
+
+%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%% ~~~~~ AMS maths, amsthm environments, etc.
+
+%% N.B., amsthm must be loaded after amsmath if using a non-AMS documentclass.
+\RequirePackage{amsmath,amssymb,amsthm}
+
+% I prefer the filled QED instead of the hollow
+\renewcommand{\qedsymbol}{\ensuremath{\blacksquare}}
+
+\theoremstyle{plain}
+    % Use section numbering
+    \newtheorem{thm}{Theorem}[section]
+    \newtheorem{thmlemma}[thm]{Lemma}
+    \newtheorem{thmprop}[thm]{Proposition}
+    \newtheorem{thmcor}[thm]{Corollary}
+    % Use subsection numbering
+    \newtheorem{subthm}{Theorem}[subsection]
+    \newtheorem{subthmlemma}[subthm]{Lemma}
+    \newtheorem{subthmprop}[subthm]{Proposition}
+    \newtheorem{subthmcor}[subthm]{Corollary}
+    % Use subsubsection numbering
+    \newtheorem{subsubthm}{Theorem}[subsubsection]
+    \newtheorem{subsubthmlemma}[subsubthm]{Lemma}
+    \newtheorem{subsubthmprop}[subsubthm]{Proposition}
+    \newtheorem{subsubthmcor}[subsubthm]{Corollary}
+
+\theoremstyle{definition}
+    % Use section numbering
+    \newtheorem{thmdef}[thm]{Definition}
+    \newtheorem{thmeg}[thm]{Example}
+    \newtheorem{thmconj}[thm]{Conjecture}
+    % Use subsection numbering
+    \newtheorem{subthmdef}[subthm]{Definition}
+    \newtheorem{subthmeg}[subthm]{Example}
+    \newtheorem{subthmconj}[subthm]{Conjecture}
+    % Use subsubsection numbering
+    \newtheorem{subsubthmdef}[subsubthm]{Definition}
+    \newtheorem{subsubthmeg}[subsubthm]{Example}
+    \newtheorem{subsubthmconj}[subsubthm]{Conjecture}
+
+\theoremstyle{remark}
+    \newtheorem*{thmrmk}{Remark}
+    \newtheorem*{thmcase}{Case}
+
+% Return to the default for anyone defining more in their document file
+\theoremstyle{plain}
+
+
+%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%% ~~~~~ I can haz moar symbols?
+
+% StMaryRd also has symbols:
+%     \curly(vee|wedge)(up|down)arrow
+%     \(L|l|r|R)bag
+%     \(ll|rr)bracket
+
+\if@useStMaryRd
+    % BUGFIX: this line fixes the erroneous "Error: Math version `bold'
+    % is not defined." error caused by packaging problems
+    \DeclareMathVersion{bold}
+    % BUG: \llparenthesis\rrparenthesis has no displaystyle
+    \RequirePackage{stmaryrd}
+\else
+    % BUG: what if displaystyle is desired? or if specific size is desired?
+    \newcommand{\llparenthesis}{(\!\!\lvert}
+    \newcommand{\rrparenthesis}{\rvert\!\!)}
+    
+    \newcommand{\llbracket}{[\![}
+    \newcommand{\rrbracket}{]\!]}
+\fi
+
+\newcommand{\llangle}{\langle\!\!\langle}
+\newcommand{\rrangle}{\rangle\!\!\rangle}
+
+
+%% I forget why this is helpful... maybe just for allowing linebreaks
+\newcommand{\arrbox}[1]{\ensuremath{\begin{array}{l}#1\end{array}}}
+
+
+%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%% ~~~~~ Universal semantic names
+
+% Correct the kerning for variable names longer than one letter.
+\newcommand{\var}[1]{\ensuremath{\text{\textit{#1}}}}
+
+% Keywords are often considered special.
+\newcommand{\keyword}[1]{\ensuremath{\text{\textbf{#1}}}}
+
+% An ``if...then...else...'' construct with proper spacing.
+\newcommand{\ifte}[3]{\ensuremath{%
+    \text{if\ }#1\text{\ then\ }#2\text{\ else\ }#3}}
+
+%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%% ~~~~~ Semantic names for ellipses
+
+% Use these semantically-oriented symbols from amsmath:
+%     \dotsc for “dots with commas”
+%     \dotsb for “dots with binary operators/relations”
+%     \dotsm for “multiplication dots”
+%     \dotsi for “dots with integrals”
+%     \dotso for “other dots” (none of the above)
+% instead of \ldots and \cdots, to allow adapting conventions on the fly
+
+%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%% ~~~~~ Semantic names for logic ops
+
+% Use \land and \lor for logical operators, instead of \wedge and
+% \vee. That way we can change the symbols for them without affecting
+% non-logic uses of those symbols
+\newcommand{\lto}{\ensuremath{\Rightarrow}}
+\newcommand{\liff}{\ensuremath{\Leftrightarrow}}
+\newcommand{\lxor}{\ensuremath{\veebar}}% most prefer \oplus
+\newcommand{\lnor}{\ensuremath{\downarrow}}% Quine arrow; Some may use instead: \veebar, or Peirce's \curlywedge ampheck
+\newcommand{\lnand}{\ensuremath{\uparrow}}% Sheffer stroke; Some may use instead: \wedgebar, or Peirce's \bar\curlywedge ampheck
+\newcommand{\ltrue}{\ensuremath{\top}}% Some prefer \mathcal{T},\mathbb{T},...
+\newcommand{\lfalse}{\ensuremath{\bot}}% Some prefer \mathcal{F},\mathbb{F},...
+
+%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%% ~~~~~ Semantic names for sets and set ops
+
+\newcommand{\cross}{\times}
+\newcommand{\union}{\cup}
+\newcommand{\bigunion}{\bigcup}
+\newcommand{\intersect}{\cap}
+\newcommand{\bigintersect}{\bigcap}
+
+\renewcommand{\emptyset}{\varnothing}% Prettier symbol for it
+\newcommand{\Bool      }{\ensuremath{\mathbb{B}}}
+\newcommand{\Nat       }{\ensuremath{\mathbb{N}}}
+\newcommand{\Int       }{\ensuremath{\mathbb{Z}}}
+\newcommand{\Rational  }{\ensuremath{\mathbb{Q}}}
+\newcommand{\Real      }{\ensuremath{\mathbb{R}}}
+\newcommand{\Complex   }{\ensuremath{\mathbb{C}}}
+\newcommand{\Quaternion}{\ensuremath{\mathbb{H}}}
+\newcommand{\Octonion  }{\ensuremath{\mathbb{O}}}
+
+%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%% ~~~~~ Functions and function-like ops
+
+%% ~~~~~ An inverse without that huge subtraction sign
+% BUG: but it is huge! What happened?
+\newcommand{\inverse}[1]{\ensuremath{{#1}^{\text{\scriptsize{$-1$}}}}}
+
+
+% <http://tex.stackexchange.com/questions/4756/typesetting-of-negative-versus-minus>
+%% ~~~~~ A small negation sign, again to avoid huge subtraction sign
+\newcommand{\@raisedminus}[1]{\raisebox{0.25em}{$\m@th#1{-}$}}
+\newcommand{\negate}[1]{\ensuremath{%
+    \mathord{%
+        \mathchoice
+            {\@raisedminus\scriptstyle}%
+            {\@raisedminus\scriptstyle}%
+            {\@raisedminus\scriptscriptstyle}%
+            {\@raisedminus\scriptscriptstyle}%
+    }#1}}
+
+%% ~~~~~ A small positive sign, just to be explicit and symmetric with \negate
+\newcommand{\@raisedplus}[1]{\raisebox{0.25em}{$\m@th#1{+}$}}
+\newcommand{\positive}[1]{\ensuremath{%
+    \mathord{%
+        \mathchoice
+            {\@raisedplus\scriptstyle}%
+            {\@raisedplus\scriptstyle}%
+            {\@raisedplus\scriptscriptstyle}%
+            {\@raisedplus\scriptscriptstyle}%
+    }#1}}
+
+
+%% ~~~~~ To be explicit about definitions instead of using \equiv or \triangleeq
+\newcommand{\defeq}{\ensuremath{\stackrel{\text{def}}{=}}}
+
+%% ~~~~~ \sigmoid{x} == 1/(1 + \e^{\negate{x}})
+\newcommand{\sigmoid}[1]{\ensuremath{\sigma\!\left(#1\right)}}
+
+% http://desk.stinkpot.org:8080/tricks/index.php/2006/03/how-to-write-argmax-in-latex/
+% \newcommand{\argmax}{\operatornamewithlimits{arg\,max}}
+\DeclareMathOperator*{\argmax}{arg\,max}
+% Maybe use with \underset{x}{\argmax} like so?
+
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+\newcommand{\leftexp}[2]{\ensuremath{{\vphantom{#2}}^{#1}{#2}}}
+
+%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%% ~~~~~ Generalized sequencing operators
+
+%% Usage: \sequence[min=1][op= ][dots=\dotsc]{elem}{max}
+%%    ==> #elem_#min #op#dots#op #elem_#max
+% <http://www.tex.ac.uk/cgi-bin/texfaq2html?label=twooptarg>
+\newcommand{\sequence}[1][1]{\def\sequence@min{{#1}}\sequence@relayI}
+\newcommand{\sequence@relayI}[1][ ]{\def\sequence@op{{#1}}\sequence@relayII}
+\newcommand{\sequence@relayII}[3][\dotsc]{%
+	\def\sequence@dots{{#1}}%
+	\def\sequence@elem{{#2}}%
+	\def\sequence@max{{#3}}%
+	\ensuremath{{\sequence@elem}_{\sequence@min}%
+		{\sequence@op}{\sequence@dots}{\sequence@op}%
+		{\sequence@elem}_{\sequence@max}%
+}}
+
+% ~~~~~ Sequence with commas or specified comma-like connectives
+\newcommand{\sequencec}[1][1]{\def\sequencec@min{{#1}}\sequencec@relay}
+\newcommand{\sequencec@relay}[3][,\;]{\sequence[\sequencec@min][#1][\dotsc]{#2}{#3}}
+
+% ~~~~~ Sequence with \star or specified binary op/relation-like connectives
+\newcommand{\sequenceb}[1][1]{\def\sequenceb@min{{#1}}\sequenceb@relay}
+\newcommand{\sequenceb@relay}[3][\star]{\sequence[\sequenceb@min][#1][\dotsb]{#2}{#3}}
+
+% ~~~~~ Sequence with \times or specified multiplication-like connectives
+\newcommand{\sequencem}[1][1]{\def\sequencem@min{{#1}}\sequencem@relay}
+\newcommand{\sequencem@relay}[3][\times]{\sequence[\sequencem@min][#1][\dotsm]{#2}{#3}}
+
+%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%% ~~~~~ Generalized syntax for quantifiers
+% (should that really be a tie? or is \; or \: better?)
+\newcommand{\Q}[2]{\ensuremath{#1 #2.~\,}}
+
+\newcommand{\FORALL}{\Q{\forall}}
+\newcommand{\EXISTS}{\Q{\exists}}
+\newcommand{\UNIQUE}{\Q{\exists!\,}}
+\newcommand{\IOTA}{\Q{\iota}}
+% <http://johnmacfarlane.net/142/latex-template.tex>
+% Russell's upside-down iota:
+% \newcommand{\riota}{\mathrm{\rotatebox[origin=c]{180}{$\iotaup$}}}
+
+% \Pi, \Sigma, \lambda, \Lambda,...
+
+%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%% ~~~~~ Bracket-like
+% We no longer make these scalable because that's usually undesirable...
+% TODO: redesign these to use and distribute \(b|B)i(g|gg)(l|r) to both sides
+
+\newcommand{\paren }[1]{\ensuremath{(#1)}}
+\newcommand{\pparen}[1]{\ensuremath{\llparenthesis#1\rrparenthesis}}
+\newcommand{\brak  }[1]{\ensuremath{[#1]}}
+\newcommand{\bbrak }[1]{\ensuremath{\llbracket#1\rrbracket}}
+\newcommand{\abrak }[1]{\ensuremath{\langle#1\rangle}}% \angle already defined
+\newcommand{\abbrak}[1]{\ensuremath{\llangle#1\rrangle}}
+\newcommand{\abs   }[1]{\ensuremath{\lvert#1\rvert}}
+\newcommand{\norm  }[1]{\ensuremath{\lVert#1\rVert}}
+\newcommand{\set   }[1]{\ensuremath{\lbrace#1\rbrace}}% \brace already defined
+% \sset
+\newcommand{\floor }[1]{\ensuremath{\lfloor#1\rfloor}}
+\newcommand{\ceil  }[1]{\ensuremath{\lceil#1\rceil}}
+\newcommand{\group }[1]{\ensuremath{\lgroup#1\rgroup}}
+\newcommand{\moustache}[1]{\ensuremath{\lmoustache#1\rmoustache}}
+
+%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ fin.

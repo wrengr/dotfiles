@@ -1,0 +1,104 @@
+# -*- mode: Shell-script; tab-stop-list: (0 6 17 32 40 45) -*-
+# ~/.mutt/colours
+# Color settings for mutt.
+#
+# N.B. Solaris boxen don't recognize "default" color, so I'm using black instead
+
+# color     ::= OBJECT COLORS COLORS [regex]
+# uncolor   ::= OBJECT COLORS COLORS [regex]
+# mono      ::= OBJECT ATTRIBUTE [regex]
+# object    ::= attachment | body | bold | error | header | hdrdefault
+#               | index | indicator | markers | message | normal | quoted
+#               | quoted1, quoted2, ..., quotedN | search | signature
+#               | status | tilde | tree | underline
+# COLORS    ::= white | black | green | magenta | blud | cyan | yellow | red
+#               | default | colorx (where x is a number)
+# ATTRIBUTE ::= none | bold | underline | reverse | standout
+
+# Default color definitions
+color hdrdefault red            black
+color quoted     red            black
+color signature  white          black
+color indicator  brightwhite    red
+color attachment black          green
+color error      red            black
+color message    brightwhite    black
+color search     brightwhite    magenta      # how to highlight search patterns in the pager
+color status     brightyellow   blue
+color tree       red            black        # the thread tree in the index menu
+color tilde      green          black
+color bold       brightyellow   black
+color markers    red            black
+
+# Color definitions when on a mono screen
+mono  bold       bold
+mono  underline  underline
+mono  indicator  reverse
+mono  index      bold                 ~N
+mono  index      bold                 ~F
+mono  index      bold                 ~T
+mono  index      bold                 ~D
+
+# Colors for items in the index
+color index      brightgreen    black ~p   # to me personally
+color index      brightyellow   black ~O   # Old
+color index      green          black ~N   # New
+color index      magenta        black ~F   # Flagged
+color index      blue           black ~T   # Tagged
+color index      red            black ~D   # Deleted
+
+# Colors for items in the reader
+#color header     red            black "scanned-by*"
+color header     brightred      black "^(from|from:)"
+color header     brightred      black "^(to:|cc:)"
+#color header     magenta        black "^reply-to:"
+color header     brightcyan     black "^subject:"
+#color header     yellow         black "^x-mailer:"
+#color header     brightcyan     black "^message-id:"
+#color header     yellow         black "^Organi[zs]ation:"
+#color header     yellow         black "^User-Agent:"
+color header     brightyellow   black  "^X-TTS:"
+
+mono  header     bold                   "^(From |Subject|X-Junked-Because|X-Virus):"
+
+# Highlights inside the body of a message.
+
+# Quoted text - coloring the first 7 levels
+color quoted     cyan           black
+color quoted1    yellow         black
+color quoted2    red            black
+color quoted3    green          black
+color quoted4    cyan           black
+color quoted5    yellow         black
+color quoted6    red            black
+color quoted7    green          black
+
+# URLs
+color body       magenta        black "(http|https|ftp|news|telnet|finger)://[^ \">\t\r\n]*"
+color body       magenta        black "mailto:[-a-z_0-9.]+@[-a-z_0-9.]+"
+color body       magenta        black "news:[^ \">\t\r\n]*"
+mono  body       bold                 "(http|https|ftp|news|telnet|finger)://[^ \">\t\r\n]*"
+mono  body       bold                 "mailto:[-a-z_0-9.]+@[-a-z_0-9.]+"
+mono  body       bold                 "news:[^ \">\t\r\n]*"
+
+# Email addresses
+color body       magenta        black "[-a-z_0-9.%$]+@[-a-z_0-9.]+\\.[-a-z][-a-z]+"
+mono  body       bold                 "[-a-z_0-9.%$]+@[-a-z_0-9.]+\\.[-a-z][-a-z]+"
+
+# Various smilies and the like
+color body       brightgreen    black "<[Gg]>"                                            # <g>
+color body       brightgreen    black "<[Bb][Gg]>"                                        # <bg>
+color body       brightgreen    black " [;:]-*[)>(<|]"                                    # :-) etc...
+color body       brightblue     black "(^|[[:space:]])\\*[^[:space:]]+\\*([[:space:]]|$)" # *Bold* text.
+color body       yellow         black "(^|[[:space:]])_[^[:space:]]+_([[:space:]]|$)"     # _Underlined_ text.
+color body       brightblue     black "(^|[[:space:]])/[^[:space:]]+/([[:space:]]|$)"     # /Italic/ text.
+
+# Other body text
+color signature  cyan           black
+color status     white          blue
+color tilde      blue           black
+color tree       brightmagenta  black
+
+color bold       cyan           black
+color error      red            black
+

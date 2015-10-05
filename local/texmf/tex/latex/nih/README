@@ -1,0 +1,14 @@
+nih.cls provides a class for grant applications to NIH, the National
+Institutes of Health, a US government agency.  
+
+The example-* files provide a template for using nih.cls and submitting
+the biographical sketches the NIH wants.  They (potentially) use
+denselists.sty, which just reduces list spacing; this is not part of the
+class proper.
+
+These files were originally created and are still maintained by Bruce
+Donald.  For more information, please see the author's web sites at
+http://www.cs.dartmouth.edu/brd/NIH/tips and http://www.cs.duke.edu/brd.
+
+All of these files are freely redistributable, see each for details.
+(You may freely use, modify and/or distribute this README itself, too.)

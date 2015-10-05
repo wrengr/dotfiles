@@ -1,0 +1,24 @@
+#!/bin/sh
+# Determine which files aren't in Darcs control.
+# wren gayle romano <wren@cpan.org>                 ~ 2008.04.05
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# This is like `darcs w -ls` but can be much faster
+
+# Try to discern watched directories
+darcs query manifest |
+	perl -ne' print "$1\n" if m/(.*)\//' |
+	sort |
+	uniq |
+	while read dir ; do
+		for file in $dir/* ; do
+			if [ "X$file" = "X$dir/*" ]; then
+				:
+			else
+				# Check for files in the directory which are unwatched
+				l=`darcs query manifest | grep "$file$" | wc -l`
+				if [ $l -eq 0 ] && [ ! -d "$file" ]; then
+					echo "$file"
+				fi
+			fi
+		done
+	done

@@ -1,0 +1,30 @@
+#!/bin/sh
+# Find duplicate files (according to md5sum) in PWD or below
+# wren gayle romano <wren@cpan.org>                 ~ 2008.08.08
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+if [ ! -e '_DUPLICATES' ]; then
+	find . -type f -exec md5sum {} \; |
+    	perl -nle '
+			my ($a,$b) = m/([0-9a-f]*\s+)(.*)/;
+			$b =~ s/_/__/g;
+			$b =~ s/\s/_/g;
+			print "$a$b";' |
+		accumulate -U > _DUPLICATES
+fi
+
+cat _DUPLICATES |
+    perl -nle '
+		s/^.*?\s+//;
+		my @x = split /\s+/;
+		for my $i (0..$#x) {
+			$x[$i] =~ s/(?<!_)_(?!_)/ /g;
+			$x[$i] =~ s/__/_/g;
+			$x[$i] =~ s{\x5C}{\x5C\x5C}g;
+			$x[$i] =~ s{\x27}{\x27\x5C\x27\x27}g;
+			$x[$i] =~ s{(.*)}{\x27$1\x27};
+		}
+		print join "\n", @x, "";'
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ fin.

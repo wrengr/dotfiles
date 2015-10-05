@@ -1,0 +1,21 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{wokluwer}[2005/02/27
+    LaTeX2e package to work around Kluwer's and Elsevier's document classes]
+
+% Define an environment/command "withoutkluwertabular", which replaces
+% tabular and tabular* with TABULAR and TABULAR*, respectively.  This is
+% for compatibility with Kluwer's document class.
+%
+\newenvironment{withoutkluwertabular}{%
+  \def\arraystretch{1}%
+  \ifx\@undefined\TABULAR\else
+    \let\withoutkluwertabular\relax
+    \let\endwithoutkluwertabular\relax
+    \let\tabular\TABULAR
+    \let\endtabular\endTABULAR
+    \expandafter\expandafter\expandafter\let\expandafter\expandafter
+        \csname tabular*\endcsname\csname TABULAR*\endcsname
+    \expandafter\expandafter\expandafter\let\expandafter\expandafter
+        \csname endtabular*\endcsname\csname endTABULAR*\endcsname
+  \fi
+}{}

@@ -1,0 +1,23 @@
+#!/usr/bin/env perl
+# Return each line single-quoted as an entry for use in shell scripts
+# wren gayle romano <wren@cpan.org>                 ~ 2006.08.08
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+# Helpful to use the return values of `find` in other commands
+# and otherwise making pipes behave themselves. Enscripted to
+# deal with Solaris' broken Bourne shell
+#
+# could also use `sed "s/\\/\\\\/g; s/'/\\\'/g; s/\(.*\)/'\1'/"`
+# if you though that looked inteligible enough
+
+use strict;
+use warnings;
+
+while (<>) {
+	s{\x5C}{\x5C\x5C}g;         # escape escapes:       \ -> \\
+	s{\x27}{\x27\x5C\x27\x27}g; # escape single-quotes: ' -> '\''
+	s{(.*)}{\x27$1\x27};        # single-quote the whole string
+	print $_;
+}
+
+__END__

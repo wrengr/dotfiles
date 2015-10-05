@@ -1,0 +1,150 @@
+<html>
+<body>
+<h2>Tips/tricks</h2>
+
+<p>Collected by Darix.</p>
+
+    <dl><dt>
+        zsh completion for irssi options.
+      </dt><dd>
+        you can download/see it <a href="http://real.irssi.org/files/misc/_irssi">here</a>
+      </dd><dt>
+        hide aliases
+      </dt><dd>
+        sometimes i found it quite useful to have a much more quiet irssi :)
+<pre>/alias  hideadd          eval set activity_hide_targets $activity_hide_targets $-
+/alias  hideclear        set -c activity_hide_targets
+/alias  hidelevels.clear set -c activity_hide_level
+/alias  hidelevels.set   set activity_hide_level parts joins quits nicks modes
+/alias  hidelist         set activity_hide_targets
+/alias  hideset          set activity_hide_targets $-
+</pre>
+        <p>
+          i have replaced the aliases with a simple script. see
+            <a href="http://real.irssi.org/scripts/scripts/hide.pl">hide.pl</a> ( <a href="http://real.irssi.org/scripts/html/hide.pl.html">source</a> )
+        </p>
+      </dd><dt>
+        mIRC-like flashing with putty
+      </dt><dd>
+        to get notified off activities, while im working, i use the following setup:
+        <dl><dt>
+            irssi
+          </dt><dd>
+<pre>/set beep_when_window_active ON
+/set beep_when_away ON
+/set beep_msg_level MSGS NOTICES DCC DCCMSGS HILIGHT
+/set bell_beeps ON
+</pre>
+          </dd><dt>
+            screen
+          </dt><dd>
+            Audible bell (switch Ctrl+a Ctrl+g)
+          </dd><dt>
+            putty
+          </dt><dd>
+            - no bell and steady on bell
+          </dd></dl>
+      </dd><dt>
+        right aligned nicks
+      </dt><dd>
+<pre>/format own_msg {ownmsgnick $2 {ownnick $[-9]0}}$1
+/format own_msg_channel {ownmsgnick $3 {ownnick $[-9]0}{msgchannel $1}}$2
+/format pubmsg_me {pubmsgmenick $2 {menick $[-9]0}}$1
+/format pubmsg_me_channel {pubmsgmenick $3 {menick $[-9]0}{msgchannel $1}}$2
+/format pubmsg_hilight {pubmsghinick $0 $3 $[-9]1}$2
+/format pubmsg_hilight_channel {pubmsghinick $0 $4 $[-9]1{msgchannel $2}}$3
+/format pubmsg {pubmsgnick $2 {pubnick $[-9]0}}$1
+/format pubmsg_channel {pubmsgnick $3 {pubnick $[-9]0}{msgchannel $1}}$2
+</pre>
+        <p>
+          <a href="http://irccrew.org/%7Ecras/format.txt">http://irccrew.org/~cras/format.txt</a>
+        </p>
+      </dd><dt>
+        uptime alias
+      </dt><dd>
+        put it in your .irssi/config in the alias section as one line:<br>
+         <code>UPTIME
+= "eval exec - expr `date +%s` - \\$F | awk '{print \"Irssi uptime:
+\"int(\\\\\\$1/3600/24)\"d \"int(\\\\\\$1/3600%24)\"h
+\"int(\\\\\\$1/60%60)\"m \"int(\\\\\\$1%60)\"s\" }'";</code>
+      </dd><dt>
+        ssh/telnet alias
+      </dt><dd>
+        <kbd>/alias TELNET window new hidden;window name telnet;exec -name telnet -nosh -interactive -window telnet $-</kbd><br>
+         <kbd>/alias SSH window new hidden;window name ssh;exec -name ssh -nosh -interactive -window ssh $-</kbd><br>
+         happy mudding, telnetting :)
+      </dd><dt>
+        icq client in irssi?:)
+      </dt><dd>
+        <kbd>/alias MICQ window new hidden;window name micq;exec -name micq -nosh -interactive -window micq $-</kbd><br>
+         but you could also try the <a href="http://real.irssi.org/files/plugins/icq/">icq module for irssi</a>
+      </dd><dt>
+        news reader in irssi?:)
+      </dt><dd>
+        no problem:<br>
+         <kbd>/alias
+NNTP window new hide;window name news;exec printf 'article
+&lt;%s&gt;\\nquit\\n', '$0'|nc news.helsinki.fi nntp|tr -d '\\r'</kbd><br>
+         hmm now there is a script for this purpose too. checkout <a href="http://real.irssi.org/scripts/scripts/news.pl">news.pl</a> (<a href="http://real.irssi.org/scripts/html/news.pl.html">source</a>)
+      </dd><dt>
+        autocorrect feature in irssi?
+      </dt><dd>
+        <strong>Of course. ;)</strong><br>
+<pre>replaces = (
+    { text = ".)"; replace = ":)"; },
+    { text = ":9"; replace = ":)"; }
+);
+</pre>
+        <p>
+          These replaces would be replaced on pressing space or return. But you can add some bindings for it.
+        </p>
+        <kbd>/bind , multi check_replaces;insert_text ,<br>
+         /bind . multi check_replaces;insert_text .<br>
+        </kbd>
+        <p>
+          Now pressing <kbd>.</kbd> or <kbd>,</kbd> will replace it too.
+        </p>
+      </dd><dt>
+        completions for often used words
+      </dt><dd>
+<pre>completions = (
+      { short = "sid"; long = "http://scripts.irssi.de/"; },
+      { short = "wid"; long = "http://www.irssi.de/"; },
+      { short = "ios"; long = "http://irssi.org/scripts/"; }
+);
+</pre>
+        <p>
+          Write <kbd>wid</kbd> press <kbd>tab key</kbd> and it will be replaced with <code>http://www.irssi.de/</code>.
+        </p>
+      </dd><dt>
+        Where are my completions/replaces gone?
+      </dt><dd>
+        <p>
+          With latest irssi cvs the format changed a bit. cras merged replaces and completions
+        </p>
+<pre>completions = {
+  wid = { value = "http://www.irssi.de/"; };
+  sid = { value = "http://scripts.irssi.de/"; };
+  ios = { value = "http://irssi.org/scripts/"; };
+  ":9" = { value = ":)"; auto = "yes"; };
+};
+</pre>
+        <p>
+          And there is now a command to maintain the completions:
+        </p>
+        <p>
+          <kbd>/completion [-auto] &lt;key&gt; &lt;value&gt;<br>
+           /completion -delete &lt;key&gt;</kbd>
+        </p>
+        <p>
+          To get the replaces like behavior add the completion with <kbd>-auto</kbd>.
+        </p>
+      </dd><dt>
+        <kbd>/ame</kbd> &amp; <kbd>/asay</kbd>
+      </dt><dd>
+        <kbd>/alias ame foreach channel /eval action $$C $$-; foreach query /eval action $$T $$-<br>
+         /alias asay foreach channel /eval msg $$C $$-; foreach query /eval msg $$T $$-</kbd>
+      </dd></dl>
+ </div>
+
+</body></html>

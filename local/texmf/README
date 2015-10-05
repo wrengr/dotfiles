@@ -1,0 +1,5 @@
+For more on the TeX (and Metafont) Directory Structure see:
+
+    http://www.tug.org/tds/tds.html
+
+To re-hash things run `mktexlsr ~/local/texmf` or `sudo texhash`.

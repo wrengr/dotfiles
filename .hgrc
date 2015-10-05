@@ -1,0 +1,5 @@
+[ui]
+username = wren gayle romano <wren@community.haskell.org>
+
+[alias]
+unmerge = update -C -r.

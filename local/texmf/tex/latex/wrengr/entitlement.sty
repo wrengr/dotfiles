@@ -1,0 +1,80 @@
+% ~~~~~ Because we're entitled to have things work!
+%% This file is an article style sheet.
+\NeedsTeXFormat{LaTeX2e} 
+\ProvidesPackage{entitlement}
+	[2014/04/25 Better preamble commands and access to internal variables]
+
+%% Much of this is TeX which is bad style, but I don't know how
+%% else to do preambling
+%%
+%% References:
+%% <http://tug.org/mail-archives/texhax/2007-June/008649.html>
+%% <http://www.math.nagoya-u.ac.jp/en/journal/manual-02.html>
+%% <http://64.233.169.104/search?q=cache:_IvpCpWo3NAJ:www.cmis.csiro.au/ismm2002/submission/kapproc.tex>
+%%
+%% <http://tug.org/mail-archives/texhax/2007-June/008649.html> Buggy
+%% <http://www.tex.ac.uk/cgi-bin/texfaq2html?label=empty>      Buggy
+%% <http://www.physics.wm.edu/~norman/latexhints/conditional_macros.html> Good
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+% ~~~~~ Redefine \date to capture \@date from \maketitle resetting it
+\gdef\the@date{\today}
+\def\date#1{\gdef\the@date{#1}\gdef\@date{#1}}
+\newcommand{\thedate}{\the@date}
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+% ~~~~~ Define a \subtitle which will appear in \maketitle but not \thetitle
+\gdef\the@subtitle{}
+\def\subtitle#1{\gdef\the@subtitle{#1}}
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+% ~~~~~ Redefine \title to capture \@title from \maketitle resetting it
+% TODO: make it further into \title[short-title]{full-title} ala \section. And then probably remove the \subtitle command.
+
+% TODO: come up with a better @-less name, or else provide some cleaner way of overriding this definition.
+\gdef\@title@sep{:\\}
+
+\gdef\the@title{}
+\def\title#1{%
+	\gdef\the@title{#1}%
+	\gdef\@title{#1\ifx\the@subtitle\@empty\relax\else\@title@sep\the@subtitle\fi}}
+\newcommand{\thetitle}{\the@title}
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+% ~~~~~ Redefine \author to capture \@author from \maketitle resetting it
+% TODO: automatically strip out \thanks{} footnotes from full-author.
+% TODO: make it further into \author[short-author]{full-author}
+\gdef\the@author{}
+\def\author#1{\gdef\the@author{#1}\gdef\@author{#1}}
+\newcommand{\theauthor}{\the@author}
+
+%% Apparently this is how optional arguments work in TeX:
+%%     \def\mycmd{\@ifnextchar[{\@with}{\@without}}
+%%     \def\@with[#1]#2{hello #1, have you met #2?}
+%%     \def\@without#1{goodbye #1}
+%% <http://tex.stackexchange.com/questions/308/different-command-definitions-with-and-without-optional-argument>
+%%
+%% The question is, how to do this LaTeX idiom:
+%%     \newcommand{\defn}[2][\defnArg]{\def\defnArg{#2}...#1...#2...}
+
+%% The \global\let will actually copy things over, unlike
+%%     \newcommand{\the@author}{\@author}
+%% This doesn't work if called within an environment, so take "global" liberally
+%% It can however be called within the preamble because it has no arguments
+
+%% For date formatting, see also:
+%%    \usepackage[british]{babel}
+%%    \usepackage[nodayofweek]{datetime}
+%%    \longdate{\today}
+%% or
+%%    \usepackage{datetime}
+%%    \renewcommand{\dateseparator}{-}
+%%    \newcommand{\todayiso}{\the\year \dateseparator \twodigit\month \dateseparator \twodigit\day}
+%% or
+%%    \usepackage{isodate}
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ fin.

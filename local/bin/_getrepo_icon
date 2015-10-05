@@ -1,0 +1,25 @@
+#!/bin/sh
+# Determine if the current directory is under version control or not.
+# (I believe I got this idea from Andi McClure)
+#
+# BUG: Alas, our terminal doesn't really like wide unicode characters...
+#
+# Maybe it'd be more efficient or robust to use something like this?:
+# > find . -path '*/_darcs' -prune -o -print0 | xargs -0 egrep
+#
+# Another fun character to use: ⚘
+
+
+if hg root >/dev/null 2>/dev/null ; then
+	echo '☿'
+elif git branch >/dev/null 2>/dev/null ; then
+	echo '±' # For lack of a better symbol; could also use '🐙'
+elif darcs show repo >/dev/null 2>/dev/null ; then
+	# We have to check this last because we have ~/ be a repo...
+	echo '❉' # U+2749
+else
+    # BUG: if we enter "\\\$" directly into $PS1 then it gets
+    # interpreted as '$' of '#' as appropriate. But if we return
+    # '\$' from this script, we don't get that behavior.
+	echo '$'
+fi

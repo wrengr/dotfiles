@@ -1,0 +1,28 @@
+\documentclass[12pt]{article}
+% TODO: how much of this style file is necessary to get the bib to print right? Obviously the url package, but someone noted a problem with diacritics in the bib file...
+\usepackage{ThorntonStyle}
+\fancyhead[L]{\thetitle}
+\fancyhead[C]{}
+\fancyhead[R]{\today}
+\fancyfoot[L]{\theauthor}
+\fancyfoot[C]{}
+\fancyfoot[R]{\thepage\ of \pageref{LastPage}}
+
+\author{\url{http://www.cs.cmu.edu/afs/cs/project/pal/bibs/logictex.bib}}
+\title{A Bibliography of Logic Theory}
+\date{19 December 2009}
+
+%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\begin{document}
+
+A warning to future users: This bibliography, while extensive, is most irregularly disorganized. It would be worthwhile to spend some time going through it to regularize how people are named, how things are formatted, typographical issues about periods and dashes, etc.
+
+Also, this copy of the \BibTeX file has been modified to correct some things such as unescaped ampersands, use of hyphens instead of en-dashes, diacritics on names, and URL presentations. Thus, if re-downloading the file from the url in the footer, be sure to reintroduce those corrections.
+
+\raggedright% To solve underfull boxes
+\nocite{*}
+\bibliography{logictex}
+
+\end{document}
+%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ fin.

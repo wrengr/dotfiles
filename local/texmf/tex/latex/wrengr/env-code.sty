@@ -1,0 +1,28 @@
+% ~~~~~ Add coding environment for numbering lines
+\NeedsTeXFormat{LaTeX2e} 
+\ProvidesPackage{env-code}[2008/02/26 (Code) environment for automatic line numbering]
+\RequirePackage{lineno}
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\newenvironment{code}{%
+	\par\noindent\runninglinenumbers
+	\modulolinenumbers[1]%
+	\linenumbersep.3em%
+	\footnotesize
+	\def\linenumberfont{\normalfont\tiny\itshape}% HACK: \def is TeX, not LaTeX
+	\ignorespaces% This needs to come last in order to work
+}{%
+	\par\noindent\ignorespacesafterend% Suppress indentation on following para.
+}
+
+
+%% Use \linelabel{} instead of \label{} to get a \ref{} with the line number
+%%     Remember \pageref{} will give the page instead of the ref;
+%%     there are other types too...
+
+%% Numbering continues across blocks by default
+
+%% Use \resetlinenumber[n] to reset the line number (default 1)
+%%     Resets counting from the beginning of the enclosing block,
+%%     not at the point it's uttered!!

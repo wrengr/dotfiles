@@ -1,0 +1,44 @@
+#!/bin/sh
+# Highlight ala color grep, but without filtering non-matches
+# wren gayle romano <wren@cpan.org>                 ~ 2008.08.02
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# As with ~/local/bin/literacy, use \E if you want regexes
+# N.B. Even with \Q the / needs escaping
+# TODO: make this really Perl not sh
+
+
+exec perl -ple '
+	BEGIN {
+		## Version for doing TTY invert
+		## requires $TERM to be something tput knows,
+		## i.e. xterm-color does not work on Solaris
+		# $on  = `tput smso`;
+		# $off = `tput rmso`;
+		
+		## Version for doing ASCII escapes
+		## We could have an env variable or flag for setting the colors...
+		$on  = sprintf "\e[01;31m"; # bold red
+		$off = sprintf "\e[00m";
+	}
+	s/(\Q'"$1"'\E)/$on$1$off/g;
+	'
+
+# ~~~~~ The old sed version 
+
+#function hilight() {
+#	local _hilight_on="`printf '\e[01;31m'`"
+#	local _hilight_off="`printf '\e[00m'`"
+#	
+#	# (sed's regexes)-- though sed -E is better
+#	# The funky regex is to escape \ and / and [ and . 
+#	# Only ^ and $ are allowed as magical
+#	sed "$(
+#		for pattern in "$@" ; do
+#			pattern="$(
+#				echo -n "$pattern" |
+#				sed 's/\\/\\\\/g; s/\//\\\//g; s/\[/\\\[/g; s/\./\\\./g'
+#			)"
+#			echo -n "s/\(${pattern}\)/${_hilight_on}\1${_hilight_off}/g; "
+#		done
+#	)"
+#}

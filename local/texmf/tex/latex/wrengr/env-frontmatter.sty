@@ -1,0 +1,22 @@
+% ~~~~~ Add coding environment for numbering lines
+\NeedsTeXFormat{LaTeX2e} 
+\ProvidesPackage{env-frontmatter}[2007/12/19 environment for frontmatter in non-book classes]
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+% Because (something like) this is only defined in the book.cls
+\newenvironment{frontmatter}{%
+	\setcounter{page}{1}%   Reset counting so this can be used as backmatter too
+	\cleardoublepage%       Probably unneeded, but just in case and just because
+	\thispagestyle{plain}%  Should only affect the first page of the frontmatter
+	\pagenumbering{roman}%
+}{%
+	\cleardoublepage%       Make sure to start non-frontmatter on the right page
+	\pagenumbering{arabic}% Must be after \cleardoublepage for the roman to work
+%                               for single-page frontmatters
+	\setcounter{page}{1}%   Reset counting so it works as expected
+}
+
+%% Within the frontmatter environment, you should use the \section*{} variant
+%% The asterix gets rid of showing the section number, but more importantly
+%% it removes the section from the TOC

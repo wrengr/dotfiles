@@ -1,0 +1,111 @@
+/*
+	~/Library/KeyBindings/DefaultKeyBinding.dict
+	http://developer.apple.com/documentation/Cocoa/Conceptual/BasicEventHandling/Tasks/TextDefaultsAndBindings.html
+	http://www.cocoadev.com/index.pl?KeyBindings
+	http://www.toodarkpark.org/computers/objc/AppKit/Classes/NSResponder.html
+	
+	This file sets the keybindings for all Cocoa text-entry apps.
+	It does not affect other programs, noteably: Terminal, jEdit, Thunderbird.
+	
+	~ = Option/Alt
+	^ = Control
+	@ = Apple/Command
+
+	Sub-structure syntax:
+		Nested dictionary (for multi-key bindings like ^X^S):  
+			{ key1 = val1; key2 = val2; ... }
+		Nested array (for binding to a sequence of commands):
+			( elt1, elt2, ... )
+	
+	Keycode format:
+		\NNN octal (ASCII usually)
+		\UXXXX hex
+	
+	Special keys (for a full list see NSEvent.h):
+		\010 \U0008 Backspace
+		\011 \U0009 Tab
+		\012 \U000A Enter (newline)
+		\015 \U000D Enter (cr)
+		\033 \U001B Escape
+		
+		     \UF700 Up Arrow
+		     \UF701 Down Arrow
+		     \UF702 Left Arrow
+		     \UF703 Right Arrow
+		     \UF704 F1
+		     ...
+		     \UF70F F12
+		     ...
+		     \UF726 F35
+		     \UF727 Insert
+		\177 \UF728 Delete
+		     \UF729 Home
+		
+		     \UF72B End
+		     \UF72C Page Up
+		     \UF72D Page Down
+		     \UF72E Print Screen
+		     \UF72F Scroll Lock
+		     \UF730 Pause
+		     \UF731 SysReq
+		     \UF732 Break
+		
+		     \UF735 Menu
+		
+		     \UF746 Help
+*/
+{
+	/* Movement */
+	"^\UF702"	= "moveWordBackward:";				/* Left */
+	"^\UF703"	= "moveWordForward:";				/* Right */
+	
+	"@\UF702"	= "moveToBeginningOfLine:";			/* Left */
+	"@\UF703"	= "moveToEndOfLine:";				/* Right */
+	
+	"^\UF700"	= "moveToBeginningOfParagraph:";	/* Up */
+	"^\UF701"	= "moveToEndOfParagraph:";			/* Down */
+	
+	"@\UF700"	= "moveToBeginningOfDocument:";		/* Up */
+	"@\UF701"	= "moveToEndOfDocument:";			/* Down */
+	"\UF729"	= "moveToBeginningOfDocument:";		/* Home */
+	"\UF72B"	= "moveToEndOfDocument:";			/* End */
+	
+	"\UF72C"	= "pageUp:";						/* Page-up */
+	"\UF72D"	= "pageDown:";						/* Page-down */
+	
+	/* Deletion */
+	"^\177"		= "deleteWordBackward:";			/* delete */
+	"^\010"		= "deleteWordForward:";				/* backspace */
+	"^\UF728"	= "deleteWordForward:";				/* delete? */
+	
+		/* these deleteTo...OfLine: calls also save the text like cut: */
+	"@\177"		= "deleteToBeginningOfLine:";		/* delete // doesn't work... */
+	"@\010"		= "deleteToEndOfLine:";				/* backspace */
+	"@\UF728"	= "deleteToEndOfLine:";				/* delete? */
+	
+	"^d"		= ("selectLine:", "delete:");
+	"^k"		= ("selectLine:", "cut:");
+	
+	/* Other */
+	"^p"		= "selectParagraph:";				/* seems to get the line instead */
+	"^l"		= "selectLine:";					/* seems to do nothing, or get a word */
+	"^w"		= "selectWord:";
+	
+	"^c"		= "capitalizeWord:";
+	"^l"		= "lowercaseWord:";
+	"^u"		= "uppercaseWord:";
+	
+	"^t"		= "transpose:";
+    "^T"		= "transposeWords:";				/* doesn't work */
+    
+	/*
+	"@z"		= "undo:";
+	"@Z"		= "redo:";
+	"@c"		= "copy:";
+	"@v"		= "paste:";
+	"@a"		= "selectAll:";
+	*/
+	
+	/* Escape should really be complete. // should it? 
+	"\033"		= "complete:";						/* Escape */
+}

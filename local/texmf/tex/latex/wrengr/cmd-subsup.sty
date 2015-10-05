@@ -1,0 +1,50 @@
+\NeedsTeXFormat{LaTeX2e} 
+\ProvidesPackage{cmd-subsup}[2007/09/25 Commands for text-mode subscripts and superscripts]
+
+\RequirePackage{amsmath} % for $\text{}$
+\RequirePackage{relsize} % better than absolute setting.
+                         % \relsize{-2} == \scriptsize from regular
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+% ~~~~~ Subscripts
+% below we need to reset the size because of \text
+\newcommand{\sub}[1]{\ensuremath{_\text{\relsize{-2}#1}}}
+\newcommand{\subrm}[1]{\sub{\textrm{#1}}}
+\newcommand{\subit}[1]{\sub{\textit{#1}}}
+\newcommand{\subsl}[1]{\sub{\textsl{#1}}}
+\newcommand{\subbf}[1]{\sub{\textbf{#1}}}
+\newcommand{\subtt}[1]{\sub{\texttt{#1}}}
+\newcommand{\subsc}[1]{\sub{\textsc{#1}}}
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+% ~~~~~ Superscripts
+% Overrides the \sup "sup" function in math mode
+\renewcommand{\sup}[1]{\ensuremath{^\text{\relsize{-2}#1}}}
+\newcommand{\suprm}[1]{\sup{\textrm{#1}}}
+\newcommand{\supit}[1]{\sup{\textit{#1}}}
+\newcommand{\supsl}[1]{\sup{\textsl{#1}}}
+\newcommand{\supbf}[1]{\sup{\textbf{#1}}}
+\newcommand{\suptt}[1]{\sup{\texttt{#1}}}
+\newcommand{\supsc}[1]{\sup{\textsc{#1}}}
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+% ~~~~~ Combined sub- and super-scripts
+% These are needed when both are used in order to get them to stack.
+% Otherwise they're next to each other in the order declared
+\newcommand{\subp}[2]{\ensuremath{_\text{\relsize{-2}#1}^\text{\relsize{-2}#2}}}
+\newcommand{\subprm}[2]{\subp{\textrm{#1}}{\textrm{#2}}}
+\newcommand{\subpit}[2]{\subp{\textit{#1}}{\textit{#2}}}
+\newcommand{\subpsl}[2]{\subp{\textsl{#1}}{\textsl{#2}}}
+\newcommand{\subpbf}[2]{\subp{\textbf{#1}}{\textbf{#2}}}
+\newcommand{\subptt}[2]{\subp{\texttt{#1}}{\texttt{#2}}}
+\newcommand{\subpsc}[2]{\subp{\textsc{#1}}{\textsc{#2}}}
+
+\newcommand{\supb}[2]{\ensuremath{^\text{\relsize{-2}#1}_\text{\relsize{-2}#2}}}
+\newcommand{\supbrm}[2]{\supb{\textrm{#1}}{\textrm{#2}}}
+\newcommand{\supbit}[2]{\supb{\textit{#1}}{\textit{#2}}}
+\newcommand{\supbsl}[2]{\supb{\textsl{#1}}{\textsl{#2}}}
+\newcommand{\supbbf}[2]{\supb{\textbf{#1}}{\textbf{#2}}}
+\newcommand{\supbtt}[2]{\supb{\texttt{#1}}{\texttt{#2}}}
+\newcommand{\supbsc}[2]{\supb{\textsc{#1}}{\textsc{#2}}}

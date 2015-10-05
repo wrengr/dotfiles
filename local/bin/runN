@@ -1,0 +1,40 @@
+#!/usr/bin/perl
+# AUTHOR:  <http://perl.plover.com/classes/mybin/samples/source/runN>
+# LICENSE: Whatever Mark J. Dominus says.
+
+use Getopt::Std;
+my %opt = (n => 1);
+getopts('r:n:v', \%opt) or usage();
+
+my @cmd = split /\s+/, shift;
+@ARGV = shuffle(@ARGV) if $opt{r};
+
+my %pid;
+while (@ARGV) {
+  if (keys(%pid) < $opt{n}) {
+    $pid{spawn(@cmd, shift @ARGV)} = 1;
+  } else {
+    delete $pid{wait()};
+  }
+}
+
+1 while wait() >= 0;
+
+sub spawn {
+  my $pid = fork;
+  die "fork: $!" unless defined $pid;
+  return $pid if $pid;
+  warn "@_\n" if $opt{v};
+  exec @_;
+  die "exec: $!";
+}
+
+sub usage {
+  print STDERR "Usage: $0 [-n N] [-r] [-v] command arg1 arg2...
+Run command arg1, command arg2, etc., concurrently.
+Run no more than N processes simultaneously (default 1)
+    -r: run commands in random order instead of specified order (unimpl.)
+    -v: verbose mode
+";
+  exit 1;
+}

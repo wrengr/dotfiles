@@ -1,0 +1,88 @@
+% ~~~~~ Do literate Haskell (Not working yet)
+%     http://www.haskell.org/haskellwiki/Literate_programming
+\NeedsTeXFormat{LaTeX2e} 
+\ProvidesPackage{env-code-haskell}[2009/12/20 Haskell code environment]
+\RequirePackage{lineno}
+\RequirePackage{listings}
+
+%% Notes for lineno:
+%
+%% Use \linelabel{} instead of \label{} to get a \ref{} with the line number
+%%     Remember \pageref{} will give the page instead of the ref;
+%%     there are other types too...
+
+%% Numbering continues across blocks by default
+
+%% Use \resetlinenumber[n] to reset the line number (default 1)
+%%     Resets counting from the beginning of the enclosing block,
+%%     not at the point it's uttered!!
+
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%% To hide some code entirely from LaTeX
+\long\def\ignore#1{}
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%% Code environment for Haskell
+\lstloadlanguages{Haskell}
+\lstnewenvironment{code}{%
+    \lstset{}%
+    \csname lst@SetFirstLabel\endcsname%
+%   \par\noindent\ignorespaces\runninglinenumbers%
+%   \modulolinenumbers[1]%
+%   \linenumbersep.3em
+%   \footnotesize
+%   \def\linenumberfont{\normalfont\tiny\itshape}% HACK: \def is TeX, not LaTeX
+}{%
+%   \par\noindent\ignorespacesafterend% Suppress indentation on following para.
+    \csname lst@SaveFirstLabel\endcsname%
+}
+
+%% From lhs2tex-1.15:lhs2TeX.sty.lit
+\newcommand{\plus}{\mathbin{+\!\!\!\!\!+}}% Two \! narrower than lhs2tex
+\newcommand{\bind}{\mathbin{>\!\!\!>\mkern-6.7mu=}}
+\newcommand{\rbind}{\mathbin{=\mkern-6.7mu<\!\!\!<}}
+\newcommand{\sequ}{\mathbin{>\!\!\!>}}
+\newcommand{\rsequ}{\mathbin{<\!\!\!<}}
+
+% TODO: we probably don't want the frameround everywhere...
+% TODO: better symbols for \$ as ($), (<$>), (<*>), (<|>), (<|), (|>), (***), (+++), (&&&), (|||)
+% BUG: Need to fix lambda and compose from gobbling everything else up
+\lstset{
+    basicstyle=\small\ttfamily,
+    flexiblecolumns=false,
+	tabsize=4,
+	frameround=fttt,
+    basewidth={0.5em,0.45em},
+    keywords={case,of,let,in,class,instance,where,deriving,data,type,newtype,if,then,else,do},
+    literate={+}{{$+$}}1
+             {/}{{$/$}}1
+             {*}{{$*$}}1
+             {++}{{$\plus$}}2
+             {=}{{$=$}}1
+             {==}{{$\equiv$}}2
+             {/=}{{$\not\equiv$}}2
+             {>}{{$>$}}1
+             {<}{{$<$}}1
+             {>=}{{$\geq$}}2
+             {<=}{{$\leq$}}2
+             {=>}{{$\Rightarrow$}}2 
+             {->}{{$\rightarrow$}}2
+             {<-}{{$\leftarrow$}}2
+             {\\}{{$\lambda$}}1
+             {\\\\}{{\char`\\\char`\\}}1
+             {...}{{$\ldots$}}2 % BUG: requires parens
+             {\ .}{{$\circ$}}2
+             {\ .\ }{{$\circ$}}2
+             {::}{{$::$}}1
+             {>>}{{$\sequ$}}2
+             {<<}{{$\rsequ$}}2
+             {>>=}{{$\bind$}}3
+             {=<<}{{$\rbind$}}3
+             {|}{{$\mid$}}1
+             {undefined}{{$\bot$}}2 % TODO: is that the right width?
+             {forall}{{$\forall$}}1
+}
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ fin.

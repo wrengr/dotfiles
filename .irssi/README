@@ -1,0 +1,58 @@
+In order to enable Unicode, you need four things:
+(1) locale configured to use it
+(2) screen configured to use it
+(3) irssi configured to use it
+(4) Restart your login, screen, and irssi sessions. The shell and
+    screen in particular typically don't admit just updating the
+    configs; you need to restart the processes. Be sure to pass
+    irssi the -U flag too.
+
+My ~/.irssi/config and ~/.screenrc files cover the second two points.
+However, the first point needs to be handled differently for each
+distro. For FreeBSD, the best method is to have a ~/.login_conf
+file which sets things up. Since that's not necessary for OSX, I
+don't want that file littering up my homedir. Thus, the .login_conf
+file used on Bastion (reaver.cat.pdx.edu as of this writting) is
+stored in *this* directory in order to move it out of the way.
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~ The hard way
+
+After getting the locale set up by hook or by crook, add
+
+    defutf8 on
+
+to your ~/.screenrc or you can try to avoid restarting by doing
+
+    Ctrl-a :utf8 on
+
+Then, within irssi, do
+
+    /set term_charset utf-8
+
+for the main part of it. Then if you want to recode everything so
+that you can interact with folks using other encodings, then do
+
+	/set recode_autodetect_utf8 ON
+	/set recode_fallback UTF-8
+	/set recode ON
+	/set recode_out_default_charset UTF-8
+	/set recode_transliterate ON
+
+and finally do
+
+    /save
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~ References
+
+http://quadpoint.org/articles/irssi
+http://www.iovene.com/54/
+http://tokakoki.blogspot.com/2008/08/irssi-with-recode-and-systray.html
+http://www.freebsd.org/doc/en_US.ISO8859-1/books/handbook/using-localization.html
+http://www.b1c1l1.com/blog/2011/05/09/using-utf-8-unicode-on-freebsd/
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ fin.

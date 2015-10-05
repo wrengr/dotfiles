@@ -1,0 +1,27 @@
+#!/usr/bin/env perl
+# Normalize spaces: collapse sequences, remove leading & trailing
+# wren gayle romano <wren@cpan.org>                 ~ 2006.08.08
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+# Enscripted to deal with Solaris' broken Bourne shell, though I
+# suppose `echo` could be contorted to do this if manipulated
+# properly.
+#
+# could also use `sed 's/[[:space:]][[:space:]]*/ /g;
+#                      s/^[[:space:]]*\(.*\)[[:space:]]*/\1/'`
+# if you thought that looked intelligible enough
+#
+# `perl -Mstrict -Wpe 's/\s+/\x20/g; s/^\s*(.*?)\s*$/$1\n/'`
+# works on the commandline, but the shebang does something wierd
+# with the -e stuff.
+
+use strict;
+use warnings;
+
+while (<>) {
+	s/\s+/\x20/g;          # collapse sequences of whitespace to one
+	s/^\s*(.*?)\s*$/$1\n/; # remove leading and trailing space
+	print $_;
+}
+
+__END__

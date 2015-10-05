@@ -1,0 +1,74 @@
+# ~/.muttrc
+#
+# See also <http://linuxbrit.co.uk/mutt/>
+# See: http://www.mutt.org/doc/manual/manual-6.html
+
+# Aliases give you a basic addressbook. Use "A" to add a message's sender to
+# the aliases file, so you don't have to remember their address.
+# File to use for saving new aliases
+set alias_file=~/.mutt/aliases
+# File to search for aliases in
+source  ~/.mutt/aliases
+
+# Boolean Variables:
+#       set foo
+# or    unset foo
+# or    toggle foo
+# or    reset foo (reset to compile time default)
+# or    set nofoo  or set invfoo (inverts actual value)
+  set pager_index_lines=9
+unset ascii_chars        # Use ASCII chars for threading arrows.
+unset collapse_unread    # don't collapse threads with unread mails
+  set sig_dashes         # Prepend "-- \n" to the signature
+  set smart_wrap         # wrap long lines at word boundary.
+
+# Quadoptions 
+#       set foo=yes
+#  or   set foo=ask-yes
+#  or   set foo=no
+#  or   set foo=ask-no
+#  or   reset foo (reset to compile time default)       
+set include=yes          # quote message, when replying
+set allow_8bit=yes
+set allow_ansi=no        # potential security issue
+set askbcc=no
+set askcc=no
+set autoedit=yes         # skip asking about headers when composing
+set beep=no
+set beep_new=no
+set check_new=yes
+set confirmcreate=yes
+set edit_headers=yes
+set header=yes           # include header when editing/replying
+set honor_followup_to=yes
+set ignore_list_reply_to=no
+set quit=yes             # really quit when we say
+set reply_self=no
+set sig_dashes=yes       # add "-- \n" before sig. Maybe turn off?
+set sig_on_top=no        # sig before quoted text?
+set smart_wrap=yes       # wrap on word not screen?
+
+# More settings
+set sort=threads
+set editor=vim
+set ispell="/usr/bin/aspell --mode=email check"
+set attribution="%f said (on %[%Y/%m/%d]):"
+set realname="wren gayle romano"
+# where to get randomness to initialize SSL stuff
+set entropy_file="/dev/urandom" # for mutt 1.4, variable doesn't exist in mutt 1.5
+set indent_string="> "
+
+# How to see/hide and order headers
+ignore *
+unignore from: date subject to cc reply-to:
+unignore organization organisation
+#unignore user-agent: x-agent: x-mailer: x-newsreader:
+unignore newsgroups: posted-to: x-spam-rule: X-Spam-Status: X-SpamProbe:
+# These can provide amusement
+unignore X-Fnord: X-WebTV-Stationery: X-Message-Flag:
+unignore X-TTS
+unhdr_order *
+hdr_order Date: From: To: Cc: X-Newsreader: X-Mailer: Organization: Organisation: User-Agent: X-Fnord: X-WebTV-Stationery: X-Message-Flag: Newsgroups: Reply-To: X-Spam-Status: x-spam-rule: x-SpamProbe: X-TTS:Subject:
+
+# Other config files to include
+source ~/.mutt/colours

@@ -1,0 +1,16 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{mathcal-fourier}%
+    [2011/11/20 Fourier font, but only for mathcal]
+
+% ~~~~~ Use Fourier for \mathcal but without all the other Fourier fonts
+%\usepackage{fourier}
+\DeclareFontEncoding{FMS}{}{}
+\DeclareFontSubstitution{FMS}{futm}{m}{n}
+\DeclareMathAlphabet{\mathcal}{FMS}{futm}{m}{n}
+
+% ~~~~~ Some common operators which look best in Fourier mathcal
+\newcommand{\powset}{\ensuremath{\mathcal{P}}}
+%\newcommand{\lang}{\ensuremath{\mathcal{L}}}% Isn't *that* common...
+
+
+%% TODO: see also the package mathrsfs which defines \mathscr{}

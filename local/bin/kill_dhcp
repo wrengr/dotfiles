@@ -1,0 +1,20 @@
+#!/bin/sh
+# This script attempts tp kill DHCP leases on OSX 10.5 in order to
+# address the bug discussed at:
+# <http://www.net.princeton.edu/mac/macos-10-5-x-releases-lease-keeps-using-ip.html>
+#
+# See also: <http://krypted.com/mac-os-x/sticky-dhcp-leases-in-mac-os-x/>
+
+sudo rm -fv /var/db/dhcpclient/leases/en1-*
+
+# Switch "Locations" 
+# scselect TEMP
+# scselect Automatic
+
+sudo ipconfig set en1 BOOTP
+sudo ipconfig set en1 DHCP
+
+echo 'Waiting for configuration...'
+sleep 1 # because doing waitall immediately gives a kern/os error
+ipconfig waitall
+ipconfig getifaddr en1

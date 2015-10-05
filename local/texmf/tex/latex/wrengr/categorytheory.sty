@@ -1,0 +1,134 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{categorytheory}[2010/04/21 stylization for Category Theory]
+% See also:
+% http://www.math.leidenuniv.nl/~edix/public_html_rennes/sgahtml/typesetting_rules.html
+
+\newif\if@useStMaryRd
+\@useStMaryRdfalse
+\DeclareOption{stmaryrd}{\@useStMaryRdtrue}
+\DeclareOption{nostmaryrd}{\@useStMaryRdfalse}
+\ProcessOptions
+
+%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+% We use PSTricks for making CT diagrams, but that means we need
+% to use `latex' not `pdflatex'. Here's an example diagram:
+%
+% \[
+% \begin{psmatrix}[colsep=2cm,rowsep=2cm]
+%     F(\mu F) & \mu F \\
+%     F(X) & X
+% \psset{arrows=->,labelsep=3pt,nodesep=3pt}
+% \ncline{1,1}{1,2}^{\mathrm{in}_F}
+% % \ncarc[arcangle=20]{1,2}{1,1}^{\mathrm{out}_F}
+% \ncline{1,1}{2,1}<{F(\cata{\phi}_F)}
+% \ncline{1,2}{2,2}>{\cata{\phi}_F}
+% \ncline{2,1}{2,2}_{\phi}
+% \end{psmatrix}
+% \]
+
+\RequirePackage{pstricks,pst-node}
+
+
+%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+% ~~~~~ General typeface definition for functions, functors, etc
+\newcommand{\Fun}[1]{\ensuremath{\mathsf{#1}}}% these are for specially named functions, not for variable/arbitrary functions
+\newcommand{\Functor}[1]{\ensuremath{\text{\textit{#1}}}}
+\newcommand{\Reserved}[1]{\ensuremath{\mathrm{#1}}}% e.g. let, in, for,...
+\newcommand{\MetaFun}[1]{\ensuremath{\mathrm{\textsc{#1}}}}
+
+% ~~~~~ Typesetting for category names
+\newcommand{\Cat}[1]{\ensuremath{{\mathbf{#1}}}}
+\newcommand{\Dual}[1]{{\dual{\Cat{#1}}}}
+\newcommand{\dual}[1]{\ensuremath{{#1}^{\mathrm{op}}}}
+
+% ~~~~~ metasyntactic functions to return objects, arrows, domain, codomain...
+\newcommand{\Ob}[1]{\ensuremath{\MetaFun{Ob}(\Cat{#1})}}
+% Another common option is just {\Cat{#1}(#2,#3)}
+\newcommand{\Hom}[3][]{\ensuremath{\MetaFun{Hom}_{\Cat{#1}}(#2,#3)}}
+\newcommand{\Dom}[1]{\ensuremath{\MetaFun{Dom}(#1)}}
+\newcommand{\Cod}[1]{\ensuremath{\MetaFun{Cod}(#1)}}
+
+% ~~~~~ etc
+\newcommand{\id}{\Fun{id}}% identity morphism, also use for the identity functor
+
+% Some people like spaces or nothing, others like parens
+% This is more for functor application, not for functions
+\newcommand{\ap}[2]{\ensuremath{#1(#2)}}
+
+% ~~~~~ Various arrows
+% TODO: how to mark these as arrows for kerning purposes?
+
+\newcommand{\natto}{\ensuremath{\mathbin{\dot{\to}\,}}}
+
+\newcommand{\uniqueto}{\mathbin{\overset{!}{\leftrightarrow}}}
+
+% leftrightarrow with a tilde on top, for isomorphism
+\newcommand{\isom}{\mathbin{\overset{\sim}{\leftrightarrow}}}
+% rightarrow with a tilde on top, for isomorphism
+\newcommand{\isomto}{\mathbin{\overset{\sim}{\rightarrow}}}
+% leftarrow with a tilde on top, for isomorphism
+\newcommand{\isomfrom}{\mathbin{\overset{\sim}{\leftarrow}}}
+
+% ~~~~~ Various (co)product and (co)exponential like operators
+% removed the \left and \right from \tuple in order to fix oversizing when a \vec is used inside it.
+\newcommand{\tuple}[1]{\ensuremath{{(#1)}}}
+\newcommand{\productFun}[1]{\ensuremath{{\langle#1\rangle}}}
+\newcommand{\coproductFun}[1]{\ensuremath{{\left[#1\right]}}}
+\newcommand{\product}[2]{\ensuremath{{#1 \times #2}}}
+\newcommand{\coproduct}[2]{\ensuremath{{#1 + #2}}}
+
+% \leftexp{e}{F} produces a left superscript ^{e}F
+\newcommand{\leftexp}[2]{\ensuremath{{\vphantom{#2}}^{#1}{#2}}}
+% exponential objects #1\to#2  (the name \exp is already taken)
+\newcommand{\expobj}[2]{\ensuremath{{#2}^{#1}}}
+% coexponential objects #2\from#1 \isom #1\to#2
+\newcommand{\coexp}[2]{\ensuremath{{#1}_{#2}}}
+
+
+%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+% ~~~~~ Various recursion patterns (banannas, lenses, barbed wire...)
+% Getting the kerning right on these is tricky
+
+\if@useStMaryRd
+    % BUGFIX: this line fixes the erroneous "Error: Math version `bold'
+    % is not defined." error caused by packaging problems
+    \DeclareMathVersion{bold}
+    % BUG: \llparenthesis\rrparenthesis has no displaystyle
+    \RequirePackage{stmaryrd}
+\else
+    % BUG: what if displaystyle isn't desired? or if specific size is desired?
+    \newcommand{\llparenthesis}{\left(\!\!\left\lvert}
+    \newcommand{\rrparenthesis}{\right\rvert\!\!\right)}
+\fi
+% BUG: what if displaystyle isn't desired? or if specific size is desired?
+\newcommand{\llens}{\left[\hspace{-.2em}\left(}
+\newcommand{\rlens}{\right)\hspace{-.2em}\right]}
+\newcommand{\lbarbedwire}{\left[\!\!\left\langle}
+\newcommand{\rbarbedwire}{\right\rangle\!\!\right]}
+\newcommand{\lbarbedwireUV}{\left\langle\!\left\lvert}
+\newcommand{\rbarbedwireUV}{\right\rvert\!\right\rangle}
+
+
+\newcommand{\cataM}[1]{\ensuremath{\left\llparenthesis #1 \right\rrparenthesis}}
+\newcommand{\inM}{\ensuremath{\Fun{in}}}
+\newcommand{\outM}{\ensuremath{\Fun{out}}}
+
+\newcommand{\anaM}[1]{\ensuremath{\llens #1\rlens}}
+
+\newcommand{\paraM}[1]{\ensuremath{\lbarbedwire #1 \rbarbedwire}}
+% Uustalu and Vene version
+\newcommand{\paraUV}[1]{\ensuremath{\lbarbedwireUV #1 \rbarbedwireUV}}
+
+
+%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+% ~~~~~ Monads etc.
+\newcommand{\monadbind}{\ensuremath{\mathbin{>\!\!\!>\mkern-6.7mu=}}}
+\newcommand{\monadrbind}{\ensuremath{\mathbin{=\mkern-6.7mu<\!\!\!<}}}
+
+% Actually applicative, but who's counting
+\newcommand{\monadmap}{\ensuremath{\mathbin{\odot}}}
+\newcommand{\monadapp}{\ensuremath{\mathbin{\circledast}}}
+
+%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ fin.

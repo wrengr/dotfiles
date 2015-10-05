@@ -1,0 +1,657 @@
+servers = (
+  {
+    address = "irc.cat.pdx.edu";
+    chatnet = "cat";
+    port = "6697";
+    use_ssl = "yes";
+    ssl_verify = "no";
+    autoconnect = "yes";
+  },
+  {
+    address = "irc.soic.indiana.edu";
+    chatnet = "soic";
+    port = "6667";
+    password = "SEEKRIT";
+    autoconnect = "yes";
+  },
+  {
+    address = "irc.freenode.net";
+    chatnet = "freenode";
+    port = "8001";
+    # using 8001 to avoid exploit "6667";
+    autoconnect = "yes";
+  },
+  {
+    # Run by @NekoArc
+    address = "irc.tsukihi.me";
+    chatnet = "tsukihime";
+    port = "6697";
+    use_ssl = "yes";
+    ssl_verify = "no";
+    autoconnect = "yes";
+  },
+  {
+    # trans feminine only
+    address = "irc.starrevolution.org";
+    chatnet = "starrevolution";
+    port = "6697";
+    use_ssl = "yes";
+    ssl_verify = "no";
+    autoconnect = "yes";
+  },
+  { address = "irc.stealth.net";  chatnet = "IRCnet";     port = "6668"; },
+  { address = "irc.efnet.net";    chatnet = "EFNet";      port = "6667"; },
+  { address = "irc.undernet.org"; chatnet = "Undernet";   port = "6667"; },
+  { address = "irc.dal.net";      chatnet = "DALnet";     port = "6667"; },
+  { address = "irc.gnome.org";    chatnet = "GIMPNet";    port = "6667"; },
+  { address = "irc.ptlink.net";   chatnet = "PTlink";     port = "6667"; },
+  { address = "irc.sorcery.net";  chatnet = "SorceryNet"; port = "6667"; },
+  { address = "irc.hashmark.net"; chatnet = "Hashmark";   port = "6667"; },
+  { address = "irc.ptnet.org";    chatnet = "PTnet";      port = "6667"; },
+  { address = "irc.azzurra.org";  chatnet = "AzzurraNET"; port = "6667"; },
+  { address = "silc.silcnet.org"; chatnet = "SILC";       port = "706";  }
+);
+
+chatnets = {
+  cat = {
+    type = "IRC";
+    autosendcmd = "/^msg NickServ identify SEEKRIT";
+  };
+  soic = {
+    type = "IRC";
+  };
+  freenode = {
+    type = "IRC";
+    max_kicks = "4";
+    max_modes = "4";
+    max_msgs = "1";
+    max_whois = "1";
+    autosendcmd = "/^msg NickServ identify SEEKRIT";
+  };
+  tsukihime = {
+    type = "IRC";
+    autosendcmd = "/^msg NickServ identify SEEKRIT";
+  };
+  starrevolution = {
+    type = "IRC";
+    autosendcmd = "/^msg NickServ identify SEEKRIT";
+  };
+  IRCnet = {
+    type = "IRC";
+    max_kicks = "4";
+    max_modes = "3";
+    max_msgs = "5";
+    max_whois = "4";
+    max_query_chans = "5";
+  };
+  EFNet = {
+    type = "IRC";
+    max_kicks = "4";
+    max_modes = "4";
+    max_msgs = "3";
+    max_whois = "1";
+  };
+  Undernet = {
+    type = "IRC";
+    max_kicks = "4";
+    max_modes = "3";
+    max_msgs = "3";
+    max_whois = "30";
+  };
+  DALnet = {
+    type = "IRC";
+    max_kicks = "4";
+    max_modes = "6";
+    max_msgs = "3";
+    max_whois = "30";
+  };
+  GIMPNet = {
+    type = "IRC";
+    max_kicks = "4";
+    max_modes = "4";
+    max_msgs = "3";
+    max_whois = "1";
+  };
+  PTlink = {
+    type = "IRC";
+    max_kicks = "1";
+    max_modes = "6";
+    max_msgs = "30";
+    max_whois = "1";
+  };
+  SorceryNet = {
+    type = "IRC";
+    max_kicks = "30";
+    max_modes = "6";
+    max_msgs = "30";
+    max_whois = "30";
+  };
+  Hashmark = {
+    type = "IRC";
+    max_kicks = "4";
+    max_modes = "3";
+    max_msgs = "3";
+    max_whois = "30";
+  };
+  PTnet = {
+    type = "IRC";
+    max_kicks = "30";
+    max_modes = "13";
+    max_msgs = "10";
+    max_whois = "30";
+  };
+  AzzurraNET = {
+    type = "IRC";
+    max_kicks = "4";
+    max_modes = "6";
+    max_msgs = "3";
+  };
+  SILC = { type = "SILC"; };
+};
+
+channels = (
+  { name = "#irssi";             chatnet = "ircnet";    autojoin = "No"; },
+  { name = "#irssi";             chatnet = "freenode";  autojoin = "No"; },
+  { name = "#freegeek";          chatnet = "freenode";  autojoin = "No"; },
+  { name = "#haskell";           chatnet = "freenode";  autojoin = "yes"; },
+  { name = "#nothaskell";        chatnet = "freenode";  autojoin = "yes"; },
+  { name = "#haskell-in-depth";  chatnet = "freenode";  autojoin = "yes"; },
+  { name = "#numerical-haskell"; chatnet = "freenode";  autojoin = "yes"; },
+  { name = "#ghc";               chatnet = "freenode";  autojoin = "no"; },
+  { name = "#darcs";             chatnet = "freenode";  autojoin = "no"; },
+  { name = "#hakyll";            chatnet = "freenode";  autojoin = "yes"; },
+  { name = "#coq";               chatnet = "freenode";  autojoin = "yes"; },
+  { name = "#agda";              chatnet = "freenode";  autojoin = "yes"; },
+  { name = "#epigram";           chatnet = "freenode";  autojoin = "yes"; },
+  { name = "##categorytheory";   chatnet = "freenode";  autojoin = "yes"; },
+  { name = "#transspace";        chatnet = "freenode";  autojoin = "no"; },
+  { name = "#lambdaladies";      chatnet = "freenode";  autojoin = "yes"; },
+  { name = "#transgender";       chatnet = "tsukihime"; autojoin = "yes"; },
+  { name = "#kink";              chatnet = "tsukihime"; autojoin = "yes"; },
+  { name = "#star";         chatnet = "starrevolution"; autojoin = "yes"; },
+  { name = "#soic";              chatnet = "soic";      autojoin = "yes"; },
+  { name = "#nlp";               chatnet = "soic";      autojoin = "yes"; },
+  {
+    name = "#meow";
+    chatnet = "cat";
+    autojoin = "yes";
+    password = "SEEKRIT";
+  },
+  {
+    name = "#hack";
+    chatnet = "cat";
+    autojoin = "no";
+    password = "SEEKRIT";
+  }
+);
+
+aliases = {
+  J = "join";
+  WJOIN = "join -window";
+  WQUERY = "query -window";
+  LEAVE = "part";
+  BYE = "quit";
+  EXIT = "quit";
+  SIGNOFF = "quit";
+  DESCRIBE = "action";
+  DATE = "time";
+  HOST = "userhost";
+  LAST = "lastlog";
+  SAY = "msg *";
+  WI = "whois";
+  WII = "whois $0 $0";
+  WW = "whowas";
+  W = "who";
+  N = "names";
+  M = "msg";
+  T = "topic";
+  C = "clear";
+  CL = "clear";
+  K = "kick";
+  KB = "kickban";
+  KN = "knockout";
+  BANS = "ban";
+  B = "ban";
+  MUB = "unban *";
+  UB = "unban";
+  IG = "ignore";
+  UNIG = "unignore";
+  SB = "scrollback";
+  UMODE = "mode $N";
+  WC = "window close";
+  WN = "window new hide";
+  WM = "window move";
+  SV = "say Irssi $J ($V) - http://irssi.org/";
+  GOTO = "sb goto";
+  CHAT = "dcc chat";
+  RUN = "SCRIPT LOAD";
+  UPTIME = "eval exec - expr `date +%s` - \\$F | awk '{print \"Irssi uptime: \"int(\\\\\\$1/3600/24)\"d \"int(\\\\\\$1/3600%24)\"h \"int(\\\\\\$1/60%60)\"m \"int(\\\\\\$1%60)\"s\" }'";
+  CALC = "exec - if which bc &>/dev/null\\; then echo '$*' | bc | awk '{print \"$*=\"$$1}'\\; else echo bc was not found\\; fi";
+  SBAR = "STATUSBAR";
+  INVITELIST = "mode $C +I";
+  Q = "QUERY";
+  X = "EXEC -";
+  sc = "scrollback clear";
+  xlast = "exec - ( last | grep koninkje | head | awk '{print \\$6,\\$7,\\$0}' | grep \"^`date +%e`\" | sort ) 2>%1 | grep -v 'Broken pipe'";
+  "topic-nawctp" = "^msg chanserv topic #nawctp ";
+};
+
+statusbar = {
+  # formats:
+  # when using {templates}, the template is shown only if it's argument isn't
+  # empty unless no argument is given. for example {sb} is printed always,
+  # but {sb $T} is printed only if $T isn't empty.
+
+  items = {
+    # start/end text in statusbars
+    barstart = "{sbstart}";
+    barend = "{sbend}";
+
+    topicbarstart = "{topicsbstart}";
+    topicbarend = "{topicsbend}";
+
+    # treated "normally", you could change the time/user name to whatever
+    time = "{sb $Z}";
+    user = "";
+
+    # These variables need to be called here then handed to the theme,
+    # otherwise it doesn't get updated right when you switch windows
+    user_server_chan = " {sb_user_server_chan {sbnickmode $cumode}$N {sbmode $usermode}{sbaway $A} $S {sbservertag $tag} {sbwinchan $winref $itemname}$winname {sbmode $M}}";
+
+    # treated specially .. window is printed with non-empty windows,
+    # window_empty is printed with empty windows
+    window = "";
+    window_empty = "";
+
+    prompt = "{prompt $[.15]itemname}";
+    prompt_empty = "{prompt $winname}";
+    topic = " $topic";
+    topic_empty = " Irssi v$J - http://irssi.org/help/";
+
+    # all of these treated specially, they're only displayed when needed
+    lag = "{sb Lag: $0-}";
+    act = "";
+    # "{sb Act: $0-}"; # Removed because we're using awl
+    more = "{sbmore}";
+  };
+
+  # there's two type of statusbars. root statusbars are either at the top
+  # of the screen or at the bottom of the screen. window statusbars are at
+  # the top/bottom of each split window in screen.
+  default = {
+    # the "default statusbars" to be displayed at the bottom of the window.
+    window = {
+      disabled  = "no";     # most normal and script items
+      type      = "window"; # window, root
+      placement = "bottom"; # top, bottom
+      position  = "2";      # number
+      visible   = "active"; # active, inactive, always
+
+      # list of items in statusbar in the display order
+      items = {
+        scroller     = { alignment = "right"; priority = "-1"; };
+        barstart     = { priority = "100"; };
+        time         = { };
+        user         = { };
+        window       = { }; # this is empty
+        window_empty = { }; # this is empty
+        usercount    = { }; # this is empty
+        act          = { }; # this is a script
+        lag          = { priority = "-1"; }; # this is empty
+        barend       = { priority = "100"; alignment = "right"; }; # script
+      };
+    };
+    window_b = {
+      # a blank bar to separate text from bars
+      disabled = "no";
+      type = "window";
+      placement = "bottom";
+      position = "1";
+      visible = "active";
+      items = {
+        barstart = { priority = "100"; };
+        more = { priority = "-1"; alignment = "right"; };
+        barend = { priority = "100"; alignment = "right"; };
+      };
+    };
+
+    # statusbar to use in inactive split windows
+    window_inact = {
+      type = "window";
+      placement = "bottom";
+      position = "1";
+      visible = "inactive";
+      items = {
+        barstart = { priority = "100"; };
+        window = { };
+        # this is empty
+        window_empty = { };
+        # this is empty
+        more = { priority = "-1"; alignment = "right"; };
+        barend = { priority = "100"; alignment = "right"; };
+      };
+    };
+
+    # we treat input line as yet another statusbar :) It's possible to
+    # add other items before or after the input line item.
+    prompt = {
+      type = "root";
+      placement = "bottom";
+      position = "100";
+      # we want to be at the bottom always
+      visible = "always";
+      items = {
+        prompt = { priority = "-1"; };
+        prompt_empty = { priority = "-1"; };
+        # treated specially, this is the real input line.
+        input = { priority = "10"; };
+      };
+    };
+    prompt_b = {
+      # the uber-long user@server:channel line
+      type = "root";
+      placement = "bottom";
+      position = "99";
+      visible = "always";
+      items = {
+        barstart = { priority = "100"; };
+        user_server_chan = { };
+        barend = { priority = "100"; alignment = "right"; };
+      };
+    };
+
+    # topicbar
+    topic = {
+      type = "root";
+      placement = "top";
+      position = "1";
+      visible = "always";
+      items = {
+        topicbarstart = { priority = "100"; };
+        topic = { };
+        topic_empty = { };
+        topicbarend = { priority = "100"; alignment = "right"; };
+      };
+    };
+    stat = { items = { }; disabled = "yes"; };
+    awl_0 = {
+      items = {
+        barstart = { priority = "100"; };
+        awl_0 = { };
+        barend = { priority = "100"; alignment = "right"; };
+      };
+    };
+    awl_1 = {
+      items = {
+        barstart = { priority = "100"; };
+        awl_1 = { };
+        barend = { priority = "100"; alignment = "right"; };
+      };
+    };
+  };
+};
+settings = {
+  core = {
+    real_name = "wren gayle romano";
+    user_name = "wrengr";
+    nick = "wrengr";
+    timestamp_format = ".%m.%d %H:%M:";
+    log_timestamp = "%Y.%m.%d %H:%M:%S";
+    log_close_string = "--- Log closed %a, %Y %b %d %H:%M:%S";
+    log_open_string = "--- Log opened %a, %Y %b %d %H:%M:%S";
+    settings_autosave = "no";
+    awaylog_file = "~/.irssi/logs/away.log";
+    # Use the /recode command to set automatic recoding for specific
+    recode_autodetect_utf8 = "yes";
+    recode_fallback = "UTF-8";
+    recode = "yes";
+    # N.B., ASCII and ISO-Latin-1 are binary compatible with UTF-8
+    recode_out_default_charset = "UTF-8";
+    recode_transliterate = "yes";
+  };
+  "fe-common/core" = {
+    theme = "ph34r";
+    hilight_act_color = "%Y";
+    term_charset = "utf-8";
+  };
+  "perl/core/scripts" = {
+    awl_display_key = "%c$Q%n%y~%n$H$C$S";
+    awl_block = "-11";
+    scrollerText = "This space intentionally left blank";
+    scrollerSpeed = "200";
+    url_log_file = "~/.irssi/logs/url.log";
+    snot_listenchans = "#hack #meow #hotsheet #test";
+    snot_morechar = ":";
+    snot_ignorenicks = "bugbot";
+    snot_msg_short_format = "%[-6]tts %status%pri %[9]from %[.*]subj";
+    snot_msg_med_format = "%[-6]tts %status%pri %[4]flag %[11]from %[8]resp %[.*]subj";
+    snot_timestamp = "%Y.%m.%d";
+    snot_msg_full_format = "%[-6]tts %status%pri %[11]flag %[13]from %[8]resp %[8]guard %[*]subj %[10]lupdate";
+    snot_msg_short_size = "70";
+    url_log_size = "100";
+  };
+  # I'm not sure what added this to the config file... (TODO: remove?)
+  "fe-text" = { actlist_sort = "refnum"; };
+};
+hilights = (
+  { text = "koninkje"; nick = "no"; word = "yes"; },
+  { text = "wrengr";   nick = "no"; word = "yes"; },
+  { text = "wren";     nick = "no"; word = "yes"; },
+);
+ignores = (
+  { level = "JOINS PARTS QUITS KICKS"
+  ; channels = (
+    "#meow", "#freegeek", "#haskell", "#haskell-ops", "#nothaskell",
+    "#haskell-in-depth", "#numerical-haskell", "#ghc", "#darcs", "#hakyll",
+    "#coq", "#agda", "#epigram", "##categorytheory", "#soic", "#nlp",
+    "#lambdaladies", "#transspace", "#transgender", "#kink", "#star" ); },
+  { mask = "Wren";           level = "ALL"; channels = ( "#meow" ); },
+  { mask = "Wren";           level = "ALL"; channels = ( "#freegeek" ); },
+  { mask = "ghcbot";         level = "ALL"; channels = ( "#ghc" ); },
+  { mask = "darcscommitbot"; level = "ALL"; channels = ( "#darcs" ); },
+);
+windows = {
+  1 = { 
+    immortal = "yes";
+    name = "(status)";
+    level = "ALL";
+    sticky = "yes";
+  };
+  2 = { name = "hilight"; sticky = "yes"; };
+  3 = {
+    items = (
+      { 
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#meow";
+        tag = "cat";
+      }
+    );
+    sticky = "yes";
+    parent = "1";
+  };
+  4 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#haskell";
+        tag = "freenode";
+      }
+    );
+    sticky = "yes";
+    parent = "1";
+  };
+  5 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#nothaskell";
+        tag = "freenode";
+      }
+    );
+    sticky = "yes";
+    parent = "1";
+  };
+  6 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#haskell-in-depth";
+        tag = "freenode";
+      }
+    );
+    sticky = "yes";
+    parent = "1";
+  };
+  7 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#numerical-haskell";
+        tag = "freenode";
+      }
+    );
+    sticky = "yes";
+    parent = "1";
+  };
+  8 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#hakyll";
+        tag = "freenode";
+      }
+    );
+    sticky = "yes";
+    parent = "1";
+  };
+  9 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#coq";
+        tag = "freenode";
+      }
+    );
+    sticky = "yes";
+    parent = "1";
+  };
+  10 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#agda";
+        tag = "freenode";
+      }
+    );
+    sticky = "yes";
+    parent = "1";
+  };
+  11 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#epigram";
+        tag = "freenode";
+      }
+    );
+    sticky = "yes";
+    parent = "1";
+  };
+  12 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "##categorytheory";
+        tag = "freenode";
+      }
+    );
+    sticky = "yes";
+    parent = "1";
+  };
+  13 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#soic";
+        tag = "soic";
+      }
+    );
+    sticky = "yes";
+    parent = "1";
+  };
+  14 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#nlp";
+        tag = "soic";
+      }
+    );
+    sticky = "yes";
+    parent = "1";
+  };
+  15 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#lambdaladies";
+        tag = "freenode";
+      }
+    );
+    sticky = "yes";
+    parent = "1";
+  };
+  16 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#transgender";
+        tag = "tsukihime";
+      }
+    );
+    sticky = "yes";
+    parent = "1";
+  };
+  17 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#kink";
+        tag = "tsukihime";
+      }
+    );
+    sticky = "yes";
+    parent = "1";
+  };
+  18 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#star";
+        tag = "starrevolution";
+      }
+    );
+    sticky = "yes";
+    parent = "1";
+  };
+};
+mainwindows = {
+  1 = { first_line = "8"; lines = "22"; };
+  2 = { first_line = "1"; lines = "7"; };
+};

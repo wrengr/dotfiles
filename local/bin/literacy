@@ -1,0 +1,50 @@
+#!/bin/sh
+# Grep for literate content
+# wren gayle romano <wren@cpan.org>                 ~ 2008.05.09
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+# Usage: ... | literacy quote [block]
+#
+#    quote  The pattern of things to even bother looking at.
+#           Using only this pattern, we're like grep with stripping.
+#
+#    block  The pattern of things to print from the quote section
+#           N.B. This starts a block of things to print; anything
+#           whitespace indented further is printed too, up to the
+#           point of out-denting past the pattern instance's length.
+#           N.B. Avoid using hard tabs for indenting thus.
+#
+#    Both patterns are stripped from the output.
+#    N.B. I'm auto-escaping the patterns; use \E if you really want regexes
+#
+# Examples:
+#     Bash in Dyna:     literacy  %   '\E\s*\$>\s+'
+#     Literate Haskell: literacy '> '
+#
+# TODO: turn this into a perl script instead of a sh script
+
+exec perl -nle '
+	next unless s/^\Q'"$1"'\E//;
+	if (s/^(\Q'"$2"'\E)//) {
+		$shell = " " x length($1);
+	} elsif (not s/$shell//) {
+		undef $shell;
+	}
+    print $_ if defined $shell;
+	'
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# # For basic `unlines` folding:
+# | perl -nle '$line .= $_; END { print $line }'
+#
+# # To unlines bash output for excution (adding semicola), consider:
+# # N.B. changing from m/$shell/ to s/$shell// breaks this...
+# | perl -nle '
+#     BEGIN { $line = " " }
+#     if ($line and m/^\S/) { print $line; $line = $_ }
+#     else { s/^\s*//; $line .= ($line =~ m/[;|&]\s*$/ ? "" : " ; ") . $_ }
+#     END { print $line }
+#     '
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ fin.

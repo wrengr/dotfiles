@@ -1,0 +1,145 @@
+% The example package -- linguistic examples for a messy world
+% Copyright 2002-2007, Chung-chieh Shan
+
+% This linguistic examples package has the following virtues.
+%
+%   - The examples typeset mimic the horizontal and vertical spacing of
+%     displayed equations and are numbered together with them.
+%
+%   - Both examples and sub(sub)examples support \label and \ref.  Two new
+%     counters "subequation" and "subsubequation" are defined to this end.
+%
+%   - Numbering is independent of layout, so for instance you can put
+%     multiple subexamples on a single line, or anywhere else.
+%
+%   - You can specify your own list of columns for tabular alignment, for
+%     instance to put an aligned equation to the right of each example.
+%     By default, page breaks are permitted between examples but not
+%     subexamples.
+%
+% By default, labels are produced in the form "(1)", "a.", and "i.", and
+% references are in the form "1ai".  You can specify your own label format
+% by renewing the commands \the(sub(sub))equation, or your own reference
+% format by renewing the commands \tag(sub(sub))equation.
+%
+% Currently, this package does not contain macros for parallel glosses.
+% They may be added in the future as an independent feature or package.
+% Yay modularity!
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{example}[2007/09/04 LaTeX2e package for linguistics examples]
+\RequirePackage{tabularx}
+\RequirePackage{mdwtab1}
+\RequirePackage{wokluwer}
+
+% Define new counters "subequation" and "subsubequation", for linguistic
+% examples numbered like "27bii".  Also define commands "\tagequation",
+% "\tagsubequation", and "\tagsubsubequation", to render these counters
+% into "(27)", "b.", and "ii." respectively by default.
+%
+\newcounter{subequation}[equation]
+\newcounter{subsubequation}[subequation]
+\renewcommand\thesubequation{\theequation\@alph\c@subequation}
+\renewcommand\thesubsubequation{\thesubequation\@roman\c@subsubequation}
+\newcommand{\tagequation      }{\hb@xt@\leftmargini{(\theequation   )\hfil}}
+\newcommand{\tagsubequation   }{\hb@xt@ 1em{\@alph \c@subequation   .\hfil}\kern\labelsep}
+\newcommand{\tagsubsubequation}{\hb@xt@ 1em{\@roman\c@subsubequation.\hfil}\kern\labelsep}
+\providecommand{\theHsubequation   }{\theHequation\alph{subequation}}
+\providecommand{\theHsubsubequation}{\theHsubequation\arabic{subsubequation}}
+
+% Define shortcuts for incrementing and typesetting equation and
+% sub(sub)equation numbers.  These can be redefined by the user.
+%
+\newcommand{\ex}{\refstepcounter{equation}\tagequation}
+\newcommand{\ey}{\refstepcounter{subequation}\tagsubequation}
+\newcommand{\ez}{\refstepcounter{subsubequation}\tagsubsubequation}
+
+% Define a new command "\subexamples" (and synonymously "\subsubexamples"),
+% which uses the tabularx environment to typeset a table that fills up all
+% available horizontal space.  For instance, since the default column
+% specification is "l@{}X", \subexamples{a.\;&foo\\b.\;&bar} typesets two
+% linguistic examples inside an hbox.
+%
+% Also define "\examples", which is just like "\subexamples" but performs
+% the typesetting in vertical mode.  It allows line breaks in the middle of
+% the table, and adds the amount of vertical space surrounding display
+% equations.
+%
+\newif\ifexample@intable  % whether we are currently in \(sub(sub))examples
+\newif\ifexample@toptable % whether we are at the very first table cell
+\newcommand{\subexamples}[2][l@{}X]{%
+    \vtop{%
+        \noindent
+        \example@intabletrue
+        \withoutkluwertabular
+        \begin{tabularx}{\linewidth}[t]{@{}#1@{}}%
+          \example@toptabletrue
+          \ignorespaces #2%
+        \end{tabularx}}%
+    \ignorespaces}
+\let\subsubexamples\subexamples
+\newcommand{\examples@lrerror}{%
+    \PackageError{example}{Cannot display examples in LR mode}{%
+      You asked with \string\examples for examples to be displayed,^^J
+      but it is impossible in LR (restricted horizontal) mode}}
+\newcommand{\examples}[2][l@{}X]{%
+  \begingroup
+    % Make sure we are not in LR mode.
+    \ifhmode \ifinner \examples@lrerror \fi \fi
+    % For text-like vertical spacing, disable mdwtab's \tabstyle,
+    % \extrarowheight, \tabextrasep, and \arrayextrasep
+    \let\tabstyle\relax
+    \def\next##1{\ifx##1\@undefined \else ##1\z@ \fi}%
+    \next\extrarowheight \next\tabextrasep \next\arrayextrasep
+    % Try to detect LaTeX2e's fleqn option (and not AMSLaTeX's)
+    % and simulate how it overrides \abovedisplayskip and \belowdisplayskip.
+    \ifx\@undefined\mathindent\else \ifx\@undefined\@fleqntrue
+      \abovedisplayskip\topsep
+      \if@tempswa\else \advance\abovedisplayskip\partopsep \fi
+      \advance\abovedisplayskip\parskip
+      \belowdisplayskip\abovedisplayskip
+    \fi \fi
+    % Work around Kluwer's reckless overriding of the tabular environment.
+    \withoutkluwertabular
+    \example@intabletrue
+    % Allow amsmath's \intertext as an alias for mdwtab's \tabpause.
+    \let\intertext\tabpause
+    \begin{tabularx}{\linewidth}[L]{@{}#1@{}}%
+      \example@toptabletrue
+      \ignorespaces #2%
+    \end{tabularx}%
+  \endgroup
+  \ignorespaces}
+
+% Define a command "examplebody", for the body text of examples.
+%
+\newcommand{\examplebody}[1]{%
+    \begin{minipage}[t]{\linewidth}%
+        \example@intablefalse
+        \noindent \ignorespaces #1%
+        \@finalstrut \@arstrutbox
+    \end{minipage}%
+}
+
+% Define commands \example, \subexample, and \subsubexample, which take
+% a single argument and typesets it as example text.  These macros detect
+% whether they are used within \(sub(sub))examples; if not, they enclose
+% themselves within one.
+%
+\newcommand{\ample@}[4]{%
+    \ifexample@intable
+        \ifexample@toptable\else#2\fi
+        #3\global\let\example@currentlabel\@currentlabel
+        &\let\@currentlabel\example@currentlabel \examplebody{#4}\cr
+    \else
+        #1{\ample@\relax{#2}{#3}{#4}}%
+    \fi}
+\newcommand{\example@jot}{\noalign{\addvspace\jot}}
+\newcommand{\example}{\ample@\examples\example@jot\ex}
+\newcommand{\subexample}{\ample@\subexamples\relax\ey}
+\newcommand{\subsubexample}{\ample@\subsubexamples\relax\ez}
+
+% Define \< as an abbreviation for \llap, for grammaticality judgments such
+% as \<* and \<{??}.
+%
+\newcommand{\<}[1]{\leavevmode\llap{#1}\ignorespaces}

@@ -1,0 +1,90 @@
+\documentclass{article}
+
+\usepackage{hyperref}
+
+%\usepackage{exercice}
+\usepackage{proof}
+
+\newtheorem{lemma}{Lemma}
+\newtheorem{theorem}{Theorem}
+
+\def \WhizzyTeX{Whizzy\TeX}
+
+\begin{document}
+
+\author{Didier R{\'e}my}
+\title {A proof environment, as an exercise\\
+together with its {\WhizzyTeX} companion}
+\maketitle
+
+
+This is a short, self-documnented article with lemmas and proofs.
+Please read the source under {\WhizzyTeX} and the output 
+at the same time.
+
+Just move the cursor down the file in and out of proofs environment. 
+You may also see the self-documented article \texttt{exercise.tex}
+from the distribution.
+
+\begin{verbatim}
+\newtheorem{lemma}{Lemma}
+\newtheorem{theorem}{Theorem}
+\end{verbatim}
+
+\begin{lemma}
+This is the first lemma. 
+\end{lemma}
+Some short comment on the lemma.
+\begin{proof}{}%inline
+This is the proof of the previous lemma. 
+
+That is the first one.
+
+Its proof is not too long. 
+
+It just first on a few lines. 
+
+And it ends there. 
+\end{proof}
+The text continues after the proof.
+
+\begin{lemma}
+This is the second lemma. 
+\end{lemma}
+Some short comment on the lemma.
+\begin{proof}{}%inline
+This is the proof of the previous lemma. 
+A  very long proof\ldots
+
+\def \p{.\par}\def \pv{\p\p\p\p\p}\def \px{\pv\pv}
+\px\px\px\px
+
+That ends here. 
+\end{proof}
+The text continues after the proof.
+
+\begin{theorem}
+This is the second lemma. 
+\end{theorem}
+Its proof is a bit shorter. 
+\begin{proof}{}%inline
+This is the proof of the previous lemma. 
+This is the proof of the previous lemma. 
+\end{proof}
+The text continues after the proof.
+
+\begin{lemma}
+Another lemma, without a proof.
+\end{lemma}
+
+
+\begin{lemma}
+Yet another lemma, with its proof.
+\end{lemma}
+\begin{proof}{}
+It the numbering right?
+\end{proof}
+\newpage
+\inputanswers{Proofs}
+
+\end{document}
