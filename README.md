@@ -12,22 +12,21 @@ probably bitrotten.
 
 Here's a quick synopsis of the scripts in `~/local/bin`:
 
-* _abspath — make a path absolute and canonical
-* _normalize_space — remove leading/trailing spaces and collapse duplicate space
-* _shell_quote — single-quote a string, escaping characters as necessary
-* byte-sort — sort lines beginning with human-readable bytesizes
-* cal — like the built-in cal, but highlights today
-* darcs-newfiles — determine which files aren't under darcs control. (like `darcs w -ls` but can be much faster)
-* dotsort — sort hostnames in the correct way
-* hilight — highlight matches; à la color grep, but without filtering out non-matching lines
-* http-head
-* link_scrape
-* literacy
-* ls_all — recursively ls every directory along a path
-* propagate — push a bunch of files to a bunch of hosts, recursively as needed
-* psed — run a program's output through several sed filters, returning the same exit code as the child program
-* w3ctime — print the current time in W3C date/time format
-
+* `_abspath` — make a path absolute and canonical
+* `_normalize_space` — remove leading/trailing spaces and collapse duplicate space
+* `_shell_quote` — single-quote a string, escaping characters as necessary
+* `byte-sort` — sort lines beginning with human-readable bytesizes
+* `cal` — like the built-in cal, but highlights today
+* `darcs-newfiles` — determine which files aren't under darcs control. (like `darcs w -ls` but can be much faster)
+* `dotsort` — sort hostnames in the correct way
+* `hilight` — highlight matches; à la color grep, but without filtering out non-matching lines
+* `http-head`
+* `link_scrape`
+* `literacy`
+* `ls_all` — recursively `ls` every directory along a path
+* `propagate` — push a bunch of files to a bunch of hosts, recursively as needed
+* `psed` — run a program's output through several sed filters, returning the same exit code as the child program
+* `w3ctime` — print the current time in [W3C date/time format](http://www.w3.org/TR/NOTE-datetime)
 
 ## Email
 
