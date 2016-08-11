@@ -1,0 +1,6 @@
+* use <http://scripts.irssi.org/scripts/screen_away.pl>?
+* define our own commands to:
+    * ask for and store the NickServ password in memory at startup, to avoid storing it in the config file
+    * one command to do the ghost/nick/identify song and dance at startup
+    * one command to do /nick on all servers at once
+    * automatically grab the desired nick from settings.core for the ghost/nick/identify song and dance at startup.

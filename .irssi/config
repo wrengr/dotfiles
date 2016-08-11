@@ -55,7 +55,7 @@ servers = (
 chatnets = {
   cat = {
     type = "IRC";
-    autosendcmd = "/^msg NickServ identify SEEKRIT";
+    autosendcmd = "/^msg NickServ ghost wrengr SEEKRIT;wait 500;/nick wrengr;wait 500;/^msg NickServ identify SEEKRIT";
   };
   soic = {
     type = "IRC";
@@ -66,15 +66,15 @@ chatnets = {
     max_modes = "4";
     max_msgs = "1";
     max_whois = "1";
-    autosendcmd = "/^msg NickServ identify SEEKRIT";
+    autosendcmd = "/^msg NickServ ghost wrengr SEEKRIT;wait 500;/nick wrengr;wait 500;/^msg NickServ identify SEEKRIT";
   };
   tsukihime = {
     type = "IRC";
-    autosendcmd = "/^msg NickServ identify SEEKRIT";
+    autosendcmd = "/^msg NickServ ghost wrengr SEEKRIT;wait 500;/nick wrengr;wait 500;/^msg NickServ identify SEEKRIT";
   };
   starrevolution = {
     type = "IRC";
-    autosendcmd = "/^msg NickServ identify SEEKRIT";
+    autosendcmd = "/^msg NickServ ghost wrengr SEEKRIT;wait 500;/nick wrengr;wait 500;/^msg NickServ identify SEEKRIT";
   };
   IRCnet = {
     type = "IRC";
@@ -154,7 +154,7 @@ channels = (
   { name = "#irssi";             chatnet = "freenode";  autojoin = "No"; },
   { name = "#freegeek";          chatnet = "freenode";  autojoin = "No"; },
   { name = "#haskell";           chatnet = "freenode";  autojoin = "yes"; },
-  { name = "#nothaskell";        chatnet = "freenode";  autojoin = "yes"; },
+  { name = "#lambdanow";         chatnet = "freenode";  autojoin = "yes"; },
   { name = "#haskell-in-depth";  chatnet = "freenode";  autojoin = "yes"; },
   { name = "#numerical-haskell"; chatnet = "freenode";  autojoin = "yes"; },
   { name = "#ghc";               chatnet = "freenode";  autojoin = "no"; },
@@ -164,11 +164,12 @@ channels = (
   { name = "#agda";              chatnet = "freenode";  autojoin = "yes"; },
   { name = "#epigram";           chatnet = "freenode";  autojoin = "yes"; },
   { name = "##categorytheory";   chatnet = "freenode";  autojoin = "yes"; },
+  { name = "#chromium";          chatnet = "freenode";  autojoin = "yes"; },
   { name = "#transspace";        chatnet = "freenode";  autojoin = "no"; },
   { name = "#lambdaladies";      chatnet = "freenode";  autojoin = "yes"; },
-  { name = "#transgender";       chatnet = "tsukihime"; autojoin = "yes"; },
-  { name = "#kink";              chatnet = "tsukihime"; autojoin = "yes"; },
-  { name = "#star";         chatnet = "starrevolution"; autojoin = "yes"; },
+  { name = "#transgender";       chatnet = "tsukihime"; autojoin = "no"; },
+  { name = "#kink";              chatnet = "tsukihime"; autojoin = "no"; },
+  { name = "#star";         chatnet = "starrevolution"; autojoin = "no"; },
   { name = "#soic";              chatnet = "soic";      autojoin = "yes"; },
   { name = "#nlp";               chatnet = "soic";      autojoin = "yes"; },
   {
@@ -233,7 +234,6 @@ aliases = {
   X = "EXEC -";
   sc = "scrollback clear";
   xlast = "exec - ( last | grep koninkje | head | awk '{print \\$6,\\$7,\\$0}' | grep \"^`date +%e`\" | sort ) 2>%1 | grep -v 'Broken pipe'";
-  "topic-nawctp" = "^msg chanserv topic #nawctp ";
 };
 
 statusbar = {
@@ -441,10 +441,11 @@ hilights = (
 ignores = (
   { level = "JOINS PARTS QUITS KICKS"
   ; channels = (
-    "#meow", "#freegeek", "#haskell", "#haskell-ops", "#nothaskell",
+    "#meow", "#freegeek", "#haskell", "#haskell-ops", "#lambdanow",
     "#haskell-in-depth", "#numerical-haskell", "#ghc", "#darcs", "#hakyll",
-    "#coq", "#agda", "#epigram", "##categorytheory", "#soic", "#nlp",
-    "#lambdaladies", "#transspace", "#transgender", "#kink", "#star" ); },
+    "#coq", "#agda", "#epigram", "##categorytheory", "#chromium",
+    "#lambdaladies", "#transspace", "#transgender", "#kink", "#star",
+    "#soic", "#nlp" ); },
   { mask = "Wren";           level = "ALL"; channels = ( "#meow" ); },
   { mask = "Wren";           level = "ALL"; channels = ( "#freegeek" ); },
   { mask = "ghcbot";         level = "ALL"; channels = ( "#ghc" ); },
@@ -457,20 +458,12 @@ windows = {
     level = "ALL";
     sticky = "yes";
   };
-  2 = { name = "hilight"; sticky = "yes"; };
-  3 = {
-    items = (
-      { 
-        type = "CHANNEL";
-        chat_type = "IRC";
-        name = "#meow";
-        tag = "cat";
-      }
-    );
+  2 = {
+    immortal = "yes";
+    name = "hilight";
     sticky = "yes";
-    parent = "1";
   };
-  4 = {
+  3 = {
     items = (
       {
         type = "CHANNEL";
@@ -482,19 +475,19 @@ windows = {
     sticky = "yes";
     parent = "1";
   };
-  5 = {
+  4 = {
     items = (
       {
         type = "CHANNEL";
         chat_type = "IRC";
-        name = "#nothaskell";
+        name = "#lambdanow";
         tag = "freenode";
       }
     );
     sticky = "yes";
     parent = "1";
   };
-  6 = {
+  5 = {
     items = (
       {
         type = "CHANNEL";
@@ -506,7 +499,7 @@ windows = {
     sticky = "yes";
     parent = "1";
   };
-  7 = {
+  6 = {
     items = (
       {
         type = "CHANNEL";
@@ -518,7 +511,7 @@ windows = {
     sticky = "yes";
     parent = "1";
   };
-  8 = {
+  7 = {
     items = (
       {
         type = "CHANNEL";
@@ -530,7 +523,7 @@ windows = {
     sticky = "yes";
     parent = "1";
   };
-  9 = {
+  8 = {
     items = (
       {
         type = "CHANNEL";
@@ -542,7 +535,7 @@ windows = {
     sticky = "yes";
     parent = "1";
   };
-  10 = {
+  9 = {
     items = (
       {
         type = "CHANNEL";
@@ -554,7 +547,7 @@ windows = {
     sticky = "yes";
     parent = "1";
   };
-  11 = {
+  10 = {
     items = (
       {
         type = "CHANNEL";
@@ -566,7 +559,7 @@ windows = {
     sticky = "yes";
     parent = "1";
   };
-  12 = {
+  11 = {
     items = (
       {
         type = "CHANNEL";
@@ -578,73 +571,25 @@ windows = {
     sticky = "yes";
     parent = "1";
   };
-  13 = {
+  12 = {
     items = (
       {
         type = "CHANNEL";
         chat_type = "IRC";
-        name = "#soic";
-        tag = "soic";
-      }
-    );
-    sticky = "yes";
-    parent = "1";
-  };
-  14 = {
-    items = (
-      {
-        type = "CHANNEL";
-        chat_type = "IRC";
-        name = "#nlp";
-        tag = "soic";
-      }
-    );
-    sticky = "yes";
-    parent = "1";
-  };
-  15 = {
-    items = (
-      {
-        type = "CHANNEL";
-        chat_type = "IRC";
-        name = "#lambdaladies";
+        name = "#chromium";
         tag = "freenode";
       }
     );
     sticky = "yes";
     parent = "1";
   };
-  16 = {
+  13 = {
     items = (
       {
         type = "CHANNEL";
         chat_type = "IRC";
-        name = "#transgender";
-        tag = "tsukihime";
-      }
-    );
-    sticky = "yes";
-    parent = "1";
-  };
-  17 = {
-    items = (
-      {
-        type = "CHANNEL";
-        chat_type = "IRC";
-        name = "#kink";
-        tag = "tsukihime";
-      }
-    );
-    sticky = "yes";
-    parent = "1";
-  };
-  18 = {
-    items = (
-      {
-        type = "CHANNEL";
-        chat_type = "IRC";
-        name = "#star";
-        tag = "starrevolution";
+        name = "#lambdaladies";
+        tag = "freenode";
       }
     );
     sticky = "yes";
