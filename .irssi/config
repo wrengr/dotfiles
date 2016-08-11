@@ -53,9 +53,11 @@ servers = (
 );
 
 chatnets = {
+  # N.B., on the cat network the command is called "regain", rather
+  # than "ghost"; and it automatically performs the /nick part
   cat = {
     type = "IRC";
-    autosendcmd = "/^msg NickServ ghost wrengr SEEKRIT;wait 500;/nick wrengr;wait 500;/^msg NickServ identify SEEKRIT";
+    autosendcmd = "/^msg NickServ regain wrengr SEEKRIT;wait 500;/nick wrengr;wait 500;/^msg NickServ identify SEEKRIT";
   };
   soic = {
     type = "IRC";
