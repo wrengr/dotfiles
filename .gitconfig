@@ -1,17 +1,69 @@
+# TODO: is there a way to set this user info differently for various
+# hosts, while using the same file (so I don't need to postprocess
+# the stuff in my dotfiles repo)?
+[user]
+	name = wren gayle romano
+	email = wren@community.haskell.org
+[github]
+	user = wrengr
+[color]
+    branch = auto
+    diff = auto
+    interactive = auto
+    status = auto
+	ui = true
+[push]
+	default = simple
+[merge]
+	ff = only
+[core]
+	autocrlf = false
+	filemode = false
+
+# Have newly-created branches starting from a branch, set their
+# start point as upstream (as oppose to the default 'true' setting
+# where this only happens when the start point is a remote-tracking
+# branch)
+# <http://grimoire.ca/git/config>
+[branch]
+	autoSetupMerge = always
+
+# There are ways of making 'pull --rebase' the default, but it seems
+# to take a non-trivial amount of work; so I'm just using an alias
+# 'pr' for now. One way to try to make 'pr' the default 'pull' is to
+# set 'pull.rebase = true', another way is to set 'branch.autoSetupRebase
+# = always', but neither of those seems to work quite right for me.
+# In any case, however you do it, if you try a 'pr' and it has conflicts
+# you need to manually resolve, then do 'rebase --continue' afterwards
+# to finish it up.
+# <http://randyfay.com/content/simpler-rebasing-avoiding-unintentional-merge-commits>
+# <http://randyfay.com/content/rebase-workflow-git>
+
+
 # For more alias ideas, see:
-# http://noamlewis.wordpress.com/2012/05/21/my-git-aliases/
+# <http://noamlewis.wordpress.com/2012/05/21/my-git-aliases/>
+# or the very last few at <https://gist.github.com/pksunkara/988716>
 [alias]
     lol  = log --graph --decorate --pretty=oneline --abbrev-commit
     lola = log --graph --decorate --pretty=oneline --abbrev-commit --all
-	st   = status
-	ci   = commit -a
-	hw   = help -w
-	ff   = merge --ff-only
+# BUG: can't actually set this alias because of the $(), but it
+# gives a nice pretty version of reflog
+#	reflol = log --graph --decorate --oneline $(git rev-list -g --all)
+	st   = status --branch
+	ci   = commit --all
+	pr   = pull --rebase
+	rc   = rebase --continue
+	hw   = help --web
 	unpushed = log @{u}..
-# This will unrecord the most recent commit. Can also use "~1" instead of "^" at the end
+# This will unrecord the most recent commit. Can also use "~1"
+# instead of "^" at the end
 # <http://stackoverflow.com/questions/927358/how-to-undo-the-last-commit>
 	unrecord = reset --soft 'HEAD^'
-	amend = commit --amend -a
+# Undo a 'git reset'. N.B., '{1}' may not always be the oe you want;
+# cf 'git reflog'
+# <http://stackoverflow.com/a/2531803/358069>
+	unreset = reset 'HEAD@{1}'
+	amend = commit --amend --all
 # Revert all unstaged changes
 # * To revert staged files, use 'git reset -- .'
 # * To remove untracked files, use 'git clean -df'
@@ -19,16 +71,8 @@
 # In all cases, you can give a specific file name instead of '.'
 # <http://stackoverflow.com/questions/52704/how-do-you-discard-unstaged-changes-in-git>
 	revert-all = checkout -- .
-[color]
-    branch = auto
-    diff = auto
-    interactive = auto
-    status = auto
-	ui = true
-# TODO: is there a way to set this user info differently for various hosts, while using the same file (so I don't need to postporcess the stuff in my dotfiles repo)?
-[user]
-	name = wren gayle romano
-	email = wren@community.haskell.org
+# Then pass the name of the new branch in the local repo.
+	push-new-branch = push --set-upstream origin
 
 # Trying to solve this problem
 # <http://stackoverflow.com/questions/11403407/git-asks-for-username-everytime-i-push>
@@ -36,11 +80,9 @@
 # <http://stackoverflow.com/questions/5343068/is-there-a-way-to-skip-password-typing-when-using-https-github/5343146#5343146>
 #[credential "https://github.iu.edu/"]
 #	username = wrengr
-[push]
-	default = simple
-# TODO: is there a way to set this http info differently for various hosts, while using the same file (so I don't need to postporcess the stuff in my dotfiles repo)?
+
+# TODO: is there a way to set this http info differently for various
+# hosts, while using the same file (so I don't need to postprocess
+# the stuff in my dotfiles repo)?
 #[http]
 #	cookiefile = /usr/local/google/home/wrengr/.gitcookies
-[core]
-	autocrlf = false
-	filemode = false
