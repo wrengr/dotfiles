@@ -24,6 +24,8 @@
     diff = auto
     interactive = auto
     status = auto
+	ui = true
+# TODO: is there a way to set this user info differently for various hosts, while using the same file (so I don't need to postporcess the stuff in my dotfiles repo)?
 [user]
 	name = wren gayle romano
 	email = wren@community.haskell.org
@@ -36,3 +38,9 @@
 #	username = wrengr
 [push]
 	default = simple
+# TODO: is there a way to set this http info differently for various hosts, while using the same file (so I don't need to postporcess the stuff in my dotfiles repo)?
+#[http]
+#	cookiefile = /usr/local/google/home/wrengr/.gitcookies
+[core]
+	autocrlf = false
+	filemode = false
