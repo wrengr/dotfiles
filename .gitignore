@@ -45,6 +45,7 @@ dist/
 .ghc/ghci_history
 .lesshst
 .maple_history
+.vim/.netrwhist
 
 # Ignore OSX-specific homedir specific stuff
 .CFUserTextEncoding
