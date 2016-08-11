@@ -156,6 +156,7 @@ set ignorecase           " Don't care if search for upper or lowercase
 "set foldopen=all        " Open folds when action happens
 "set foldclose=all       " Automatically close folds when leving
 
+
 " ~~~~~ Quick swap between normal and relative line numbers
 " <https://github.com/alialliallie/vimfiles/blob/master/vimrc>
 function! NumberToggle()
@@ -167,6 +168,19 @@ function! NumberToggle()
 	endif
 endfunc
 nnoremap <C-L> :call NumberToggle()<cr>
+
+
+" ~~~~~ Quick swap highlight certain spaces as errors
+" TODO: actually make this toggle!
+" BUG: this doesn't seem to work everywhere (e.g., inside `function!`
+" itself; though it works just fine inside `if`)
+function! SpaceErrorToggle()
+	syn match tab display "\t"
+	hi link tab Error
+	syn match trailingWhite display "[[:space:]]\+$"
+	hi link trailingWhite Error
+endfunc
+
 
 " ~~~~~ Etc.
 "     http://www.tjansson.dk/filer/vimrc.html
@@ -219,6 +233,7 @@ let Grep_Skip_Dirs = 'RCS CVS SCCS .svn .hg _darcs'
 vnoremap p <Esc>:let current_reg = @"<CR>gvdi<C-R>=current_reg<CR><Esc>
 
 
+" TODO: guard this stuff to be OSX-only?
 " <http://www.drbunsen.org/text-triumvirate.html>
 " Yank text to the OS X clipboard
 noremap <leader>y "*y
@@ -238,7 +253,7 @@ if has("autocmd")
 	
 	" Allow filebased indentation 
 	filetype indent on
-
+	
 	" Makes vim capable of guessing based on the filetype 
 	"filetype on
 	
@@ -248,7 +263,7 @@ if has("autocmd")
 	autocmd BufNewFile,BufRead *.ecl :set ft=prolog
 	" TODO: move this all to ~/.vim/ftplugin/python.vim
 	autocmd BufNewFile,BufRead *.py set smartindent cinwords=if,elif,else,for,while,try,except,finally,def,class
-
+	
 	" This causes GHC to type check every time you save the file
 	"autocmd BufWritePost *.hs !ghc -c %
 	" TODO: similar things for *.hsc, *.lhs,... you can use {,} alternation a-la Bash
@@ -281,15 +296,15 @@ map =jd :.,+1!~/.vim/macro_jd.pl
 " Add type signatures to top-level functions
 " From Sebastiaan Visser
 "function! HaskellType()
-"    w
-"    execute "normal {j^YP"
-"    execute (".!ghc -XNoMonomorphismRestriction -w % -e \":t " . expand("<cword>") . "\"")
-"    redraw!
+"	w
+"	execute "normal {j^YP"
+"	execute (".!ghc -XNoMonomorphismRestriction -w % -e \":t " . expand("<cword>") . "\"")
+"	redraw!
 "endfunction
 "
 "function Haskell()
-"    map <buffer> <silent> tt :call HaskellType()<Cr>
-"    " more haskell stuff here
+"	map <buffer> <silent> tt :call HaskellType()<Cr>
+"	" more haskell stuff here
 "endfunction
 "
 "autocmd BufRead,BufNewFile *.{ag,hs,lhs,ghs} call Haskell()
@@ -297,20 +312,20 @@ map =jd :.,+1!~/.vim/macro_jd.pl
 "" Compare vs the following Cabal integration hack
 "
 "function! SetToCabalBuild()
-"  if glob("*.cabal") != ''
-"    let a = system( 'grep "/\* package .* \*/"  dist/build/autogen/cabal_macros.h' )
-"    let b = system( 'sed -e "s/\/\* /-/" -e "s/\*\///"', a )
-"    let pkgs = "-hide-all-packages " .  system( 'xargs echo -n', b )
-"    let hs = "import Distribution.Dev.Interactive\n"
-"    let hs .= "import Data.List\n"
-"    let hs .= 'main = withOpts [""] error return >>= putStr . intercalate " "'
-"    let opts = system( 'runhaskell', hs )
-"    let b:ghc_staticoptions = opts . ' ' . pkgs
-"  else
-"    let b:ghc_staticoptions = '-XNoMonomorphismRestriction -Wall -fno-warn-name-shadowing'
-"  endif
-"  execute 'setlocal makeprg=' . g:ghc . '\ ' . escape(b:ghc_staticoptions,' ') .'\ -e\ :q\ %'
-"  let b:my_changedtick -=1
+"	if glob("*.cabal") != ''
+"		let a = system( 'grep "/\* package .* \*/"  dist/build/autogen/cabal_macros.h' )
+"		let b = system( 'sed -e "s/\/\* /-/" -e "s/\*\///"', a )
+"		let pkgs = "-hide-all-packages " .  system( 'xargs echo -n', b )
+"		let hs = "import Distribution.Dev.Interactive\n"
+"		let hs .= "import Data.List\n"
+"		let hs .= 'main = withOpts [""] error return >>= putStr . intercalate " "'
+"		let opts = system( 'runhaskell', hs )
+"		let b:ghc_staticoptions = opts . ' ' . pkgs
+"	else
+"		let b:ghc_staticoptions = '-XNoMonomorphismRestriction -Wall -fno-warn-name-shadowing'
+"	endif
+"	execute 'setlocal makeprg=' . g:ghc . '\ ' . escape(b:ghc_staticoptions,' ') .'\ -e\ :q\ %'
+"	let b:my_changedtick -=1
 "endfunction
 "
 "autocmd BufEnter *.hs,*.lhs :call SetToCabalBuild()
