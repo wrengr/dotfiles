@@ -1,0 +1,537 @@
+<?xml version="1.0"?>
+<!DOCTYPE MODE SYSTEM "xmode.dtd">
+<MODE>
+	<PROPS>
+		<PROPERTY NAME="commentStart" VALUE="/*" />
+		<PROPERTY NAME="commentEnd" VALUE="*/" />
+		<PROPERTY NAME="lineComment" VALUE="//" />
+		<PROPERTY NAME="wordBreakChars" VALUE=",+-=&lt;&gt;/?^&amp;*" />
+
+	<!-- Auto indent -->
+		<PROPERTY NAME="indentOpenBrackets" VALUE="{" />
+		<PROPERTY NAME="indentCloseBrackets" VALUE="}" />
+		<PROPERTY NAME="unalignedOpenBrackets" VALUE="(" />
+		<PROPERTY NAME="unalignedCloseBrackets" VALUE=")" />
+		<PROPERTY NAME="indentNextLine" VALUE="\s*(((if|while)\s*\(|else\s*|else\s+if\s*\(|for(?:each)?\s*\(.*\))[^{;]*)" />
+		<PROPERTY NAME="unindentThisLine" VALUE="(?&lt;!\{)^\s*(\w+:|case.*:)\s*($|/[*/])" />
+		<PROPERTY NAME="electricKeys" VALUE=":" />
+	</PROPS>
+
+	<RULES IGNORE_CASE="TRUE">
+
+		<!-- silly comment -->
+		<SEQ TYPE="COMMENT1">/**/</SEQ>
+
+		<!-- doc comments -->
+		<SPAN TYPE="COMMENT3" DELEGATE="DOCCOMMENT">
+			<BEGIN>/**</BEGIN>
+			<END>*/</END>
+		</SPAN>
+
+		<!-- block comments -->
+		<SPAN TYPE="COMMENT1" DELEGATE="COMMENT">
+			<BEGIN>/*</BEGIN>
+			<END>*/</END>
+		</SPAN>
+
+		<!-- line comments -->
+		<EOL_SPAN TYPE="COMMENT2" DELEGATE="EOLCOMMENT">//</EOL_SPAN>
+
+		<!-- numbers -->
+		<SEQ_REGEXP HASH_CHARS="0123456789" AT_WORD_START="TRUE" TYPE="DIGIT">[0-9][0-9a-f.x]*</SEQ_REGEXP>
+
+		<!-- string literals -->
+		<SPAN TYPE="LITERAL1" NO_LINE_BREAK="TRUE" DELEGATE="STRING">
+			<BEGIN>"</BEGIN>
+			<END>"</END>
+		</SPAN>
+
+		<!-- name and object literals -->
+		<SPAN_REGEXP AT_WORD_START="TRUE" TYPE="LITERAL2" NO_LINE_BREAK="TRUE">
+			<BEGIN>\w*'</BEGIN>
+			<END>'</END>
+		</SPAN_REGEXP>
+
+		<!-- UE1/2 compiler directives and UCPP pragmas -->
+		<EOL_SPAN AT_WHITESPACE_END="TRUE" DELEGATE="DIRECTIVE" TYPE="KEYWORD2">#</EOL_SPAN>
+
+		<!-- UE3 compiler macros -->
+		<!-- macro in braces -->
+		<SPAN TYPE="MARKUP" MATCH_TYPE="KEYWORD4" NO_LINE_BREAK="TRUE">
+			<BEGIN>`{</BEGIN>
+			<END>}</END>
+		</SPAN>
+		<!-- special UE3 compiler macros -->
+		<EOL_SPAN_REGEXP HASH_CHAR="`" AT_WHITESPACE_END="TRUE" DELEGATE="MAIN" TYPE="KEYWORD4">`((un)?define|else|endif|if)\b</EOL_SPAN_REGEXP>
+		<SPAN AT_WHITESPACE_END="TRUE" TYPE="LITERAL4" MATCH_TYPE="KEYWORD4">
+			<BEGIN>`include(</BEGIN>
+			<END>)</END>
+		</SPAN>
+		<SEQ_REGEXP HASH_CHAR="`" TYPE="KEYWORD4">`(isdefined|notdefined)\b</SEQ_REGEXP>
+		<!-- in-line macro -->
+		<MARK_FOLLOWING MATCH_TYPE="KEYWORD4" TYPE="MARKUP">`</MARK_FOLLOWING>
+
+
+		<!-- GoTo labels -->
+		<MARK_PREVIOUS TYPE="LABEL" MATCH_TYPE="OPERATOR" AT_WHITESPACE_END="TRUE">:</MARK_PREVIOUS>
+
+		<!-- UE3 native replacements -->
+		<SEQ_REGEXP HASH_CHAR="{" TYPE="COMMENT4">\{[^};]+}</SEQ_REGEXP>
+
+		<!-- operators, separators and brackets -->
+		<SEQ TYPE="OPERATOR">~</SEQ>
+		<SEQ TYPE="OPERATOR">!</SEQ>
+		<SEQ TYPE="OPERATOR">@</SEQ>
+		<SEQ TYPE="OPERATOR">#</SEQ>
+		<SEQ TYPE="OPERATOR">$</SEQ>
+		<SEQ TYPE="OPERATOR">^</SEQ>
+		<SEQ TYPE="OPERATOR">&amp;</SEQ>
+		<SEQ TYPE="OPERATOR">*</SEQ>
+		<SEQ TYPE="OPERATOR">-</SEQ>
+		<SEQ TYPE="OPERATOR">=</SEQ>
+		<SEQ TYPE="OPERATOR">+</SEQ>
+		<SEQ TYPE="OPERATOR">|</SEQ>
+		<SEQ TYPE="OPERATOR">:</SEQ>
+		<SEQ TYPE="OPERATOR">&lt;</SEQ>
+		<SEQ TYPE="OPERATOR">&gt;</SEQ>
+		<SEQ TYPE="OPERATOR">/</SEQ>
+		<SEQ TYPE="OPERATOR">?</SEQ>
+		<SEQ TYPE="OPERATOR">\</SEQ>
+		<SEQ TYPE="OPERATOR">)</SEQ>
+		<SEQ TYPE="OPERATOR">{</SEQ>
+		<SEQ TYPE="OPERATOR">}</SEQ>
+
+	<!-- functions -->
+		<MARK_PREVIOUS TYPE="FUNCTION" MATCH_TYPE="OPERATOR">(</MARK_PREVIOUS>
+
+	<!-- static modifier -->
+		<SEQ_REGEXP AT_WORD_START="TRUE" HASH_CHAR="static" TYPE="KEYWORD1">static\b(?!\s*\.)</SEQ_REGEXP>
+	<!-- static function call -->
+		<SEQ_REGEXP AT_WORD_START="TRUE" HASH_CHAR="static" TYPE="KEYWORD2">static\b(?=\s*\.)</SEQ_REGEXP>
+
+	<!-- switch keyword -->
+		<SEQ_REGEXP AT_WORD_START="TRUE" HASH_CHAR="switch" TYPE="KEYWORD1">switch\b(?=\s*\()</SEQ_REGEXP>
+
+	<!-- default switch case -->
+		<SEQ_REGEXP AT_WORD_START="TRUE" HASH_CHAR="default" TYPE="KEYWORD1">default\b(?=\s*\:)</SEQ_REGEXP>
+	<!-- default value access -->
+		<SEQ_REGEXP AT_WORD_START="TRUE" HASH_CHAR="default" TYPE="KEYWORD2">default\b(?=\s*\.)</SEQ_REGEXP>
+
+	<!-- input variable modifier -->
+		<SEQ_REGEXP AT_WORD_START="TRUE" HASH_CHAR="input" TYPE="KEYWORD1">input\b(?=\s*\w])</SEQ_REGEXP>
+
+	<!-- init struct modifier -->
+		<SEQ_REGEXP AT_WORD_START="TRUE" HASH_CHAR="init" TYPE="KEYWORD1">init\b(?=\s*\w)</SEQ_REGEXP>
+
+	<!-- name datatype -->
+		<SEQ_REGEXP AT_WORD_START="TRUE" HASH_CHAR="name" TYPE="KEYWORD3">name\b(?=\s*[\w&gt;])</SEQ_REGEXP>
+
+	<!-- class keyword -->
+		<SEQ_REGEXP AT_WHITESPACE_END="TRUE" HASH_CHAR="class" TYPE="KEYWORD1">class\b(?=\s*[\w])</SEQ_REGEXP>
+	<!-- class datatype -->
+		<SEQ_REGEXP AT_WORD_START="TRUE" HASH_CHAR="class" TYPE="KEYWORD3">class\b(?=\s*[\w&lt;&gt;])</SEQ_REGEXP>
+
+	<!-- delegate keyword -->
+		<SEQ_REGEXP AT_WHITESPACE_END="TRUE" HASH_CHAR="delegate" TYPE="KEYWORD1">delegate\b(?=\s*[\w])</SEQ_REGEXP>
+	<!-- delegate datatype -->
+		<SEQ_REGEXP AT_WORD_START="TRUE" HASH_CHAR="delegate" TYPE="KEYWORD3">delegate\b(?=\s*[\w&lt;&gt;])</SEQ_REGEXP>
+
+		<!-- default values section for class and structs -->
+		<SPAN_REGEXP AT_WHITESPACE_END="TRUE" HASH_CHARS="ds" NO_LINE_BREAK="FALSE" MATCH_TYPE="KEYWORD1" DELEGATE="DEFAULTS">
+			<BEGIN>(struct)?defaultproperties\s*$</BEGIN>
+			<END>}</END>
+		</SPAN_REGEXP>
+
+		<KEYWORDS>
+			<KEYWORD1>Abstract</KEYWORD1>
+			<KEYWORD1>Assert</KEYWORD1>
+			<KEYWORD1>Auto</KEYWORD1>
+			<KEYWORD1>Automated</KEYWORD1>
+
+			<KEYWORD1>Break</KEYWORD1>
+
+			<KEYWORD1>Cache</KEYWORD1>
+			<KEYWORD1>CacheExempt</KEYWORD1>
+			<KEYWORD1>Case</KEYWORD1>
+			<KEYWORD1>Client</KEYWORD1>
+			<KEYWORD1>Coerce</KEYWORD1>
+			<KEYWORD1>CollapseCategories</KEYWORD1>
+			<KEYWORD1>Config</KEYWORD1>
+			<KEYWORD1>Const</KEYWORD1>
+			<KEYWORD1>Continue</KEYWORD1>
+			<KEYWORD1>cpptext</KEYWORD1>
+			<KEYWORD1>cppstruct</KEYWORD1>
+
+			<KEYWORD1>DataBinding</KEYWORD1>
+			<KEYWORD1>DependsOn</KEYWORD1>
+			<LABEL>Deprecated</LABEL>
+			<KEYWORD1>Do</KEYWORD1>
+			<KEYWORD1>DontCollapseCategories</KEYWORD1>
+			<KEYWORD1>DuplicateTransient</KEYWORD1>
+
+			<KEYWORD1>EdFindable</KEYWORD1>
+			<KEYWORD1>EditConst</KEYWORD1>
+			<KEYWORD1>EditConstArray</KEYWORD1>
+			<KEYWORD1>EditFixedSize</KEYWORD1>
+			<KEYWORD1>EditInline</KEYWORD1>
+			<KEYWORD1>EditInlineNew</KEYWORD1>
+			<KEYWORD1>EditInlineNotify</KEYWORD1>
+			<KEYWORD1>EditInlineUse</KEYWORD1>
+			<KEYWORD1>Else</KEYWORD1>
+			<KEYWORD1>Enum</KEYWORD1>
+			<KEYWORD1>Event</KEYWORD1>
+			<KEYWORD1>Exec</KEYWORD1>
+			<INVALID>Expands</INVALID>
+			<KEYWORD1>Export</KEYWORD1>
+			<KEYWORD1>ExportStructs</KEYWORD1>
+			<KEYWORD1>Extends</KEYWORD1>
+
+			<KEYWORD1>Final</KEYWORD1>
+			<KEYWORD1>For</KEYWORD1>
+			<KEYWORD1>ForEach</KEYWORD1>
+			<KEYWORD1>Function</KEYWORD1>
+
+			<KEYWORD1>GlobalConfig</KEYWORD1>
+			<KEYWORD1>Goto</KEYWORD1>
+
+			<KEYWORD1>HideCategories</KEYWORD1>
+			<KEYWORD1>HideDropDown</KEYWORD1>
+
+			<KEYWORD1>If</KEYWORD1>
+			<KEYWORD1>Ignores</KEYWORD1>
+			<KEYWORD1>Immutable</KEYWORD1>
+			<KEYWORD1>Implements</KEYWORD1>
+			<KEYWORD1>Import</KEYWORD1>
+			<KEYWORD4>Inherits</KEYWORD4>
+			<KEYWORD1>Instanced</KEYWORD1>
+			<KEYWORD1>Interface</KEYWORD1>
+			<KEYWORD1>Intrinsic</KEYWORD1>
+			<KEYWORD1>Iterator</KEYWORD1>
+
+			<KEYWORD1>Latent</KEYWORD1>
+			<KEYWORD1>Local</KEYWORD1>
+			<KEYWORD1>Localized</KEYWORD1>
+			<KEYWORD1>Long</KEYWORD1>
+
+			<KEYWORD1>Native</KEYWORD1>
+			<KEYWORD1>NativeReplication</KEYWORD1>
+			<KEYWORD1>NoExport</KEYWORD1>
+			<KEYWORD1>NoImport</KEYWORD1>
+			<KEYWORD1>NotEditInlineNew</KEYWORD1>
+			<KEYWORD1>NotPlaceable</KEYWORD1>
+			<KEYWORD1>NotTransient</KEYWORD1>
+
+			<KEYWORD1>Operator</KEYWORD1>
+			<KEYWORD1>Optional</KEYWORD1>
+			<KEYWORD1>Out</KEYWORD1>
+
+			<KEYWORD1>ParseConfig</KEYWORD1>
+			<KEYWORD1>PerObjectConfig</KEYWORD1>
+			<KEYWORD1>Placeable</KEYWORD1>
+			<KEYWORD1>PostOperator</KEYWORD1>
+			<KEYWORD1>PreOperator</KEYWORD1>
+			<KEYWORD1>Private</KEYWORD1>
+			<KEYWORD1>Protected</KEYWORD1>
+			<KEYWORD1>Public</KEYWORD1>
+
+			<KEYWORD1>Reliable</KEYWORD1>
+			<KEYWORD1>Replication</KEYWORD1>
+			<KEYWORD1>RepNotify</KEYWORD1>
+			<KEYWORD1>Return</KEYWORD1>
+
+			<KEYWORD1>SafeReplace</KEYWORD1>
+			<KEYWORD1>Server</KEYWORD1>
+			<KEYWORD1>ShowCategories</KEYWORD1>
+			<KEYWORD1>Simulated</KEYWORD1>
+			<KEYWORD1>Singular</KEYWORD1>
+			<KEYWORD1>Skip</KEYWORD1>
+			<KEYWORD1>State</KEYWORD1>
+			<KEYWORD1>Stop</KEYWORD1>
+			<KEYWORD1>Struct</KEYWORD1>
+
+			<KEYWORD1>Transient</KEYWORD1>
+			<KEYWORD1>Travel</KEYWORD1>
+
+			<KEYWORD1>Unreliable</KEYWORD1>
+			<KEYWORD1>Until</KEYWORD1>
+
+			<KEYWORD1>Var</KEYWORD1>
+
+			<KEYWORD1>While</KEYWORD1>
+			<KEYWORD1>Within</KEYWORD1>
+
+	<!-- literals and special function calls -->
+			<KEYWORD2>ArrayCount</KEYWORD2>
+			<KEYWORD2>AddItem</KEYWORD2>
+			<KEYWORD2>EnumCount</KEYWORD2>
+			<KEYWORD2>False</KEYWORD2>
+			<KEYWORD2>Find</KEYWORD2>
+			<KEYWORD2>Global</KEYWORD2>
+			<KEYWORD2>Insert</KEYWORD2>
+			<KEYWORD2>InsertItem</KEYWORD2>
+			<KEYWORD2>Length</KEYWORD2>
+			<KEYWORD2>New</KEYWORD2>
+			<KEYWORD2>None</KEYWORD2>
+			<KEYWORD2>Remove</KEYWORD2>
+			<KEYWORD2>RemoveItem</KEYWORD2>
+			<KEYWORD2>Rot</KEYWORD2>
+			<KEYWORD2>Self</KEYWORD2>
+			<KEYWORD2>Super</KEYWORD2>
+			<KEYWORD2>True</KEYWORD2>
+			<KEYWORD2>Vect</KEYWORD2>
+
+	<!-- built-in type names -->
+			<KEYWORD3>Bool</KEYWORD3>
+			<KEYWORD3>Byte</KEYWORD3>
+			<KEYWORD3>Float</KEYWORD3>
+			<KEYWORD3>Int</KEYWORD3>
+			<KEYWORD3>String</KEYWORD3>
+			<KEYWORD3>Pointer</KEYWORD3>
+			<KEYWORD3>Array</KEYWORD3>
+
+	<!-- UE3 property tags -->
+			<KEYWORD4>AllowAbstract</KEYWORD4>
+			<KEYWORD4>AutoComment</KEYWORD4>
+			<KEYWORD4>DisplayName</KEYWORD4>
+			<KEYWORD4>EditCondition</KEYWORD4>
+			<KEYWORD4>Tooltip</KEYWORD4>
+		</KEYWORDS>
+	</RULES>
+
+	<RULES IGNORE_CASE="TRUE" SET="DIRECTIVE">
+		<EOL_SPAN TYPE="COMMENT2">//</EOL_SPAN>
+
+		<!-- exec directives -->
+		<EOL_SPAN DELEGATE="EXEC_COMMAND" TYPE="KEYWORD1">exec</EOL_SPAN>
+		<EOL_SPAN DELEGATE="EXEC_COMMAND" TYPE="KEYWORD1">alwaysexec</EOL_SPAN>
+		<EOL_SPAN DELEGATE="EXEC_COMMAND" TYPE="KEYWORD1">forceexec</EOL_SPAN>
+		<!-- source include -->
+		<EOL_SPAN DELEGATE="EXEC_COMMAND" TYPE="KEYWORD1">include</EOL_SPAN>
+		<!-- execute command file -->
+		<EOL_SPAN DELEGATE="EXEC_COMMAND" TYPE="KEYWORD1">call</EOL_SPAN>
+		<EOL_SPAN DELEGATE="EXEC_COMMAND" TYPE="KEYWORD1">alwayscall</EOL_SPAN>
+
+		<!-- throw compiler error -->
+		<EOL_SPAN DELEGATE="IGNORED" TYPE="KEYWORD1">error</EOL_SPAN>
+
+		<!-- UCPP directives -->
+		<EOL_SPAN DELEGATE="MAIN" TYPE="KEYWORD1">ifdef</EOL_SPAN>
+		<EOL_SPAN DELEGATE="MAIN" TYPE="KEYWORD1">ifndef</EOL_SPAN>
+		<EOL_SPAN DELEGATE="MAIN" TYPE="KEYWORD1">if</EOL_SPAN>
+		<EOL_SPAN DELEGATE="MAIN" TYPE="KEYWORD1">elif</EOL_SPAN>
+		<EOL_SPAN DELEGATE="IGNORED" TYPE="KEYWORD1">else</EOL_SPAN>
+		<EOL_SPAN DELEGATE="IGNORED" TYPE="KEYWORD1">endif</EOL_SPAN>
+
+		<EOL_SPAN DELEGATE="MAIN" TYPE="KEYWORD1">define</EOL_SPAN>
+		<EOL_SPAN DELEGATE="MAIN" TYPE="KEYWORD1">undef</EOL_SPAN>
+		<EOL_SPAN DELEGATE="MAIN" TYPE="KEYWORD1">linenumber</EOL_SPAN>
+
+		<EOL_SPAN DELEGATE="PRAGMA" TYPE="KEYWORD1">pragma</EOL_SPAN>
+		<EOL_SPAN DELEGATE="PRAGMA" TYPE="KEYWORD1">ucpp</EOL_SPAN>
+	</RULES>
+
+	<RULES DEFAULT="COMMENT1" SET="COMMENT">
+		<IMPORT DELEGATE="EOLCOMMENT"/>
+		<SPAN DELEGATE="NESTEDCOMMENT1" TYPE="COMMENT4">
+			<BEGIN>/*</BEGIN>
+			<END>*/</END>
+		</SPAN>
+	</RULES>
+	<RULES DEFAULT="COMMENT3" SET="DOCCOMMENT">
+		<IMPORT DELEGATE="EOLCOMMENT"/>
+		<SPAN DELEGATE="COMMENT" TYPE="COMMENT1">
+			<BEGIN>/*</BEGIN>
+			<END>*/</END>
+		</SPAN>
+	</RULES>
+	<RULES DEFAULT="COMMENT4" SET="NESTEDCOMMENT1">
+		<IMPORT DELEGATE="EOLCOMMENT"/>
+		<SPAN DELEGATE="NESTEDCOMMENT2" TYPE="COMMENT2">
+			<BEGIN>/*</BEGIN>
+			<END>*/</END>
+		</SPAN>
+	</RULES>
+	<RULES DEFAULT="COMMENT2" SET="NESTEDCOMMENT2">
+		<IMPORT DELEGATE="EOLCOMMENT"/>
+		<SPAN DELEGATE="COMMENT" TYPE="COMMENT1">
+			<BEGIN>/*</BEGIN>
+			<END>*/</END>
+		</SPAN>
+	</RULES>
+	<RULES DEFAULT="COMMENT2" SET="EOLCOMMENT">
+		<!-- UE3 @tags in all kinds of comments -->
+		<SEQ_REGEXP AT_WORD_START="TRUE" HASH_CHAR="@" TYPE="LABEL">(?&lt;!\w)@\w+</SEQ_REGEXP>
+	</RULES>
+
+	<RULES DEFAULT="COMMENT1" SET="IGNORED">
+		<EOL_SPAN TYPE="COMMENT2">//</EOL_SPAN>
+	</RULES>
+
+	<RULES DEFAULT="MARKUP" SET="PRAGMA">
+		<!-- UCPP pragmas -->
+
+		<EOL_SPAN TYPE="COMMENT2">//</EOL_SPAN>
+
+		<KEYWORDS>
+			<KEYWORD1>ucpp</KEYWORD1>
+
+			<KEYWORD3>notice</KEYWORD3>
+			<KEYWORD3>rename</KEYWORD3>
+			<KEYWORD3>include</KEYWORD3>
+			<KEYWORD3>warning</KEYWORD3>
+			<KEYWORD3>config</KEYWORD3>
+
+			<LITERAL2>true</LITERAL2>
+			<LITERAL2>false</LITERAL2>
+			<LITERAL2>on</LITERAL2>
+			<LITERAL2>off</LITERAL2>
+		</KEYWORDS>
+	</RULES>
+
+	<RULES IGNORE_CASE="TRUE" SET="EXEC_COMMAND" NO_WORD_SEP="_\\.,+-&lt;&gt;/?^&amp;*">
+		<!-- exec directive markup -->
+
+		<EOL_SPAN TYPE="COMMENT2">//</EOL_SPAN>
+
+		<!-- quoted strings -->
+		<SPAN TYPE="LITERAL1" NO_LINE_BREAK="TRUE">
+			<BEGIN>"</BEGIN>
+			<END>"</END>
+		</SPAN>
+
+		<!-- numbers -->
+		<SEQ_REGEXP HASH_CHARS="+-0123456789" AT_WORD_START="TRUE" TYPE="DIGIT">([+-]|\b)[0-9][0-9a-f.x]*</SEQ_REGEXP>
+
+		<!-- parameters -->
+		<MARK_PREVIOUS MATCH_TYPE="OPERATOR" TYPE="MARKUP">=</MARK_PREVIOUS>
+
+		<!-- boolean values -->
+		<KEYWORDS>
+			<LITERAL2>true</LITERAL2>
+			<LITERAL2>false</LITERAL2>
+			<LITERAL2>yes</LITERAL2>
+			<LITERAL2>no</LITERAL2>
+			<LITERAL2>on</LITERAL2>
+			<LITERAL2>off</LITERAL2>
+		</KEYWORDS>
+	</RULES>
+
+	<RULES SET="DEFAULTS" IGNORE_CASE="TRUE">
+		<!-- defaultproperties and structdefaultproperties -->
+
+		<!--
+			highlight initial opening brace like final closing brace
+			(there are no others in defprops, so this shouldn't be a problem
+		-->
+		<SEQ TYPE="KEYWORD1">{</SEQ>
+
+		<!-- block comments -->
+		<SPAN TYPE="COMMENT1" DELEGATE="COMMENT">
+			<BEGIN>/*</BEGIN>
+			<END>*/</END>
+		</SPAN>
+
+		<!-- line comments -->
+		<EOL_SPAN TYPE="COMMENT2" DELEGATE="EOLCOMMENT">//</EOL_SPAN>
+
+		<!-- macro in braces -->
+		<SPAN TYPE="MARKUP" MATCH_TYPE="KEYWORD2" NO_LINE_BREAK="TRUE">
+			<BEGIN>`{</BEGIN>
+			<END>}</END>
+		</SPAN>
+		<!-- in-line macro -->
+		<MARK_FOLLOWING MATCH_TYPE="KEYWORD2" TYPE="MARKUP">`</MARK_FOLLOWING>
+
+		<!-- string literals -->
+		<SPAN TYPE="LITERAL1" NO_LINE_BREAK="TRUE" DELEGATE="STRING">
+			<BEGIN>"</BEGIN>
+			<END>"</END>
+		</SPAN>
+
+		<!-- name and object literals -->
+		<SPAN_REGEXP AT_WORD_START="TRUE" TYPE="LITERAL2" NO_LINE_BREAK="TRUE">
+			<BEGIN>\w*\s*'</BEGIN>
+			<END>'</END>
+		</SPAN_REGEXP>
+
+		<!-- subobjects -->
+		<EOL_SPAN_REGEXP HASH_CHAR="b" AT_WHITESPACE_END="TRUE" DELEGATE="BEGINOBJECT" MATCH_TYPE="KEYWORD1">begin\s+object\s*</EOL_SPAN_REGEXP>
+		<EOL_SPAN_REGEXP HASH_CHAR="e" AT_WHITESPACE_END="TRUE" MATCH_TYPE="KEYWORD1">end\s+object\s*</EOL_SPAN_REGEXP>
+
+		<!-- numbers -->
+		<SEQ_REGEXP HASH_CHARS="+-0123456789" TYPE="DIGIT">([+-]|\b)[0-9][0-9a-f.x]*</SEQ_REGEXP>
+
+		<!-- everything before "=", ".", "(" or "[" is a variable name -->
+		<MARK_PREVIOUS AT_WORD_START="TRUE" MATCH_TYPE="OPERATOR" TYPE="MARKUP">=</MARK_PREVIOUS>
+		<MARK_PREVIOUS AT_WORD_START="TRUE" MATCH_TYPE="OPERATOR" TYPE="MARKUP">.</MARK_PREVIOUS>
+		<MARK_PREVIOUS AT_WORD_START="TRUE" MATCH_TYPE="OPERATOR" TYPE="MARKUP">(</MARK_PREVIOUS>
+		<MARK_PREVIOUS AT_WORD_START="TRUE" MATCH_TYPE="OPERATOR" TYPE="MARKUP">[</MARK_PREVIOUS>
+
+		<!-- closing brackets -->
+		<SEQ TYPE="OPERATOR">]</SEQ>
+		<SEQ TYPE="OPERATOR">)</SEQ>
+
+		<!-- comma for dynarray and struct values -->
+		<SEQ TYPE="OPERATOR">,</SEQ>
+
+		<!-- variable names can be separated from "=" by whitespace, so highlight that case separately -->
+		<SEQ_REGEXP AT_WHITESPACE_END="TRUE" HASH_CHARS="abcdefghijklmnopqrstuvwxyz" TYPE="MARKUP">\w+</SEQ_REGEXP>
+
+		<KEYWORDS>
+			<!-- dynamic array operations -->
+			<KEYWORD1>Add</KEYWORD1>
+			<KEYWORD1>Empty</KEYWORD1>
+			<KEYWORD1>Remove</KEYWORD1>
+
+	<!-- literals -->
+			<KEYWORD2>False</KEYWORD2>
+			<KEYWORD2>None</KEYWORD2>
+			<KEYWORD2>True</KEYWORD2>
+
+		</KEYWORDS>
+	</RULES>
+
+	<RULES SET="BEGINOBJECT">
+		<!-- special highlighting for "Begin Object" lines -->
+
+		<!-- block comments -->
+		<SPAN TYPE="COMMENT1" DELEGATE="COMMENT" NO_LINE_BREAK="TRUE">
+			<BEGIN>/*</BEGIN>
+			<END>*/</END>
+		</SPAN>
+
+		<!-- line comments -->
+		<EOL_SPAN TYPE="COMMENT2" DELEGATE="EOLCOMMENT">//</EOL_SPAN>
+
+		<!-- unterminated block comment -->
+		<EOL_SPAN TYPE="INVALID">/*</EOL_SPAN>
+
+		<!-- macro in braces -->
+		<SPAN TYPE="MARKUP" MATCH_TYPE="KEYWORD2" NO_LINE_BREAK="TRUE">
+			<BEGIN>`{</BEGIN>
+			<END>}</END>
+		</SPAN>
+		<!-- in-line macro -->
+		<MARK_FOLLOWING MATCH_TYPE="KEYWORD2" TYPE="MARKUP">`</MARK_FOLLOWING>
+
+		<SEQ TYPE="OPERATOR">=</SEQ>
+
+		<KEYWORDS>
+			<KEYWORD1>Class</KEYWORD1>
+			<KEYWORD1>Name</KEYWORD1>
+			<KEYWORD1>LegacyClassName</KEYWORD1><!-- since UE3 -->
+		</KEYWORDS>
+
+	</RULES>
+
+	<RULES DEFAULT="LITERAL1" ESCAPE="\" HIGHLIGHT_DIGITS="FALSE" IGNORE_CASE="TRUE" SET="STRING">
+
+		<!-- macro in braces -->
+		<SPAN TYPE="MARKUP" MATCH_TYPE="KEYWORD2" NO_LINE_BREAK="TRUE">
+			<BEGIN>`{</BEGIN>
+			<END>}</END>
+		</SPAN>
+		<!-- in-line macro -->
+		<MARK_FOLLOWING MATCH_TYPE="KEYWORD2" TYPE="MARKUP">`</MARK_FOLLOWING>
+	</RULES>
+</MODE>

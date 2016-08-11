@@ -1,0 +1,110 @@
+<?xml version="1.0"?>
+<!DOCTYPE MODE SYSTEM "xmode.dtd">
+<MODE>
+	<PROPS>
+		<PROPERTY NAME="lineComment" VALUE="#" />
+	</PROPS>
+	<RULES IGNORE_CASE="TRUE" HIGHLIGHT_DIGITS="TRUE">
+		<!-- N.B., at line start only -->
+		<EOL_SPAN TYPE="COMMENT1" AT_WHITESPACE_END="TRUE">#</EOL_SPAN>
+		<EOL_SPAN TYPE="COMMENT1" AT_WHITESPACE_END="TRUE">;</EOL_SPAN>
+
+		<!-- Variables -->
+		<!-- String variables must end in $ -->
+		<MARK_PREVIOUS TYPE="KEYWORD2">$</MARK_PREVIOUS>
+		<!-- BUG: MARK_PREVIOUS only works if there's no intervening space
+		<MARK_PREVIOUS TYPE="KEYWORD2" MATCH_TYPE="OPERATOR">=</MARK_PREVIOUS>
+		-->
+		<!-- N.B., these are variable derefeences, not literals!!! -->
+		<!-- TODO: should highlight the :n notation differently -->
+		<SPAN TYPE="KEYWORD2">
+			<BEGIN>'</BEGIN><END>'</END></SPAN>
+
+		<!-- Literals -->
+		<SPAN TYPE="LITERAL1">
+			<BEGIN>"</BEGIN><END>"</END></SPAN>
+
+		<!-- Operators -->
+		<SEQ TYPE="OPERATOR">+</SEQ>
+		<SEQ TYPE="OPERATOR">-</SEQ>
+		<SEQ TYPE="OPERATOR">*</SEQ>
+		<SEQ TYPE="OPERATOR">/</SEQ>
+		<SEQ TYPE="OPERATOR">&gt;=</SEQ>
+		<SEQ TYPE="OPERATOR">&gt;</SEQ>
+		<SEQ TYPE="OPERATOR">&lt;=</SEQ>
+		<SEQ TYPE="OPERATOR">&lt;</SEQ>
+		<SEQ TYPE="OPERATOR">=</SEQ>
+		<!-- only at the beginning of a line, else is part of function name -->
+		<SEQ TYPE="OPERATOR" AT_WHITESPACE_END="TRUE">...</SEQ>
+
+		<!-- functions use FUNCTION. Is there any way to detect them? -->
+		<!-- Hack in some known ones, until we can figure out some rules -->
+		<SEQ TYPE="FUNCTION">Get start of selection</SEQ>
+		<SEQ TYPE="FUNCTION">Get end of selection</SEQ>
+		<SEQ TYPE="FUNCTION">Get selection length</SEQ>
+		<SEQ TYPE="FUNCTION">Select...</SEQ>
+		<SEQ TYPE="FUNCTION">Move cursor to...</SEQ>
+		<SEQ TYPE="FUNCTION">Get pitch</SEQ>
+		<SEQ TYPE="FUNCTION">Get formant...</SEQ>
+		<SEQ TYPE="FUNCTION">Get bandwidth...</SEQ>
+		<SEQ TYPE="FUNCTION">Get mean...</SEQ>
+		<SEQ TYPE="FUNCTION">Get standard deviation...</SEQ>
+
+		<KEYWORDS>
+			<KEYWORD1>if</KEYWORD1>
+			<KEYWORD1>then</KEYWORD1>
+			<KEYWORD1>elif</KEYWORD1>
+			<KEYWORD1>elsif</KEYWORD1>
+			<KEYWORD1>else</KEYWORD1>
+			<KEYWORD1>endif</KEYWORD1>
+			<KEYWORD1>for</KEYWORD1>
+			<KEYWORD1>from</KEYWORD1>
+			<KEYWORD1>to</KEYWORD1>
+			<KEYWORD1>endfor</KEYWORD1>
+			<KEYWORD1>repeat</KEYWORD1>
+			<KEYWORD1>until</KEYWORD1>
+			<KEYWORD1>while</KEYWORD1>
+			<KEYWORD1>endwhile</KEYWORD1>
+			<KEYWORD1>procedure</KEYWORD1>
+			<KEYWORD1>endproc</KEYWORD1>
+			<KEYWORD1>call</KEYWORD1>
+			<KEYWORD1>include</KEYWORD1>
+			<KEYWORD1>execute</KEYWORD1>
+			<KEYWORD1>form</KEYWORD1>
+			<!-- TODO: these should be DELEGATEed, and should introduce variables -->
+			<KEYWORD1>real</KEYWORD1> <!-- is followed by variable -->
+			<KEYWORD1>positive</KEYWORD1> <!-- is followed by variable -->
+			<KEYWORD1>integer</KEYWORD1> <!-- is followed by variable -->
+			<KEYWORD1>natural</KEYWORD1> <!-- is followed by variable -->
+			<KEYWORD1>word</KEYWORD1> <!-- is followed by variable -->
+			<KEYWORD1>sentence</KEYWORD1> <!-- is followed by variable -->
+			<KEYWORD1>text</KEYWORD1> <!-- is followed by variable -->
+			<KEYWORD1>boolean</KEYWORD1> <!-- is followed by variable -->
+			<KEYWORD1>choice</KEYWORD1> <!-- is followed by variable? -->
+			<KEYWORD1>button</KEYWORD1> <!-- is followed by variable? -->
+			<KEYWORD1>comment</KEYWORD1> <!-- is followed by literal text -->
+			<KEYWORD1>endform</KEYWORD1>
+			<KEYWORD1>exit</KEYWORD1> <!-- is followed by literal text and ''ed variables -->
+			<KEYWORD1>nowarn</KEYWORD1>
+			<KEYWORD1>noprogress</KEYWORD1>
+			<KEYWORD1>nocheck</KEYWORD1>
+			<KEYWORD1>select</KEYWORD1>
+			<LITERAL1>undefined</LITERAL1>
+			
+			<FUNCTION>sqrt</FUNCTION>
+			<FUNCTION>sin</FUNCTION>
+			<FUNCTION>pi</FUNCTION>
+			<FUNCTION>clearinfo</FUNCTION>
+			<FUNCTION>echo</FUNCTION> <!-- is followed by literal text and ''ed variables -->
+			<FUNCTION>print</FUNCTION> <!-- is followed by literal text and ''ed variables -->
+			<FUNCTION>printline</FUNCTION> <!-- is followed by literal text and ''ed variables -->
+			<FUNCTION>printtab</FUNCTION>
+			<FUNCTION>sendsocket</FUNCTION>
+			<FUNCTION>system_nocheck</FUNCTION>
+			<FUNCTION>system</FUNCTION>
+			<FUNCTION>stopwatch</FUNCTION>
+			<FUNCTION>beginPause</FUNCTION>
+			<FUNCTION>endPause</FUNCTION>
+		</KEYWORDS>
+	</RULES>
+</MODE>

@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+<!DOCTYPE MODE SYSTEM "xmode.dtd">
+<!--
+Add the next line to the catalog file:
+	<MODE NAME="Backus-Naur Form" FILE="bnf.xml" FILE_NAME_GLOB="*.{bnf}" />
+-->
+
+<MODE>
+	<PROPS>
+		<!-- Comments -->
+		<PROPERTY NAME="commentStart" VALUE="/*" />
+		<PROPERTY NAME="commentEnd" VALUE="*/" />
+		<PROPERTY NAME="lineComment" VALUE="//" />
+		
+		<!-- Auto indent -->
+		<PROPERTY NAME="indentOpenBrackets" VALUE="{" />
+		<PROPERTY NAME="indentCloseBrackets" VALUE="}" />
+		<PROPERTY NAME="lineUpClosingBracket" VALUE="true" />
+	</PROPS>
+	
+	<RULES IGNORE_CASE="TRUE">
+		
+		<SPAN TYPE="LITERAL1" NO_LINE_BREAK="TRUE">
+			<BEGIN>"</BEGIN>
+			<END>"</END>
+		</SPAN>
+		
+		<SPAN TYPE="LITERAL2" NO_LINE_BREAK="TRUE" DELEGATE="SPAN">
+			<BEGIN>[</BEGIN>
+			<END>]</END>
+		</SPAN>
+		
+		<!-- Comments -->
+		<SEQ TYPE="COMMENT1">/**/</SEQ>
+
+		<SPAN TYPE="COMMENT3">
+			<BEGIN>/**</BEGIN>
+			<END>**/</END>
+		</SPAN>
+
+		<SPAN TYPE="COMMENT1">
+			<BEGIN>/*</BEGIN>
+			<END>*/</END>
+		</SPAN>
+		
+		<EOL_SPAN TYPE="COMMENT2">//</EOL_SPAN>
+		
+		<MARK_PREVIOUS TYPE="FUNCTION" EXCLUDE_MATCH="FALSE">&lt;</MARK_PREVIOUS>
+		<SEQ TYPE="FUNCTION">&gt;</SEQ>
+		
+		<!-- This should only catch things like *FOO ::= ... -->
+		<MARK_FOLLOWING TYPE="MARKUP">*</MARK_FOLLOWING>
+		<SEQ TYPE="MARKUP">start</SEQ>
+		<SEQ TYPE="MARKUP">eof</SEQ>
+		
+		<SEQ TYPE="INVALID">...</SEQ> <!-- to know to go in and finish it -->
+		
+		<SEQ TYPE="OPERATOR">|</SEQ>
+		<SEQ TYPE="OPERATOR">,</SEQ>
+		<SEQ TYPE="OPERATOR">;</SEQ>
+		<SEQ TYPE="OPERATOR">!(</SEQ>
+		<SEQ TYPE="OPERATOR">(</SEQ>
+		<SEQ TYPE="OPERATOR">)*</SEQ>
+		<SEQ TYPE="OPERATOR">)+</SEQ>
+		<SEQ TYPE="OPERATOR">)?</SEQ>
+		<SEQ TYPE="OPERATOR">)</SEQ>
+		
+		<KEYWORDS>
+			<KEYWORD1>{</KEYWORD1>
+			<KEYWORD1>}</KEYWORD1>
+			<KEYWORD1>::=</KEYWORD1>
+			<KEYWORD1>::</KEYWORD1>
+			<KEYWORD1>.</KEYWORD1>
+			<KEYWORD1>&lt;-</KEYWORD1> <!-- not showing up because of `foo<>` -->
+		</KEYWORDS>
+		
+	</RULES>
+	
+	<RULES SET="SPAN" DEFAULT="LITERAL2">
+		<!-- Literal escapes -->
+		<SEQ TYPE="LITERAL2">\-</SEQ>
+		<SEQ TYPE="LITERAL2">\\</SEQ>
+		
+		<!-- Magical escapes -->
+		<SEQ_REGEXP HASH_CHAR="\" TYPE="KEYWORD1">\\.</SEQ_REGEXP>
+		
+		<!-- Character span operator -->
+		<SEQ TYPE="KEYWORD1">-</SEQ> <!-- Not OPERATOR in order to make it legible vs LITERAL2 -->
+	</RULES>
+</MODE>

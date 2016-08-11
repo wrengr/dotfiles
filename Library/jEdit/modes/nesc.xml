@@ -1,0 +1,263 @@
+<?xml version="1.0"?>
+<!DOCTYPE MODE SYSTEM "xmode.dtd">
+<!--
+Add the next line to the catalog file:
+	<MODE NAME="nesC" FILE="nesc.xml" FILE_NAME_GLOB="*.{nc}" />
+
+This was mostly cut and pasted from the c.xml since I'm not sure how to import all the C stuff and just add new keywords.
+-->
+
+<MODE>
+	<PROPS>
+		<PROPERTY NAME="commentStart" VALUE="/*" />
+		<PROPERTY NAME="commentEnd" VALUE="*/" />
+		<PROPERTY NAME="lineComment" VALUE="//" />
+		<PROPERTY NAME="wordBreakChars" VALUE=",+-=&lt;&gt;/?^&amp;*" />
+		
+		<!-- Auto indent -->
+		<PROPERTY NAME="indentOpenBrackets" VALUE="{" />
+		<PROPERTY NAME="indentCloseBrackets" VALUE="}" />
+		<PROPERTY NAME="indentNextLine"
+		VALUE="\s*(((if|while)\s*\(|else\s*|else\s+if\s*\(|for\s*\(.*\))[^{;]*)" />
+		<!-- set this to 'true' if you want to use GNU coding style -->
+		<PROPERTY NAME="doubleBracketIndent" VALUE="false" />
+		<PROPERTY NAME="lineUpClosingBracket" VALUE="true" />
+	</PROPS>
+	
+	<RULES ESCAPE="\"
+		IGNORE_CASE="FALSE"
+		HIGHLIGHT_DIGITS="TRUE"
+		DIGIT_RE="(0x[[:xdigit:]]+[lL]?|[[:digit:]]+(e[[:digit:]]*)?[lLdDfF]?)">
+		
+		<!-- Doxygen comment, Javadoc style -->
+		<SPAN TYPE="COMMENT3" DELEGATE="doxygen::DOXYGEN">
+			<BEGIN>/**</BEGIN>
+			<END>*/</END>
+		</SPAN>
+		
+		<!-- Doxygen comment, Qt style -->
+		<SPAN TYPE="COMMENT3" DELEGATE="doxygen::DOXYGEN">
+			<BEGIN>/*!</BEGIN>
+			<END>*/</END>
+		</SPAN>
+		
+		<!-- C style comment -->
+		<SPAN TYPE="COMMENT2">
+			<BEGIN>/*</BEGIN>
+			<END>*/</END>
+		</SPAN>
+		
+		<SPAN TYPE="LITERAL1" NO_LINE_BREAK="TRUE">
+			<BEGIN>"</BEGIN>
+			<END>"</END>
+		</SPAN>
+		<SPAN TYPE="LITERAL1" NO_LINE_BREAK="TRUE">
+			<BEGIN>'</BEGIN>
+			<END>'</END>
+		</SPAN>
+		
+		<!-- for nesC -->
+		<SEQ TYPE="KEYWORD1"> -&gt; </SEQ> <!-- the spaces are to distinguish from the struct accessor -->
+		<SEQ TYPE="OPERATOR">,</SEQ>
+		<SEQ TYPE="OPERATOR">.</SEQ>
+		<SEQ TYPE="KEYWORD1">;</SEQ>
+		
+		
+		<!-- preprocessor statements -->
+		<SEQ TYPE="KEYWORD2">##</SEQ>
+		<EOL_SPAN TYPE="KEYWORD2" DELEGATE="CPP">#</EOL_SPAN>
+		
+		<EOL_SPAN TYPE="COMMENT1">//</EOL_SPAN>
+		<SEQ TYPE="OPERATOR">=</SEQ>
+		<SEQ TYPE="OPERATOR">!</SEQ>
+		<SEQ TYPE="OPERATOR">&gt;=</SEQ>
+		<SEQ TYPE="OPERATOR">&lt;=</SEQ>
+		<SEQ TYPE="OPERATOR">+</SEQ>
+		<SEQ TYPE="OPERATOR">-</SEQ>
+		<SEQ TYPE="OPERATOR">/</SEQ>
+		
+		<SEQ TYPE="OPERATOR">*</SEQ>
+		<SEQ TYPE="OPERATOR">&gt;</SEQ>
+		<SEQ TYPE="OPERATOR">&lt;</SEQ>
+		<SEQ TYPE="OPERATOR">%</SEQ>
+		<SEQ TYPE="OPERATOR">&amp;</SEQ>
+		<SEQ TYPE="OPERATOR">|</SEQ>
+		<SEQ TYPE="OPERATOR">^</SEQ>
+		<SEQ TYPE="OPERATOR">~</SEQ>
+		<SEQ TYPE="OPERATOR">}</SEQ>
+		<SEQ TYPE="OPERATOR">{</SEQ>
+		<MARK_PREVIOUS AT_WHITESPACE_END="TRUE"
+			EXCLUDE_MATCH="TRUE"
+			TYPE="LABEL">:</MARK_PREVIOUS>
+		
+		<!-- Function calls -->
+		<MARK_PREVIOUS TYPE="FUNCTION" EXCLUDE_MATCH="TRUE">(</MARK_PREVIOUS>
+		
+		<KEYWORDS>
+			<KEYWORD3>char</KEYWORD3>
+			<KEYWORD3>double</KEYWORD3>
+			<KEYWORD3>enum</KEYWORD3>
+			<KEYWORD3>float</KEYWORD3>
+			<KEYWORD3>int</KEYWORD3>
+			<KEYWORD3>long</KEYWORD3>
+			<KEYWORD3>short</KEYWORD3>
+			<KEYWORD3>signed</KEYWORD3>
+			<KEYWORD3>struct</KEYWORD3>
+			<KEYWORD3>typedef</KEYWORD3>
+			<KEYWORD3>union</KEYWORD3>
+			<KEYWORD3>unsigned</KEYWORD3>
+			<KEYWORD3>void</KEYWORD3>
+			
+			<KEYWORD1>auto</KEYWORD1>
+			<KEYWORD1>const</KEYWORD1>
+			<KEYWORD1>extern</KEYWORD1>
+			<KEYWORD1>register</KEYWORD1>
+			<KEYWORD1>static</KEYWORD1>
+			<KEYWORD1>volatile</KEYWORD1>
+			
+			<KEYWORD1>break</KEYWORD1>
+			<KEYWORD1>case</KEYWORD1>
+			<KEYWORD1>continue</KEYWORD1>
+			<KEYWORD1>default</KEYWORD1>
+			<KEYWORD1>do</KEYWORD1>
+			<KEYWORD1>else</KEYWORD1>
+			<KEYWORD1>for</KEYWORD1>
+			<KEYWORD1>goto</KEYWORD1>
+			<KEYWORD1>if</KEYWORD1>
+			<KEYWORD1>return</KEYWORD1>
+			<KEYWORD1>sizeof</KEYWORD1>
+			<KEYWORD1>switch</KEYWORD1>
+			<KEYWORD1>while</KEYWORD1>
+			
+			<KEYWORD2>asm</KEYWORD2>
+			<KEYWORD2>asmlinkage</KEYWORD2>
+			<KEYWORD2>far</KEYWORD2>
+			<KEYWORD2>huge</KEYWORD2>
+			<KEYWORD2>inline</KEYWORD2>
+			<KEYWORD2>near</KEYWORD2>
+			<KEYWORD2>pascal</KEYWORD2>
+			
+			<LITERAL2>true</LITERAL2>
+			<LITERAL2>false</LITERAL2>
+			<LITERAL2>NULL</LITERAL2>
+			
+			<!-- nesC stuff -->
+			<KEYWORD1>generic</KEYWORD1>
+			<KEYWORD1>configuration</KEYWORD1>
+			<KEYWORD1>module</KEYWORD1>
+			<KEYWORD1>implementation</KEYWORD1>
+			
+			<FUNCTION>call</FUNCTION>
+			<KEYWORD1>command</KEYWORD1>
+			<FUNCTION>signal</FUNCTION>
+			<KEYWORD1>event</KEYWORD1>
+			<FUNCTION>post</FUNCTION>
+			<KEYWORD1>task</KEYWORD1>
+			
+			<KEYWORD1>components</KEYWORD1>
+			<KEYWORD1>uses</KEYWORD1>
+			<KEYWORD1>provides</KEYWORD1>
+			<KEYWORD1>interface</KEYWORD1>
+			<KEYWORD1>new</KEYWORD1>
+			<KEYWORD1>as</KEYWORD1>
+			<KEYWORD1>async</KEYWORD1>
+			<KEYWORD1>atomic</KEYWORD1>
+			
+			<KEYWORD3>bool</KEYWORD3>
+			<KEYWORD3>nx_struct</KEYWORD3>
+			<KEYWORD3>message_t</KEYWORD3>
+			<KEYWORD3>am_id_t</KEYWORD3>
+			<KEYWORD3>am_addr_t</KEYWORD3>
+			<KEYWORD3>error_t</KEYWORD3>
+			<KEYWORD3>int8_t</KEYWORD3>
+			<KEYWORD3>int16_t</KEYWORD3>
+			<KEYWORD3>int32_t</KEYWORD3>
+			<KEYWORD3>int64_t</KEYWORD3>
+			<KEYWORD3>uint8_t</KEYWORD3>
+			<KEYWORD3>uint16_t</KEYWORD3>
+			<KEYWORD3>uint32_t</KEYWORD3>
+			<KEYWORD3>uint64_t</KEYWORD3>
+			<KEYWORD3>nx_int8_t</KEYWORD3>
+			<KEYWORD3>nx_int16_t</KEYWORD3>
+			<KEYWORD3>nx_int32_t</KEYWORD3>
+			<KEYWORD3>nx_int64_t</KEYWORD3>
+			<KEYWORD3>nx_uint8_t</KEYWORD3>
+			<KEYWORD3>nx_uint16_t</KEYWORD3>
+			<KEYWORD3>nx_uint32_t</KEYWORD3>
+			<KEYWORD3>nx_uint64_t</KEYWORD3>
+			<KEYWORD3>nxle_int8_t</KEYWORD3>
+			<KEYWORD3>nxle_int16_t</KEYWORD3>
+			<KEYWORD3>nxle_int32_t</KEYWORD3>
+			<KEYWORD3>nxle_int64_t</KEYWORD3>
+			<KEYWORD3>nxle_uint8_t</KEYWORD3>
+			<KEYWORD3>nxle_uint16_t</KEYWORD3>
+			<KEYWORD3>nxle_uint32_t</KEYWORD3>
+			<KEYWORD3>nxle_uint64_t</KEYWORD3>
+			
+			<MARKUP>dbg</MARKUP>
+			<MARKUP>dbg_clear</MARKUP>
+			<MARKUP>dbgerror</MARKUP>
+			<MARKUP>dbgerror_clear</MARKUP>
+			
+			<LITERAL2>TOS_NODE_ID</LITERAL2>
+			<LITERAL2>TRUE</LITERAL2>
+			<LITERAL2>FALSE</LITERAL2>
+			
+			<LITERAL2>SUCCESS</LITERAL2>
+			<LITERAL2>FAIL</LITERAL2>
+			<LITERAL2>ESIZE</LITERAL2>
+			<LITERAL2>ECANCEL</LITERAL2>
+			<LITERAL2>EOFF</LITERAL2>
+			<LITERAL2>EBUSY</LITERAL2>
+			<LITERAL2>EINVAL</LITERAL2>
+			<LITERAL2>ERETRY</LITERAL2>
+			<LITERAL2>ERESERVE</LITERAL2>
+			<LITERAL2>EALREADY</LITERAL2>
+		</KEYWORDS>
+	</RULES>
+
+	<!-- This is for the preprocessor, not C++ -->
+	<RULES SET="CPP" DEFAULT="KEYWORD2" IGNORE_CASE="FALSE"
+		HIGHLIGHT_DIGITS="TRUE"
+		DIGIT_RE="(0x[[:xdigit:]]+[lL]?|[[:digit:]]+(e[[:digit:]]*)?[lLdDfF]?)">
+		<!-- C style comment -->
+		<SPAN TYPE="COMMENT2">
+			<BEGIN>/*</BEGIN>
+			<END>*/</END>
+		</SPAN>
+		<!-- C++ style comment -->
+		<EOL_SPAN TYPE="COMMENT1">//</EOL_SPAN>
+		
+		<!-- this is a hack so that #include <net/if.h> does not get
+		the if highlighted -->
+		<EOL_SPAN TYPE="MARKUP" DELEGATE="INCLUDE">include</EOL_SPAN>
+		
+		<!-- Directives -->
+		<KEYWORDS>
+			<MARKUP>assert</MARKUP>
+			<MARKUP>define</MARKUP>
+			<MARKUP>assert</MARKUP>
+			<MARKUP>define</MARKUP>
+			<MARKUP>elif</MARKUP>
+			<MARKUP>else</MARKUP>
+			<MARKUP>endif</MARKUP>
+			<MARKUP>error</MARKUP>
+			<MARKUP>ident</MARKUP>
+			<MARKUP>if</MARKUP>
+			<MARKUP>ifdef</MARKUP>
+			<MARKUP>ifndef</MARKUP>
+			<MARKUP>import</MARKUP>
+			<MARKUP>include</MARKUP>
+			<MARKUP>include_next</MARKUP>
+			<MARKUP>line</MARKUP>
+			<MARKUP>pragma</MARKUP>
+			<MARKUP>sccs</MARKUP>
+			<MARKUP>unassert</MARKUP>
+			<MARKUP>undef</MARKUP>
+			<MARKUP>warning</MARKUP>
+		</KEYWORDS>
+	</RULES>
+
+	<RULES SET="INCLUDE" DEFAULT="KEYWORD2" />
+
+</MODE>

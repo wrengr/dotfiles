@@ -1,0 +1,197 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE MODE SYSTEM "xmode.dtd">
+
+<!-- This version modified from 4.3pre13 in order to fix new bugs over 4.2final. wren@cpan.org -->
+
+<MODE>
+	<PROPS>
+		<PROPERTY NAME="lineComment" VALUE="#" />
+		<PROPERTY NAME="indentOpenBrackets" VALUE="{" />
+		<PROPERTY NAME="indentCloseBrackets" VALUE="}" />
+	</PROPS>
+	<RULES IGNORE_CASE="TRUE" HIGHLIGHT_DIGITS="TRUE">
+		<!-- Comments -->
+		<EOL_SPAN TYPE="COMMENT2">#!</EOL_SPAN>
+		<EOL_SPAN TYPE="COMMENT1">#</EOL_SPAN>
+
+		<!-- Variables -->
+		<SPAN TYPE="KEYWORD2" NO_LINE_BREAK="TRUE">
+			<BEGIN>${</BEGIN><END>}</END></SPAN>
+		
+		<SEQ TYPE="KEYWORD2">$#</SEQ>
+		<SEQ TYPE="KEYWORD2">$?</SEQ>
+		<SEQ TYPE="KEYWORD2">$*</SEQ>
+		<SEQ TYPE="KEYWORD2">$@</SEQ>
+		<SEQ TYPE="KEYWORD2">$$</SEQ>
+		<SEQ TYPE="KEYWORD2">$&lt;</SEQ>
+		<MARK_FOLLOWING TYPE="KEYWORD2">$</MARK_FOLLOWING>
+		
+		<MARK_PREVIOUS TYPE="KEYWORD2" MATCH_TYPE="OPERATOR">=</MARK_PREVIOUS>
+
+		<!-- exec quotes -->
+		<SPAN TYPE="KEYWORD3" DELEGATE="EXEC">
+			<BEGIN>$((</BEGIN><END>))</END></SPAN>
+		<SPAN TYPE="KEYWORD3" DELEGATE="EXEC">
+			<BEGIN>$(</BEGIN><END>)</END></SPAN>
+		<SPAN TYPE="KEYWORD3" DELEGATE="EXEC">
+			<BEGIN>$[</BEGIN><END>]</END></SPAN>
+		<SPAN TYPE="KEYWORD3" DELEGATE="EXEC">
+			<BEGIN>`</BEGIN><END>`</END></SPAN>
+
+		<!-- Literals -->
+		<SPAN TYPE="LITERAL1" DELEGATE="LITERAL">
+			<BEGIN>"</BEGIN><END>"</END></SPAN>
+		<SEQ TYPE="LITERAL1">\'</SEQ>
+		<SPAN TYPE="LITERAL1">
+			<BEGIN>'</BEGIN><END>'</END></SPAN>
+
+		<!-- Readins -->
+		<SPAN_REGEXP HASH_CHAR="&lt;&lt;" TYPE="LITERAL1" DELEGATE="LITERAL">
+			<BEGIN><![CDATA[<<[\p{Space}'"]*([\p{Alnum}_]+)[\p{Space}'"]*]]></BEGIN>
+			<END>$1</END>
+		</SPAN_REGEXP>
+
+		<!-- Operators -->
+		<SEQ TYPE="OPERATOR">|</SEQ>
+		<SEQ TYPE="OPERATOR">&amp;</SEQ>
+		<SEQ TYPE="OPERATOR">&gt;</SEQ>
+		<SEQ TYPE="OPERATOR">&lt;</SEQ>
+		<SEQ TYPE="OPERATOR">}</SEQ>
+		<SEQ TYPE="OPERATOR">{</SEQ>
+		<SEQ TYPE="OPERATOR">;</SEQ>
+
+		<!-- %jobnumber -->
+		<MARK_FOLLOWING TYPE="KEYWORD2">%</MARK_FOLLOWING>
+
+		<!-- functions -->
+		<MARK_PREVIOUS TYPE="FUNCTION" MATCH_TYPE="OPERATOR">(</MARK_PREVIOUS>
+		<SEQ TYPE="OPERATOR">)</SEQ>
+
+		<!-- some of these should be marked OPERATOR -->
+		<!-- <SEQ TYPE="NULL">)</SEQ>
+		<SEQ TYPE="NULL">(</SEQ>
+		<SEQ TYPE="NULL">=</SEQ>
+		<SEQ TYPE="NULL">!</SEQ>
+		<SEQ TYPE="NULL">&gt;=</SEQ>
+		<SEQ TYPE="NULL">&lt;=</SEQ>
+		<SEQ TYPE="NULL">+</SEQ>
+		<SEQ TYPE="NULL">-</SEQ>
+		<SEQ TYPE="NULL">/</SEQ>
+		<SEQ TYPE="NULL">*</SEQ>
+		<SEQ TYPE="NULL">^</SEQ>
+		<SEQ TYPE="NULL">~</SEQ>
+		<SEQ TYPE="NULL">.</SEQ
+		<SEQ TYPE="NULL">,</SEQ>
+		<SEQ TYPE="NULL">]</SEQ>
+		<SEQ TYPE="NULL">[</SEQ>
+		<SEQ TYPE="NULL">?</SEQ>
+		<SEQ TYPE="NULL">:</SEQ> -->
+
+		<KEYWORDS>
+			<KEYWORD1>if</KEYWORD1>
+			<KEYWORD1>then</KEYWORD1>
+			<KEYWORD1>elif</KEYWORD1>
+			<KEYWORD1>else</KEYWORD1>
+			<KEYWORD1>fi</KEYWORD1>
+			<KEYWORD1>case</KEYWORD1>
+			<KEYWORD1>in</KEYWORD1>
+			<OPERATOR>;;</OPERATOR>
+			<OPERATOR>:;</OPERATOR> <!-- The nop -->
+			<KEYWORD1>esac</KEYWORD1>
+			<KEYWORD1>while</KEYWORD1>
+			<KEYWORD1>for</KEYWORD1>
+			<KEYWORD1>do</KEYWORD1>
+			<KEYWORD1>done</KEYWORD1>
+			<KEYWORD1>continue</KEYWORD1>
+
+			<KEYWORD1>local</KEYWORD1> <!-- BUG: should only be at word start. This is prolly true for everything in here -->
+			<KEYWORD1>return</KEYWORD1>
+			<KEYWORD1>alias</KEYWORD1>
+			<KEYWORD1>export</KEYWORD1>
+			<KEYWORD1>function</KEYWORD1>
+			<KEYWORD1>source</KEYWORD1>
+			<KEYWORD1>unset</KEYWORD1>
+			<KEYWORD1>shift</KEYWORD1>
+			<KEYWORD1>exit</KEYWORD1>
+			<KEYWORD1>exec</KEYWORD1>
+			<KEYWORD1>eval</KEYWORD1>
+			<KEYWORD1>set</KEYWORD1>
+			<KEYWORD1>typeset</KEYWORD1>
+		</KEYWORDS>
+	</RULES>
+
+	
+	
+	<RULES SET="LITERAL" DEFAULT="LITERAL1" ESCAPE="\">
+		<!-- Variables -->
+		<SPAN TYPE="KEYWORD2" NO_LINE_BREAK="TRUE">
+			<BEGIN>${</BEGIN><END>}</END></SPAN>
+		
+		<SEQ TYPE="KEYWORD2">$#</SEQ>
+		<SEQ TYPE="KEYWORD2">$?</SEQ>
+		<SEQ TYPE="KEYWORD2">$*</SEQ>
+		<SEQ TYPE="KEYWORD2">$@</SEQ>
+		<SEQ TYPE="KEYWORD2">$$</SEQ>
+		<SEQ TYPE="KEYWORD2">$&lt;</SEQ>
+		<MARK_FOLLOWING TYPE="KEYWORD2">$</MARK_FOLLOWING>
+		
+		<MARK_PREVIOUS TYPE="KEYWORD2" MATCH_TYPE="OPERATOR">=</MARK_PREVIOUS>
+
+		<!-- exec quotes -->
+		<SPAN TYPE="KEYWORD3" DELEGATE="EXEC">
+			<BEGIN>$((</BEGIN><END>))</END></SPAN>
+		<SPAN TYPE="KEYWORD3" DELEGATE="EXEC">
+			<BEGIN>$(</BEGIN><END>)</END></SPAN>
+		<SPAN TYPE="KEYWORD3" DELEGATE="EXEC">
+			<BEGIN>$[</BEGIN><END>]</END></SPAN>
+		<SPAN TYPE="KEYWORD3" DELEGATE="EXEC">
+			<BEGIN>`</BEGIN><END>`</END></SPAN>
+	</RULES>
+
+	
+	
+	
+	<!-- Other than the different default, this should be identical to MAIN-->
+	<RULES SET="EXEC" DEFAULT="KEYWORD3" ESCAPE="\">
+		<!-- Variables -->
+		<SPAN TYPE="KEYWORD2" NO_LINE_BREAK="TRUE">
+			<BEGIN>${</BEGIN><END>}</END></SPAN>
+		
+		<SEQ TYPE="KEYWORD2">$#</SEQ>
+		<SEQ TYPE="KEYWORD2">$?</SEQ>
+		<SEQ TYPE="KEYWORD2">$*</SEQ>
+		<SEQ TYPE="KEYWORD2">$@</SEQ>
+		<SEQ TYPE="KEYWORD2">$$</SEQ>
+		<SEQ TYPE="KEYWORD2">$&lt;</SEQ>
+		<MARK_FOLLOWING TYPE="KEYWORD2">$</MARK_FOLLOWING>
+		
+		<MARK_PREVIOUS TYPE="KEYWORD2" MATCH_TYPE="OPERATOR">=</MARK_PREVIOUS>
+
+		<!-- exec quotes -->
+		<SPAN TYPE="KEYWORD3" DELEGATE="EXEC">
+			<BEGIN>$((</BEGIN><END>))</END></SPAN>
+		<SPAN TYPE="KEYWORD3" DELEGATE="EXEC">
+			<BEGIN>$(</BEGIN><END>)</END></SPAN>
+		<SPAN TYPE="KEYWORD3" DELEGATE="EXEC">
+			<BEGIN>$[</BEGIN><END>]</END></SPAN>
+		<SPAN TYPE="KEYWORD3" DELEGATE="EXEC">
+			<BEGIN>`</BEGIN><END>`</END></SPAN>
+
+		<!-- Literals -->
+		<SPAN TYPE="LITERAL1" DELEGATE="LITERAL">
+			<BEGIN>"</BEGIN><END>"</END></SPAN>
+		<SEQ TYPE="LITERAL1">\'</SEQ>
+		<SPAN TYPE="LITERAL1">
+			<BEGIN>'</BEGIN><END>'</END></SPAN>
+
+		<!-- Operators -->
+		<SEQ TYPE="OPERATOR">|</SEQ>
+		<SEQ TYPE="OPERATOR">&amp;</SEQ>
+		<SEQ TYPE="OPERATOR">&gt;</SEQ>
+		<SEQ TYPE="OPERATOR">&lt;</SEQ>
+		<SEQ TYPE="OPERATOR">}</SEQ>
+		<SEQ TYPE="OPERATOR">{</SEQ>
+		<SEQ TYPE="OPERATOR">;</SEQ>
+	</RULES>
+</MODE>

@@ -1,0 +1,434 @@
+<?xml version="1.0"?>
+<!DOCTYPE MODE SYSTEM "xmode.dtd">
+<!--
+	This is a Coq mode for jEdit 4.3
+	http://coq.inria.fr/doc/Reference-Manual003.html
+-->
+<MODE>
+	<PROPS>
+		<PROPERTY NAME="commentStart" VALUE="(*" />
+		<PROPERTY NAME="commentEnd"   VALUE="*)" />
+		<PROPERTY NAME="folding"      VALUE="indent" /> <!--sw33t!-->
+		<PROPERTY NAME="noWordSep"    VALUE="_'" /> <!-- does it help? -->
+		
+		<!-- Because I like 4. Who knows what the community says? -->
+		<PROPERTY NAME="tabSize"      VALUE="4" />
+		<PROPERTY NAME="indentSize"   VALUE="4" />
+		<PROPERTY NAME="noTabs"       VALUE="TRUE" /> <!-- make them soft-->
+	</PROPS>
+	
+	<!-- BUG: those aren't Coq digits -->
+	<RULES IGNORE_CASE="FALSE" ESCAPE="\"
+		HIGHLIGHT_DIGITS="TRUE"  DIGIT_RE="((0|[1-9]\d*)(\.[0-9]+)?([eE][+-]?[0-9]+)?|0[xX]\p{XDigit}+|0[oO][0-7]+)">
+		
+		<!-- Pragmas, comments, strings, and their ilk -->
+		<SPAN TYPE="COMMENT3" DELEGATE="comment1"><BEGIN>(*</BEGIN><END>*)</END></SPAN>
+		<SPAN TYPE="LITERAL1"
+			NO_LINE_BREAK="TRUE"><BEGIN>"</BEGIN><END>"</END></SPAN>
+		
+		<SPAN AT_WHITESPACE_END="TRUE" MATCH_TYPE="KEYWORD1">
+			<BEGIN>Add LoadPath</BEGIN><END>.</END></SPAN> <!-- BUG: can have string literals embedded -->
+		<SPAN AT_WHITESPACE_END="TRUE" MATCH_TYPE="KEYWORD1">
+			<BEGIN>Set Implicit</BEGIN><END>.</END></SPAN>
+		<SPAN AT_WHITESPACE_END="TRUE" MATCH_TYPE="KEYWORD1">
+			<BEGIN>Implicit Arguments</BEGIN><END>.</END></SPAN>
+		<SPAN AT_WHITESPACE_END="TRUE" MATCH_TYPE="KEYWORD1">
+			<BEGIN>Require Import</BEGIN><END>.</END></SPAN> <!-- BUG: dot-delimited modules -->
+		<SPAN AT_WHITESPACE_END="TRUE" MATCH_TYPE="KEYWORD1">
+			<BEGIN>Require Export</BEGIN><END>.</END></SPAN> <!-- BUG: dot-delimited modules -->
+		<SPAN AT_WHITESPACE_END="TRUE" MATCH_TYPE="KEYWORD1" TYPE="FUNCTION">
+			<BEGIN>Hint Constructors</BEGIN><END>.</END></SPAN>
+		<SPAN AT_WHITESPACE_END="TRUE" MATCH_TYPE="KEYWORD1" TYPE="FUNCTION">
+			<BEGIN>Hint Unfold</BEGIN><END>.</END></SPAN>
+		<SPAN AT_WHITESPACE_END="TRUE" MATCH_TYPE="KEYWORD1" TYPE="FUNCTION">
+			<BEGIN>Hint Transparent</BEGIN><END>.</END></SPAN>
+		<SPAN AT_WHITESPACE_END="TRUE" MATCH_TYPE="KEYWORD1" TYPE="FUNCTION">
+			<BEGIN>Hint Immediate</BEGIN><END>.</END></SPAN>
+		<SPAN AT_WHITESPACE_END="TRUE" MATCH_TYPE="KEYWORD1" TYPE="FUNCTION">
+			<BEGIN>Hint Resolve</BEGIN><END>.</END></SPAN> <!-- BUG: only until ":" or "." -->
+		<SPAN AT_WHITESPACE_END="TRUE" MATCH_TYPE="KEYWORD1" TYPE="FUNCTION">
+			<BEGIN>Hint Rewrite</BEGIN><END>.</END></SPAN>
+		<SPAN AT_WHITESPACE_END="TRUE" MATCH_TYPE="KEYWORD1" DELEGATE="tactics">
+			<BEGIN>Ltac</BEGIN><END>.</END></SPAN> <!-- TODO: next-word=FUNCTION -->
+		<SPAN AT_WHITESPACE_END="TRUE" MATCH_TYPE="KEYWORD1" DELEGATE="MAIN">
+			<BEGIN>Tactic Notation</BEGIN><END>.</END></SPAN>
+		<SPAN AT_WHITESPACE_END="TRUE" MATCH_TYPE="KEYWORD1">
+			<BEGIN>Create HintDb</BEGIN><END>.</END></SPAN>
+
+		<SEQ TYPE="KEYWORD1" AT_WORD_START="TRUE">Hint Extern</SEQ>
+		<SEQ TYPE="KEYWORD1" AT_WORD_START="TRUE">Module Import</SEQ>
+		<SEQ TYPE="KEYWORD1" AT_WORD_START="TRUE">Declare Module</SEQ>
+		<SEQ TYPE="KEYWORD1" AT_WORD_START="TRUE">Module Export</SEQ>
+		<SEQ TYPE="KEYWORD1" AT_WORD_START="TRUE">Implicit Types</SEQ>
+		<SEQ TYPE="KEYWORD1" AT_WORD_START="TRUE">Implicit Type</SEQ>
+		<SEQ TYPE="KEYWORD1" AT_WORD_START="TRUE">Delimit Scope</SEQ>
+		<SEQ TYPE="KEYWORD1" AT_WORD_START="TRUE">Bind Scope</SEQ>
+		<SEQ TYPE="KEYWORD1" AT_WORD_START="TRUE">Open Scope</SEQ>
+		
+		<!-- TODO: handle these properly -->
+		<SEQ TYPE="KEYWORD1" AT_WORD_START="TRUE">Add Parametric Relation</SEQ>
+		
+		
+		<SEQ_REGEXP HASH_CHAR="@" TYPE="FUNCTION">@(?:#|\w)+</SEQ_REGEXP>
+		
+		<!-- Special tokens. -->
+		<SEQ TYPE="OPERATOR">!</SEQ>
+		<SEQ TYPE="OPERATOR">%</SEQ>
+		<SEQ TYPE="LITERAL2">&amp;&amp;</SEQ>
+		<SEQ TYPE="OPERATOR">&amp;</SEQ>
+		<SEQ TYPE="OPERATOR">()</SEQ>
+		<!-- Try to detect function applications -->
+		<!-- BUG: MARK_FOLLOWING doesn't treat ' nor . as letters -->
+		<!-- N.B. the EXCLUDE_MATCH="TRUE" from 4.3pre16 and prior is called MATCH_TYPE="CONTEXT" in 4.3final and subsequent. EXCLUDE_MATCH="FALSE" is now called MATCH_TYPE="RULE" -->
+		<MARK_FOLLOWING TYPE="FUNCTION" MATCH_TYPE="CONTEXT">(</MARK_FOLLOWING>
+		<SEQ TYPE="NULL">(</SEQ>
+		<SEQ TYPE="NULL">)</SEQ>
+		<SEQ TYPE="LITERAL2">*</SEQ>
+		<SEQ TYPE="OPERATOR">++</SEQ>
+		<SEQ TYPE="LITERAL2">+</SEQ>
+		<SEQ TYPE="OPERATOR">,</SEQ>
+		<SEQ TYPE="OPERATOR">-&gt;</SEQ>
+		<SEQ TYPE="LITERAL2">-</SEQ>
+		<SEQ TYPE="OPERATOR">.(</SEQ>
+		<SEQ TYPE="OPERATOR">..</SEQ>
+		<SEQ TYPE="OPERATOR">.</SEQ>
+		<SEQ TYPE="LITERAL2">/\</SEQ>
+		<SEQ TYPE="LITERAL2">/</SEQ>
+		<SEQ TYPE="LITERAL2">::</SEQ>
+		<SEQ TYPE="OPERATOR">:&lt;</SEQ>
+		<SEQ TYPE="OPERATOR">:=</SEQ>
+		<SEQ TYPE="OPERATOR">:&gt;</SEQ>
+		<SEQ TYPE="OPERATOR">:</SEQ>
+		<SEQ TYPE="OPERATOR">;</SEQ>
+		<SEQ TYPE="LITERAL2">&lt;-&gt;</SEQ>
+		<SEQ TYPE="OPERATOR">&lt;-</SEQ>
+		<SEQ TYPE="OPERATOR">&lt;:</SEQ>
+		<SEQ TYPE="LITERAL2">&lt;=</SEQ>
+		<SEQ TYPE="LITERAL2">&lt;&gt;</SEQ>
+		<SEQ TYPE="LITERAL2">&lt;</SEQ>
+		<SEQ TYPE="OPERATOR">=&gt;</SEQ>
+		<SEQ TYPE="OPERATOR">=_D</SEQ>
+		<SEQ TYPE="LITERAL2">=</SEQ>
+		<SEQ TYPE="OPERATOR">&gt;-&gt;</SEQ>
+		<SEQ TYPE="LITERAL2">&gt;=</SEQ>
+		<SEQ TYPE="LITERAL2">&gt;</SEQ>
+		<SEQ TYPE="LITERAL2">?=</SEQ>
+		<SEQ TYPE="OPERATOR">?</SEQ>
+		<SEQ TYPE="OPERATOR">@</SEQ>
+		<SEQ TYPE="OPERATOR">[</SEQ>
+		<SEQ TYPE="LITERAL2">\/</SEQ>
+		<SEQ TYPE="OPERATOR">]</SEQ>
+		<SEQ TYPE="LITERAL2">^</SEQ>
+		<SEQ TYPE="OPERATOR">{</SEQ>
+		<SEQ TYPE="OPERATOR">|-</SEQ>
+		<SEQ TYPE="LITERAL2">||</SEQ>
+		<SEQ TYPE="OPERATOR">|</SEQ>
+		<SEQ TYPE="OPERATOR">}</SEQ>
+		<SEQ TYPE="LITERAL2">~</SEQ>
+		
+		<!-- syntactic contexts -->
+		<!-- BUG: these pick up uses as a non-keyword, i.e. within identifiers -->
+		<!-- BUG: lines following "Lemma" should also delegate, even if no "Proof." line -->
+		<SEQ TYPE="KEYWORD1" AT_WORD_START="TRUE" DELEGATE="tactics">Proof.</SEQ>
+		<SEQ TYPE="OPERATOR" AT_WORD_START="TRUE" DELEGATE="lambda">fun </SEQ> <!-- N.B., that space is essential -->
+			
+		<!-- "
+			Identifiers are sequences of letters [[incl. unicode-letter and unicode-id-part]], digits, _ and ', that do not start with a digit or ' [[or unicode-id-part]].
+		"
+		<SEQ_REGEXP
+			AT_WORD_START="TRUE" TYPE="LITERAL2"
+			HASH_CHARS="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+			>[A-Z][a-zA-Z0-9_]*</SEQ_REGEXP>
+		-->
+		
+		<KEYWORDS>
+			<LITERAL2>nil</LITERAL2>
+			<LITERAL2>True</LITERAL2>
+			<LITERAL2>False</LITERAL2>
+		
+			<!-- Keywords proper. -->
+			<KEYWORD1>_</KEYWORD1>
+			<KEYWORD1>as</KEYWORD1>
+			<KEYWORD1>at</KEYWORD1>
+			<KEYWORD1>cofix</KEYWORD1>
+			<KEYWORD1>else</KEYWORD1>
+			<KEYWORD1>end</KEYWORD1>
+			<KEYWORD1>exists</KEYWORD1>
+			<KEYWORD1>exists2</KEYWORD1>
+			<KEYWORD1>fix</KEYWORD1>
+			<KEYWORD1>for</KEYWORD1>
+			<KEYWORD1>forall</KEYWORD1> <!-- TODO: move to only type context -->
+			<KEYWORD1>if</KEYWORD1>
+			<KEYWORD1>IF</KEYWORD1>
+			<KEYWORD1>in</KEYWORD1>
+			<KEYWORD1>let</KEYWORD1>
+			<KEYWORD1>match</KEYWORD1>
+			<LITERAL2>mod</LITERAL2>
+			<KEYWORD2>Prop</KEYWORD2>
+			<KEYWORD1>return</KEYWORD1>
+			<KEYWORD2>Set</KEYWORD2>
+			<KEYWORD1>then</KEYWORD1>
+			<KEYWORD2>Type</KEYWORD2>
+			<KEYWORD1>using</KEYWORD1>
+			<KEYWORD1>where</KEYWORD1>
+			<KEYWORD1>with</KEYWORD1>
+			
+			<!-- Definitions etc. -->
+			<!-- TODO: next-word=FUNCTION -->
+			<KEYWORD1>Theorem</KEYWORD1>
+				<KEYWORD1>Lemma</KEYWORD1>
+				<KEYWORD1>Remark</KEYWORD1>
+				<KEYWORD1>Fact</KEYWORD1>
+				<KEYWORD1>Corollary</KEYWORD1>
+				<KEYWORD1>Proposition</KEYWORD1>
+			<KEYWORD1>Axiom</KEYWORD1>
+				<KEYWORD1>Conjecture</KEYWORD1>
+				<KEYWORD1>Parameter</KEYWORD1>
+				<KEYWORD1>Parameters</KEYWORD1>
+			<KEYWORD1>Variable</KEYWORD1>
+				<KEYWORD1>Variables</KEYWORD1>
+				<KEYWORD1>Hypothesis</KEYWORD1>
+				<KEYWORD1>Hypotheses</KEYWORD1>
+				<KEYWORD1>Context</KEYWORD1>
+			<KEYWORD1>Definition</KEYWORD1>
+				<KEYWORD1>Example</KEYWORD1>
+			<KEYWORD1>Let</KEYWORD1>
+			<KEYWORD1>Inductive</KEYWORD1>
+			<KEYWORD1>CoInductive</KEYWORD1>
+			<KEYWORD1>Fixpoint</KEYWORD1>
+			<KEYWORD1>CoFixpoint</KEYWORD1>
+			
+			<KEYWORD1>Proof</KEYWORD1>
+			<KEYWORD1>Qed</KEYWORD1>
+				<KEYWORD1>Defined</KEYWORD1>
+				<KEYWORD1>Admitted</KEYWORD1>
+				<KEYWORD1>Save</KEYWORD1>
+			
+			<KEYWORD1>Section</KEYWORD1> <!-- TODO: color the section name -->
+			<KEYWORD1>Module</KEYWORD1>
+			<KEYWORD1>Instance</KEYWORD1>
+			<KEYWORD1>Include</KEYWORD1>
+			<KEYWORD1>End</KEYWORD1> <!-- TODO: color the section name -->
+			
+			<KEYWORD1>Infix</KEYWORD1>
+			<KEYWORD1>Notation</KEYWORD1>
+			<KEYWORD1>Combined</KEYWORD1>
+			<KEYWORD1>Scheme</KEYWORD1>
+			<KEYWORD1>Ltac</KEYWORD1> <!-- TODO: next-word=FUNCTION -->
+		</KEYWORDS>
+	</RULES>
+	
+	
+	<RULES SET="types" IGNORE_CASE="FALSE" DEFAULT="MARKUP">
+		<!-- these get lost in some *.lhs bugs -->
+		<SPAN TYPE="COMMENT3"><BEGIN>(*</BEGIN><END>*)</END></SPAN>
+		
+		<!-- TODO: fill this out correctly -->
+		
+		<KEYWORDS>
+			<KEYWORD1>forall</KEYWORD1>
+		</KEYWORDS>
+	</RULES>
+	
+	<RULES SET="tactics" IGNORE_CASE="FALSE" DEFAULT="MARKUP">
+		
+		<SPAN TYPE="COMMENT3" DELEGATE="comment1"><BEGIN>(*</BEGIN><END>*)</END></SPAN>
+		<SPAN TYPE="LITERAL1"
+			NO_LINE_BREAK="TRUE"><BEGIN>"</BEGIN><END>"</END></SPAN>
+		
+		<!-- Special tokens. -->
+		<SEQ TYPE="OPERATOR">!</SEQ>
+		<SEQ TYPE="OPERATOR">%</SEQ>
+		<SEQ TYPE="LITERAL2">&amp;&amp;</SEQ>
+		<SEQ TYPE="OPERATOR">&amp;</SEQ>
+		<SEQ TYPE="OPERATOR">()</SEQ>
+		<SEQ TYPE="NULL">(</SEQ>
+		<SEQ TYPE="NULL">)</SEQ>
+		<SEQ TYPE="LITERAL2">*</SEQ>
+		<SEQ TYPE="OPERATOR">++</SEQ>
+		<SEQ TYPE="LITERAL2">+</SEQ>
+		<SEQ TYPE="OPERATOR">,</SEQ>
+		<SEQ TYPE="OPERATOR">-&gt;</SEQ>
+		<SEQ TYPE="LITERAL2">-</SEQ>
+		<SEQ TYPE="OPERATOR">.(</SEQ>
+		<SEQ TYPE="OPERATOR">..</SEQ>
+		<SEQ TYPE="OPERATOR">.</SEQ>
+		<SEQ TYPE="LITERAL2">/\</SEQ>
+		<SEQ TYPE="LITERAL2">/</SEQ>
+		<SEQ TYPE="LITERAL2">::</SEQ>
+		<SEQ TYPE="OPERATOR">:&lt;</SEQ>
+		<SEQ TYPE="OPERATOR">:=</SEQ>
+		<SEQ TYPE="OPERATOR">:&gt;</SEQ>
+		<SEQ TYPE="OPERATOR">:</SEQ>
+		<SEQ TYPE="OPERATOR">;</SEQ>
+		<SEQ TYPE="LITERAL2">&lt;-&gt;</SEQ>
+		<SEQ TYPE="OPERATOR">&lt;-</SEQ>
+		<SEQ TYPE="OPERATOR">&lt;:</SEQ>
+		<SEQ TYPE="LITERAL2">&lt;=</SEQ>
+		<SEQ TYPE="LITERAL2">&lt;&gt;</SEQ>
+		<SEQ TYPE="LITERAL2">&lt;</SEQ>
+		<SEQ TYPE="OPERATOR">=&gt;</SEQ>
+		<SEQ TYPE="OPERATOR">=_D</SEQ>
+		<SEQ TYPE="LITERAL2">=</SEQ>
+		<SEQ TYPE="OPERATOR">&gt;-&gt;</SEQ>
+		<SEQ TYPE="LITERAL2">&gt;=</SEQ>
+		<SEQ TYPE="LITERAL2">&gt;</SEQ>
+		<SEQ TYPE="LITERAL2">?=</SEQ>
+		<SEQ TYPE="OPERATOR">?</SEQ>
+		<SEQ TYPE="OPERATOR">@</SEQ>
+		<SEQ TYPE="OPERATOR">[</SEQ>
+		<SEQ TYPE="LITERAL2">\/</SEQ>
+		<SEQ TYPE="OPERATOR">]</SEQ>
+		<SEQ TYPE="LITERAL2">^</SEQ>
+		<SEQ TYPE="OPERATOR">{</SEQ>
+		<SEQ TYPE="OPERATOR">|-</SEQ>
+		<SEQ TYPE="LITERAL2">||</SEQ>
+		<SEQ TYPE="OPERATOR">|</SEQ>
+		<SEQ TYPE="OPERATOR">}</SEQ>
+		<SEQ TYPE="LITERAL2">~</SEQ>
+		
+		<SEQ TYPE="INVALID"  AT_WORD_START="TRUE">Proof.</SEQ>
+		<SEQ TYPE="KEYWORD1" AT_WORD_START="TRUE">Focus</SEQ>
+		<SEQ TYPE="KEYWORD1" AT_WORD_START="TRUE">Unfocus.</SEQ>
+		<SEQ TYPE="KEYWORD1" AT_WORD_START="TRUE">Show Proof.</SEQ>
+		<SEQ TYPE="KEYWORD1" AT_WORD_START="TRUE">Show Script.</SEQ>
+		<SEQ TYPE="KEYWORD1" AT_WORD_START="TRUE">Show.</SEQ>
+		<SEQ TYPE="KEYWORD1" DELEGATE="MAIN">Qed.</SEQ>
+		<SEQ TYPE="KEYWORD1" DELEGATE="MAIN">Defined.</SEQ>
+		<SEQ TYPE="KEYWORD1" DELEGATE="MAIN">Save.</SEQ>
+		<SEQ TYPE="KEYWORD1" DELEGATE="MAIN">Abort.</SEQ>
+		<SEQ TYPE="KEYWORD1" DELEGATE="MAIN">Admitted.</SEQ>
+		
+		<!-- BUG: this should only delegate until the end of the function! -->
+		<SEQ TYPE="OPERATOR" AT_WORD_START="TRUE" DELEGATE="lambda">fun </SEQ><!-- N.B., that space is essential -->
+		
+		<KEYWORDS>
+			<LITERAL2>nil</LITERAL2>
+			<LITERAL2>True</LITERAL2>
+			<LITERAL2>False</LITERAL2>
+
+			<!-- Keywords proper. -->
+			<KEYWORD1>_</KEYWORD1>
+			<KEYWORD1>as</KEYWORD1>
+			<KEYWORD1>at</KEYWORD1>
+			<KEYWORD1>cofix</KEYWORD1>
+			<KEYWORD1>else</KEYWORD1>
+			<KEYWORD1>end</KEYWORD1>
+			<KEYWORD1>exists</KEYWORD1>
+			<KEYWORD1>exists2</KEYWORD1>
+			<KEYWORD1>fix</KEYWORD1>
+			<KEYWORD1>for</KEYWORD1>
+			<KEYWORD1>forall</KEYWORD1> <!-- TODO: move to only type context -->
+			<KEYWORD1>if</KEYWORD1>
+			<KEYWORD1>IF</KEYWORD1>
+			<KEYWORD1>in</KEYWORD1>
+			<KEYWORD1>let</KEYWORD1>
+			<KEYWORD1>match</KEYWORD1>
+			<LITERAL2>mod</LITERAL2>
+			<KEYWORD2>Prop</KEYWORD2>
+			<KEYWORD1>return</KEYWORD1>
+			<KEYWORD2>Set</KEYWORD2>
+			<KEYWORD1>then</KEYWORD1>
+			<KEYWORD2>Type</KEYWORD2>
+			<KEYWORD1>using</KEYWORD1>
+			<KEYWORD1>where</KEYWORD1>
+			<KEYWORD1>with</KEYWORD1>
+			
+			<!-- a few known tactics -->
+			<!-- BUG: really we should do minimal parsing and hilight the first thing after ; . or [ -->
+			<KEYWORD2>Case</KEYWORD2>
+			<KEYWORD2>SCase</KEYWORD2>
+			<KEYWORD3>abstract</KEYWORD3>
+			<FUNCTION>apply</FUNCTION>
+			<FUNCTION>assert</FUNCTION>
+			<FUNCTION>assumption</FUNCTION>
+			<FUNCTION>auto</FUNCTION>
+			<FUNCTION>autorewrite</FUNCTION>
+			<FUNCTION>case</FUNCTION>
+			<FUNCTION>case_eq</FUNCTION>
+			<FUNCTION>cbv</FUNCTION>
+			<FUNCTION>change</FUNCTION>
+			<FUNCTION>clear</FUNCTION>
+			<FUNCTION>compute</FUNCTION>
+			<FUNCTION>congruence</FUNCTION>
+			<FUNCTION>constructor</FUNCTION>
+			<FUNCTION>contradict</FUNCTION>
+			<FUNCTION>contradiction</FUNCTION>
+			<FUNCTION>destruct</FUNCTION>
+			<FUNCTION>eapply</FUNCTION>
+			<FUNCTION>eauto</FUNCTION>
+			<FUNCTION>exact</FUNCTION>
+			<FUNCTION>field</FUNCTION> <!-- Require Import Reals -->
+			<FUNCTION>field_simplify</FUNCTION> <!-- Require Import Reals -->
+			<FUNCTION>field_simplify_eq</FUNCTION> <!-- Require Import Reals -->
+			<FUNCTION>firstorder</FUNCTION>
+			<FUNCTION>fourier</FUNCTION> <!-- Require Import Fourier -->
+			<FUNCTION>generalize</FUNCTION>
+			<FUNCTION>induction</FUNCTION>
+			<FUNCTION>injection</FUNCTION>
+			<FUNCTION>intro</FUNCTION>
+			<FUNCTION>intros</FUNCTION>
+			<FUNCTION>inversion</FUNCTION>
+			<FUNCTION>inversion_clear</FUNCTION>
+			<FUNCTION>lazy</FUNCTION>
+			<FUNCTION>left</FUNCTION>
+			<FUNCTION>lia</FUNCTION> <!-- Require Import Psatz -->
+			<FUNCTION>omega</FUNCTION> <!-- Require Import Omega -->
+			<FUNCTION>pose</FUNCTION>
+			<KEYWORD3>progress</KEYWORD3>
+			<FUNCTION>psatz</FUNCTION> <!-- Require Import Psatz -->
+			<FUNCTION>psatzl</FUNCTION> <!-- Require Import Psatz -->
+			<FUNCTION>refine</FUNCTION>
+			<FUNCTION>reflexivity</FUNCTION>
+			<FUNCTION>remember</FUNCTION>
+			<FUNCTION>rename</FUNCTION>
+			<KEYWORD3>repeat</KEYWORD3>
+			<FUNCTION>revert</FUNCTION>
+			<FUNCTION>rewrite</FUNCTION>
+			<FUNCTION>right</FUNCTION>
+			<FUNCTION>ring</FUNCTION> <!-- Require Import Ring -->
+			<FUNCTION>ring_simplify</FUNCTION> <!-- Require Import Ring -->
+			<FUNCTION>simpl</FUNCTION>
+			<KEYWORD3>solve</KEYWORD3>
+			<FUNCTION>specialize</FUNCTION>
+			<FUNCTION>split</FUNCTION>
+			<FUNCTION>subst</FUNCTION>
+			<FUNCTION>symmetry</FUNCTION>
+			<FUNCTION>tauto</FUNCTION>
+			<FUNCTION>transitivity</FUNCTION>
+			<FUNCTION>trivial</FUNCTION>
+			<KEYWORD3>try</KEYWORD3>
+			<FUNCTION>unfold</FUNCTION>
+
+			<!-- Some of my own tactics -->
+			<FUNCTION>destruct_if</FUNCTION>
+			<FUNCTION>ex_falso</FUNCTION>
+			<FUNCTION>fequal</FUNCTION>
+			<FUNCTION>introv</FUNCTION>
+			<FUNCTION>identity</FUNCTION>
+			<FUNCTION>jauto</FUNCTION>
+		</KEYWORDS>
+	</RULES>
+	
+	<!-- Nested comments (are these legal Coq?) -->
+	<RULES SET="comment1" DEFAULT="COMMENT3">
+		<SPAN TYPE="COMMENT4" DELEGATE="comment2"><BEGIN>(*</BEGIN><END>*)</END></SPAN>
+	</RULES>
+	<RULES SET="comment2" DEFAULT="COMMENT4">
+		<SPAN TYPE="COMMENT1" DELEGATE="comment3"><BEGIN>(*</BEGIN><END>*)</END></SPAN>
+	</RULES>
+	<RULES SET="comment3" DEFAULT="COMMENT1">
+		<SPAN TYPE="COMMENT3" DELEGATE="comment1"><BEGIN>(*</BEGIN><END>*)</END></SPAN>
+	</RULES>
+
+
+	<!-- Mark parameters to lambda abstractions as LITERAL4 -->
+	<RULES SET="lambda" DEFAULT="LITERAL4" IGNORE_CASE="FALSE"
+	HIGHLIGHT_DIGITS="TRUE"  DIGIT_RE="((0|[1-9]\d*)(\.[0-9]+)?([eE][+-]?[0-9]+)?|0[xX]\p{XDigit}+|0[oO][0-7]+)">
+		
+		<!-- TODO: fill this out correctly -->
+		
+		<SEQ TYPE="OPERATOR" DELEGATE="MAIN">=&gt;</SEQ>
+	</RULES>
+	
+</MODE>

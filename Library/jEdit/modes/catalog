@@ -1,0 +1,85 @@
+<?xml version="1.0"?>
+<!DOCTYPE CATALOG SYSTEM "catalog.dtd">
+<MODES>
+<!-- See the README if these aren't being picked up -->
+
+	<!-- https://github.com/peterlynch/jEdit-modes/blob/master/markdown.xml -->
+	<MODE NAME="Markdown"
+		FILE="markdown.xml"
+		FILE_NAME_GLOB="*.{md,markdown}"
+		/>
+
+	<MODE NAME="Isabelle"
+		FILE="isabelle.xml"
+		FILE_NAME_GLOB="*.thy"
+		/>
+
+	<MODE NAME="Coq"
+		FILE="coq.xml"
+		FILE_NAME_GLOB="*.v"
+		/>
+	<MODE NAME="Ott"
+		FILE="ott.xml"
+		FILE_NAME_GLOB="*.ott"
+		/>
+	
+	<MODE NAME="Literate Haskell"
+		FILE="literate-haskell.xml"
+		FILE_NAME_GLOB="*.{lhs,fmt}"
+		/>
+	<!-- A legible version -->
+	<MODE NAME="Haskell"
+		FILE="haskell.xml"
+		FILE_NAME_GLOB="*.hs"
+		/>
+	<MODE NAME="Haskell/C"
+		FILE="haskell.xml"
+		FILE_NAME_GLOB="*.hsc"
+		/>
+	<MODE NAME="Haskell Core"
+		FILE="haskell-core.xml"
+		FILE_NAME_GLOB="*.hcr"
+		/>
+	<MODE NAME="Cabal (Haskell)"
+		FILE="cabal.xml"
+		FILE_NAME_GLOB="*.cabal"
+		/>
+									
+	<MODE NAME="Backus-Naur Form"
+		FILE="bnf.xml"
+		FILE_NAME_GLOB="*.bnf"
+		/>
+	<MODE NAME="nesC"
+		FILE="nesc.xml"
+		FILE_NAME_GLOB="*.nc"
+		/>
+	<MODE NAME="Dyna"
+		FILE="dyna.xml"
+		FILE_NAME_GLOB="*.{dyna,par}"
+		/>
+	<MODE NAME="Praat"
+		FILE="praat.xml"
+		FILE_NAME_GLOB="*.praat"
+		/>
+	<MODE NAME="R"
+		FILE="r.xml"
+		FILE_NAME_GLOB="*.R"
+		/>
+	
+	<!-- Symlinked -->
+	<MODE NAME="ECLiPSe"
+		FILE="prolog.xml"
+		FILE_NAME_GLOB="*.ecl"
+		/>
+	
+	<!-- Bug-fixed version -->
+	<MODE NAME="shellscript"
+		FILE="shellscript.xml"
+		FILE_NAME_GLOB="*.{csh,sh,bash}"
+		FIRST_LINE_GLOB="#!/*sh*"
+		/>
+	<MODE NAME="shellscript"
+		FILE="shellscript.xml"
+		FILE_NAME_GLOB=".{login,profile,bashrc,bash_profile,bash_logout}"
+		/>
+</MODES>

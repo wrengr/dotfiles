@@ -1,0 +1,510 @@
+<?xml version="1.0"?>
+<!DOCTYPE MODE SYSTEM "xmode.dtd">
+
+<!--
+	This Haskell mode for jEdit 4.3 was based off the standard disribution
+	Haskell mode by Kristian Ovaska (kristian.ovaska@helsinki.fi), it
+	has since been extended and redesigned to unrecognizable oblivion by
+	wren gayle romano (wren@cpan.org). Last Mod: 2008-03-15T20:42:55-04:00
+	
+	This is a work in progress and is released with no warranty under
+	Creative Commons Attribution-Noncommercial-Share Alike 3.0 Unported
+	http://creativecommons.org/licenses/by-nc-sa/3.0/
+	
+	Known BUGS and TODO list:
+	* make type/data/newtype decls span until blank line
+	* make (::) decls not break parens matching
+	* better detection of function calls in general, including ($), ($!)
+	* type-constructor vs data-constructors within module/import decls?
+	* Fix weird interactions re EOL stuff with my Literate Haskell mode
+	* See if there's a non-broken way to unify all those regexps for jEdit 4.2
+	
+	
+	N.B. from the Haskell Report <http://haskell.org/onlinereport/lexemes.html>
+	symbol     \in= ! # $ % & * + . / < = > ? @ \ ^ | - ~
+	Reserved    ::= .. | : | :: | = | \ | | | <- | -> | @ | ~ | =>
+	Operator    ::= symbol (symbol | : )*
+		except Reserved or any string of 2+ dashes
+	Constructor ::= : (symbol | : )*
+		except Reserved
+-->
+
+<MODE>
+	<PROPS>
+		<PROPERTY NAME="commentStart" VALUE="{-" />
+		<PROPERTY NAME="commentEnd"   VALUE="-}" />
+		<PROPERTY NAME="lineComment"  VALUE="--" />
+		<PROPERTY NAME="folding"      VALUE="indent" /> <!--sw33t!-->
+		<PROPERTY NAME="noWordSep"    VALUE="_'" /> <!-- does it help? -->
+		
+		<!-- Haskell convention says hard tabs are 8 spaces -->
+		<PROPERTY NAME="tabSize"      VALUE="8" />
+		<PROPERTY NAME="indentSize"   VALUE="8" />
+		<PROPERTY NAME="noTabs"       VALUE="TRUE" /> <!-- make them soft-->
+	</PROPS>
+	
+	
+	<RULES IGNORE_CASE="FALSE" ESCAPE="\"
+		HIGHLIGHT_DIGITS="TRUE"  DIGIT_RE="((0|[1-9]\d*)(\.[0-9]+)?([eE][+-]?[0-9]+)?|0[xX]\p{XDigit}+|0[oO][0-7]+)">
+		
+		<!-- Pragmas, comments, strings, and their ilk -->
+		<SPAN     TYPE="COMMENT2" DELEGATE="pragma"><BEGIN>{-#</BEGIN><END>#-}</END></SPAN>
+		<SPAN     TYPE="COMMENT3" DELEGATE="comment1"><BEGIN>{-</BEGIN><END>-}</END></SPAN>
+		<EOL_SPAN TYPE="COMMENT1">--</EOL_SPAN>
+		<SPAN TYPE="LITERAL1"
+			NO_LINE_BREAK="TRUE"><BEGIN>"</BEGIN><END>"</END></SPAN>
+		<SPAN TYPE="OPERATOR"
+			NO_LINE_BREAK="TRUE"><BEGIN>`</BEGIN><END>`</END></SPAN>
+		<!-- Maybe shouldn't DELEGATE="c::CPP"? -->
+		<EOL_SPAN TYPE="COMMENT2" AT_LINE_START="TRUE">#</EOL_SPAN>
+		
+		
+		<!-- Get literal characters without munging primes on variables -->
+		<SEQ_REGEXP AT_WORD_START="TRUE" TYPE="LITERAL1"
+			HASH_CHAR="'">'(\\.|[^\\])'</SEQ_REGEXP>
+		<!-- I say bad style, but they're not typos...
+		<SEQ_REGEXP AT_WORD_START="FALSE" TYPE="INVALID"
+			HASH_CHAR="'">'[a-zA-Z0-9_]+</SEQ_REGEXP>
+		N.B. [:alphanum:] includes ':' too -->
+		
+		
+		<!-- BUGlet: the ending ) also gets OPERATOR
+				this also munges up parentheses matching
+				EXCLUDE_MATCH="TRUE" will exclude both...
+			N.B. to get nested ) we need the span rule in "types"
+			BUG: with literate haskell, unless we have an EOL in the
+				haskell part, the next line'll look odd (i.e. not commented)
+				for multiline data decls the highlighting's all screwy in *.lhs
+		-->
+		<SPAN TYPE="MARKUP" DELEGATE="types" NO_LINE_BREAK="TRUE">
+			<BEGIN>::</BEGIN>
+			<END>)</END>
+		</SPAN>
+		<!-- BUG: AT_WHITESPACE_END doesn't. It's the same as AT_LINE_START -->
+		<EOL_SPAN AT_WHITESPACE_END="TRUE"
+			TYPE="KEYWORD1" DELEGATE="types">data</EOL_SPAN>
+		<EOL_SPAN AT_WHITESPACE_END="TRUE"
+			TYPE="KEYWORD1" DELEGATE="types">type</EOL_SPAN>
+		<EOL_SPAN AT_WHITESPACE_END="TRUE"
+			TYPE="KEYWORD1" DELEGATE="types">newtype</EOL_SPAN>
+		<EOL_SPAN AT_WHITESPACE_END="TRUE"
+			TYPE="KEYWORD1" DELEGATE="types">class</EOL_SPAN>
+		<EOL_SPAN AT_WHITESPACE_END="TRUE"
+			TYPE="KEYWORD1" DELEGATE="types">instance</EOL_SPAN>
+		<EOL_SPAN AT_WHITESPACE_END="TRUE"
+			TYPE="KEYWORD1" DELEGATE="types">import</EOL_SPAN> <!--BUG: not a type environment!-->
+		<EOL_SPAN AT_WHITESPACE_END="TRUE"
+			TYPE="KEYWORD1" DELEGATE="ffi">foreign</EOL_SPAN>
+		
+		
+		<!-- This gets many functions
+			the <SEQ>s are to fix breaks in <KEYWORDS> due to these rules
+			* BUG: overgeneralizes on infix operators and sections,
+			, e.g. (5+), (a==b), especially (x:xs) and especially ([Foo],...)
+		-->
+		<SEQ TYPE="LITERAL2">()</SEQ>
+		<SEQ TYPE="LITERAL2">:</SEQ>
+		<SEQ TYPE="LITERAL2">[]</SEQ>
+		<SEQ TYPE="OPERATOR">[</SEQ>
+		<SEQ TYPE="OPERATOR">]</SEQ>
+		
+		<!-- Fix breakage about mapM+_ vs mapM_ etc -->
+		<SEQ TYPE="FUNCTION">mapM_</SEQ>
+		<SEQ TYPE="FUNCTION">sequence_</SEQ>
+		<!-- fix so ``foo_bar`` still works right -->
+		<SEQ_REGEXP TYPE="KEYWORD1" HASH_CHAR="_">\b_\b</SEQ_REGEXP>
+		
+		<SEQ TYPE="OPERATOR">..</SEQ>
+		<!-- Protect the floats -->
+		<SEQ_REGEXP AT_WORD_START="FALSE" TYPE="DIGIT"
+			HASH_CHAR=".">\.[0-9]</SEQ_REGEXP>
+		
+		<!-- The real rules for detecting function application -->
+		<!-- BUG: MARK_FOLLOWING doesn't treat ' as a letter -->
+		<MARK_FOLLOWING TYPE="FUNCTION" EXCLUDE_MATCH="TRUE">(</MARK_FOLLOWING>
+		<MARK_FOLLOWING TYPE="FUNCTION" EXCLUDE_MATCH="TRUE">[</MARK_FOLLOWING>
+		<MARK_FOLLOWING TYPE="FUNCTION" EXCLUDE_MATCH="TRUE">.</MARK_FOLLOWING>
+		<!-- This tricksy bit gets a few definitions -->
+		<MARK_PREVIOUS  TYPE="FUNCTION" AT_WHITESPACE_END="TRUE">&#32;</MARK_PREVIOUS>
+		
+		
+		<SEQ TYPE="OPERATOR">{</SEQ>
+		<SEQ TYPE="OPERATOR">;</SEQ>
+		<SEQ TYPE="OPERATOR">}</SEQ>
+		<SEQ TYPE="OPERATOR">!</SEQ>
+		<SEQ TYPE="OPERATOR">#</SEQ>
+		<SEQ TYPE="OPERATOR">$</SEQ>
+		<SEQ TYPE="OPERATOR">%</SEQ>
+		<SEQ TYPE="OPERATOR">&amp;</SEQ>
+		<SEQ TYPE="OPERATOR">*</SEQ>
+		<SEQ TYPE="OPERATOR">+</SEQ>
+		<SEQ TYPE="OPERATOR">/</SEQ>
+		<SEQ TYPE="OPERATOR">&lt;</SEQ>
+		<SEQ TYPE="OPERATOR">=</SEQ>
+		<SEQ TYPE="OPERATOR">&gt;</SEQ>
+		<SEQ TYPE="OPERATOR">?</SEQ>
+		<SEQ TYPE="OPERATOR">@</SEQ>
+		<SEQ TYPE="OPERATOR" DELEGATE="lambda">\</SEQ>
+		<SEQ TYPE="OPERATOR">^</SEQ>
+		<SEQ TYPE="OPERATOR">|</SEQ>
+		<SEQ TYPE="OPERATOR">-</SEQ>
+		<SEQ TYPE="OPERATOR">~</SEQ>
+
+		<!-- Defining this as OPERATOR causes float numbers not to be
+		highlighted... Which is more important?
+		<SEQ TYPE="NULL">.</SEQ>
+		-->
+		
+		
+		<SEQ_REGEXP
+			AT_WORD_START="TRUE" TYPE="LITERAL2"
+			HASH_CHARS="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+			>[A-Z][a-zA-Z0-9_]*</SEQ_REGEXP>
+		
+		
+		
+		<KEYWORDS>
+			<!-- Reserved words. -->
+			<KEYWORD1>case</KEYWORD1>
+			<KEYWORD1>class</KEYWORD1>
+			<KEYWORD1>data</KEYWORD1>
+			<KEYWORD1>default</KEYWORD1>
+			<KEYWORD1>deriving</KEYWORD1>
+			<KEYWORD1>do</KEYWORD1>
+			<KEYWORD1>else</KEYWORD1>
+			<KEYWORD1>if</KEYWORD1>
+			<KEYWORD1>import</KEYWORD1>
+			<KEYWORD1>in</KEYWORD1>
+			<KEYWORD1>infix</KEYWORD1>
+			<KEYWORD1>infixl</KEYWORD1>
+			<KEYWORD1>infixr</KEYWORD1>
+			<KEYWORD1>instance</KEYWORD1>
+			<KEYWORD1>let</KEYWORD1>
+			<KEYWORD1>module</KEYWORD1>
+			<KEYWORD1>newtype</KEYWORD1>
+			<KEYWORD1>of</KEYWORD1>
+			<KEYWORD1>then</KEYWORD1>
+			<KEYWORD1>type</KEYWORD1>
+			<KEYWORD1>where</KEYWORD1>
+			<!--<KEYWORD1>_</KEYWORD1>-->
+			<KEYWORD1>as</KEYWORD1>
+			<KEYWORD1>qualified</KEYWORD1>
+			<KEYWORD1>hiding</KEYWORD1>
+			<KEYWORD1>otherwise</KEYWORD1>
+			
+			<!-- Why were these "operators" instead of functions? -->
+			<OPERATOR>quot</OPERATOR>
+			<OPERATOR>rem</OPERATOR>
+			<OPERATOR>div</OPERATOR>
+			<OPERATOR>mod</OPERATOR>
+			<OPERATOR>seq</OPERATOR>
+			<OPERATOR>error</OPERATOR>
+			<LITERAL2>undefined</LITERAL2>
+			
+			<FUNCTION>const</FUNCTION>
+			<FUNCTION>not</FUNCTION>
+			<FUNCTION>even</FUNCTION>
+			<FUNCTION>odd</FUNCTION>
+			<FUNCTION>gcd</FUNCTION>
+			<FUNCTION>lcm</FUNCTION>
+			<FUNCTION>read</FUNCTION>
+			<FUNCTION>asTypeOf</FUNCTION>
+			
+			<!-- list of known monadic functions from the Prelude-->
+			<FUNCTION>return</FUNCTION>
+			<FUNCTION>fail</FUNCTION>
+			<FUNCTION>fmap</FUNCTION>
+			<!--<FUNCTION>mapM_</FUNCTION>-->
+			<FUNCTION>mapM</FUNCTION>
+			<!--<FUNCTION>sequence_</FUNCTION>-->
+			<FUNCTION>sequence</FUNCTION>
+			
+			<!-- arbitrary list of folds, projections, and combinators -->
+			<FUNCTION>maybe</FUNCTION>
+			<FUNCTION>either</FUNCTION>
+			<FUNCTION>fst</FUNCTION>
+			<FUNCTION>snd</FUNCTION>
+			<FUNCTION>curry</FUNCTION>
+			<FUNCTION>uncurry</FUNCTION>
+			<FUNCTION>id</FUNCTION>
+			<FUNCTION>flip</FUNCTION>
+			
+			<!-- list of known functions from PreludeList-->
+			<FUNCTION>map</FUNCTION>
+			<FUNCTION>reverse</FUNCTION>
+			<FUNCTION>concat</FUNCTION>
+			<FUNCTION>filter</FUNCTION>
+			<FUNCTION>head</FUNCTION>
+			<FUNCTION>last</FUNCTION>
+			<FUNCTION>tail</FUNCTION>
+			<FUNCTION>init</FUNCTION>
+			<FUNCTION>null</FUNCTION>
+			<FUNCTION>length</FUNCTION>
+			<FUNCTION>foldl</FUNCTION>
+			<FUNCTION>foldl1</FUNCTION>
+			<FUNCTION>scanl</FUNCTION>
+			<FUNCTION>scanl1</FUNCTION>
+			<FUNCTION>foldr</FUNCTION>
+			<FUNCTION>foldr1</FUNCTION>
+			<FUNCTION>scanr</FUNCTION>
+			<FUNCTION>scanr1</FUNCTION>
+			<FUNCTION>iterate</FUNCTION>
+			<FUNCTION>repeat</FUNCTION>
+			<FUNCTION>replicate</FUNCTION>
+			<FUNCTION>cycle</FUNCTION>
+			<FUNCTION>take</FUNCTION>
+			<FUNCTION>drop</FUNCTION>
+			<FUNCTION>splitAt</FUNCTION>
+			<FUNCTION>takeWhile</FUNCTION>
+			<FUNCTION>dropWhile</FUNCTION>
+			<FUNCTION>span</FUNCTION>
+			<FUNCTION>break</FUNCTION>
+			<FUNCTION>lines</FUNCTION>
+			<FUNCTION>words</FUNCTION>
+			<FUNCTION>unlines</FUNCTION>
+			<FUNCTION>unwords</FUNCTION>
+			<FUNCTION>and</FUNCTION>
+			<FUNCTION>or</FUNCTION>
+			<FUNCTION>any</FUNCTION>
+			<FUNCTION>all</FUNCTION>
+			<FUNCTION>elem</FUNCTION>
+			<FUNCTION>notElem</FUNCTION>
+			<FUNCTION>lookup</FUNCTION>
+			<FUNCTION>sum</FUNCTION>
+			<FUNCTION>product</FUNCTION>
+			<FUNCTION>maximum</FUNCTION>
+			<FUNCTION>minimum</FUNCTION>
+			<FUNCTION>concatMap</FUNCTION>
+			<FUNCTION>zip</FUNCTION>
+			<FUNCTION>zip3</FUNCTION>
+			<FUNCTION>zipWith</FUNCTION>
+			<FUNCTION>zipWith3</FUNCTION>
+			<FUNCTION>unzip</FUNCTION>
+			<FUNCTION>unzip3</FUNCTION>
+			
+			<!-- list of known functions from PreludeIO
+				http://haskell.org/ghc/docs/latest/html/libraries/base/Prelude.html#t%3AIO
+			-->
+			<FUNCTION>putChar</FUNCTION>
+			<FUNCTION>putStr</FUNCTION>
+			<FUNCTION>putStrLn</FUNCTION>
+			<FUNCTION>print</FUNCTION>
+			<FUNCTION>getChar</FUNCTION>
+			<FUNCTION>getLine</FUNCTION>
+			<FUNCTION>getContents</FUNCTION>
+			<FUNCTION>interact</FUNCTION>
+			<FUNCTION>readFile</FUNCTION>
+			<FUNCTION>writeFile</FUNCTION>
+			<FUNCTION>appendFile</FUNCTION>
+			<FUNCTION>readIO</FUNCTION>
+			<FUNCTION>readLn</FUNCTION>
+			<FUNCTION>ioError</FUNCTION>
+			<FUNCTION>userError</FUNCTION>
+			<FUNCTION>catch</FUNCTION>
+		</KEYWORDS>
+	</RULES>
+	
+	
+	
+	<RULES SET="types" IGNORE_CASE="FALSE" DEFAULT="MARKUP">
+		<!-- these get lost in some *.lhs bugs -->
+		<SPAN     TYPE="COMMENT2"><BEGIN>{-#</BEGIN><END>#-}</END></SPAN>
+		<SPAN     TYPE="COMMENT3"><BEGIN>{-</BEGIN><END>-}</END></SPAN>
+		<EOL_SPAN TYPE="COMMENT1">--</EOL_SPAN>
+		
+		
+		<SEQ_REGEXP
+			AT_WORD_START="TRUE" TYPE="KEYWORD3"
+			HASH_CHARS="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+			>[A-Z][a-zA-Z0-9_]*</SEQ_REGEXP>
+		
+		<!-- super tricksy
+			BUG: re `type` declarations, shouldn't do this.
+			     Also, if there's no trailing space after the constructor...
+		-->
+		<SPAN TYPE="OPERATOR" DELEGATE="dataconstructor">
+			<BEGIN>=&#32;</BEGIN><END>&#32;</END></SPAN>
+		<SPAN TYPE="OPERATOR" DELEGATE="dataconstructor">
+			<BEGIN>|&#32;</BEGIN><END>&#32;</END></SPAN>
+		
+		<SEQ TYPE="LITERAL2">()</SEQ>
+		<SEQ TYPE="OPERATOR">[</SEQ>
+		<SEQ TYPE="OPERATOR">]</SEQ>
+		<SEQ TYPE="MARKUP">-&gt;</SEQ> <!-- or maybe back to OPERATOR -->
+		<SEQ TYPE="OPERATOR">,</SEQ>
+		
+		<!-- tricksy so :: can end on balanced )
+		    TODO: Should detect for commas so grouping parens are MARKUP
+		-->
+		<SPAN DELEGATE="types" TYPE="OPERATOR"
+			NO_LINE_BREAK="TRUE"><BEGIN>(</BEGIN><END>)</END></SPAN>
+		
+		<!-- These can only be constructors because of the leading (:)
+			Haskell Report <http://haskell.org/onlinereport/lexemes.html>
+			Just escaping everything for paronoia's sake
+		-->
+		<SEQ_REGEXP HASH_CHAR=":" TYPE="LITERAL2">:[\!\#\$\%&amp;\*\+\./&lt;\=&gt;\?\@\\\^\|\-\~\:]*</SEQ_REGEXP>
+		
+		<SEQ TYPE="OPERATOR">.</SEQ> <!-- qualified names should use MARKUP -->
+		<SEQ TYPE="OPERATOR">:</SEQ>
+		<SEQ TYPE="OPERATOR">{</SEQ>
+		<SEQ TYPE="OPERATOR">;</SEQ>
+		<SEQ TYPE="OPERATOR">}</SEQ>
+		<SEQ TYPE="OPERATOR">!</SEQ>
+		<SEQ TYPE="OPERATOR">#</SEQ>
+		<SEQ TYPE="OPERATOR">$</SEQ>
+		<SEQ TYPE="OPERATOR">%</SEQ>
+		<SEQ TYPE="OPERATOR">&amp;</SEQ>
+		<SEQ TYPE="OPERATOR">*</SEQ>
+		<SEQ TYPE="OPERATOR">+</SEQ>
+		<SEQ TYPE="OPERATOR">/</SEQ>
+		<SEQ TYPE="OPERATOR">&lt;</SEQ>
+		<SEQ TYPE="OPERATOR">=</SEQ>
+		<SEQ TYPE="OPERATOR">&gt;</SEQ>
+		<SEQ TYPE="OPERATOR">?</SEQ>
+		<SEQ TYPE="OPERATOR">@</SEQ>
+		<SEQ TYPE="OPERATOR" DELEGATE="lambda">\</SEQ>
+		<SEQ TYPE="OPERATOR">^</SEQ>
+		<SEQ TYPE="OPERATOR">|</SEQ>
+		<SEQ TYPE="OPERATOR">-</SEQ>
+		<SEQ TYPE="OPERATOR">~</SEQ>
+		
+		<KEYWORDS>
+			<KEYWORD1>deriving</KEYWORD1>
+			<KEYWORD1>where</KEYWORD1>
+			<KEYWORD1>as</KEYWORD1>
+			<KEYWORD1>qualified</KEYWORD1>
+			<KEYWORD1>hiding</KEYWORD1>
+			<KEYWORD1>forall</KEYWORD1> <!-- Rank-2 extension to Haskell98 -->
+		</KEYWORDS>
+	</RULES>
+	
+	
+	
+	<RULES SET="dataconstructor"  IGNORE_CASE="FALSE" DEFAULT="NULL">
+		
+		<!-- so ``type Foo = [Bar]`` works right -->
+		<SPAN TYPE="OPERATOR" DELEGATE="Haskell::types"
+			NO_LINE_BREAK="TRUE"><BEGIN>[</BEGIN><END>]</END></SPAN>
+		
+		
+		<SEQ_REGEXP
+			AT_WORD_START="TRUE" TYPE="LITERAL2"
+			HASH_CHARS="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+			>[A-Z][a-zA-Z0-9_]*</SEQ_REGEXP>
+		
+		
+		<!-- so section syntax still highlights correctly -->
+		<SEQ_REGEXP HASH_CHAR=":" TYPE="LITERAL2">:[\!\#\$\%&amp;\*\+\./&lt;\=&gt;\?\@\\\^\|\-\~\:]*</SEQ_REGEXP>
+		
+		<!-- Are these valid? -->
+		<SEQ TYPE="OPERATOR">.</SEQ>
+		<SEQ TYPE="OPERATOR">:</SEQ>
+		<SEQ TYPE="OPERATOR">{</SEQ>
+		<SEQ TYPE="OPERATOR">;</SEQ>
+		<SEQ TYPE="OPERATOR">}</SEQ>
+		<SEQ TYPE="OPERATOR">!</SEQ>
+		<SEQ TYPE="OPERATOR">#</SEQ>
+		<SEQ TYPE="OPERATOR">$</SEQ>
+		<SEQ TYPE="OPERATOR">%</SEQ>
+		<SEQ TYPE="OPERATOR">&amp;</SEQ>
+		<SEQ TYPE="OPERATOR">*</SEQ>
+		<SEQ TYPE="OPERATOR">+</SEQ>
+		<SEQ TYPE="OPERATOR">/</SEQ>
+		<SEQ TYPE="OPERATOR">&lt;</SEQ>
+		<SEQ TYPE="OPERATOR">=</SEQ>
+		<SEQ TYPE="OPERATOR">&gt;</SEQ>
+		<SEQ TYPE="OPERATOR">?</SEQ>
+		<SEQ TYPE="OPERATOR">@</SEQ>
+		<SEQ TYPE="OPERATOR" DELEGATE="lambda">\</SEQ>
+		<SEQ TYPE="OPERATOR">^</SEQ>
+		<SEQ TYPE="OPERATOR">|</SEQ>
+		<SEQ TYPE="OPERATOR">-</SEQ>
+		<SEQ TYPE="OPERATOR">~</SEQ>
+	</RULES>
+
+	<!-- Nested comments -->
+	<RULES SET="comment1" DEFAULT="COMMENT3">
+		<SPAN TYPE="COMMENT4" DELEGATE="comment2"><BEGIN>{-</BEGIN><END>-}</END></SPAN>
+	</RULES>
+	<RULES SET="comment2" DEFAULT="COMMENT4">
+		<SPAN TYPE="COMMENT1" DELEGATE="comment3"><BEGIN>{-</BEGIN><END>-}</END></SPAN>
+	</RULES>
+	<RULES SET="comment3" DEFAULT="COMMENT1">
+		<SPAN TYPE="COMMENT3" DELEGATE="comment1"><BEGIN>{-</BEGIN><END>-}</END></SPAN>
+	</RULES>
+
+	<!-- for comments in RULES -->
+	<RULES SET="pragma" DEFAULT="COMMENT2">
+		<EOL_SPAN TYPE="COMMENT1">--</EOL_SPAN>
+	</RULES>
+	
+	
+	<!-- Mark parameters to lambda abstractions as LITERAL4 -->
+	<RULES SET="lambda" DEFAULT="LITERAL4" IGNORE_CASE="FALSE"
+	HIGHLIGHT_DIGITS="TRUE"  DIGIT_RE="((0|[1-9]\d*)(\.[0-9]+)?([eE][+-]?[0-9]+)?|0[xX]\p{XDigit}+|0[oO][0-7]+)">
+		
+		<SPAN TYPE="MARKUP" DELEGATE="types" NO_LINE_BREAK="TRUE">
+			<BEGIN>::</BEGIN>
+			<END>)</END>
+		</SPAN>
+		
+		<SEQ_REGEXP AT_WORD_START="TRUE" TYPE="KEYWORD3"
+			HASH_CHARS="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+			>[A-Z][a-zA-Z0-9]*</SEQ_REGEXP>
+		
+		<SEQ TYPE="OPERATOR">@</SEQ>
+		
+		<SEQ TYPE="LITERAL2">()</SEQ>
+		<SPAN MATCH_TYPE="NULL" TYPE="LABEL" DELEGATE="lambda">
+			<BEGIN>(</BEGIN><END>)</END></SPAN>
+		
+		<SEQ TYPE="LITERAL2">[]</SEQ>
+		<SEQ TYPE="OPERATOR">[</SEQ>
+		<SEQ TYPE="OPERATOR">,</SEQ>
+		<SEQ TYPE="OPERATOR">]</SEQ>
+		
+		
+		<SEQ_REGEXP HASH_CHAR=":" TYPE="LITERAL2">:[\!\#\$\%&amp;\*\+\./&lt;\=&gt;\?\@\\\^\|\-\~\:]*</SEQ_REGEXP>
+		
+		<SEQ TYPE="OPERATOR" DELEGATE="MAIN">-&gt;</SEQ>
+	</RULES>
+	
+	
+	
+	<RULES SET="ffi" IGNORE_CASE="FALSE" DEFAULT="FUNCTION">
+		<!-- these get lost in some *.lhs bugs -->
+		<SPAN     TYPE="COMMENT2"><BEGIN>{-#</BEGIN><END>#-}</END></SPAN>
+		<SPAN     TYPE="COMMENT3"><BEGIN>{-</BEGIN><END>-}</END></SPAN>
+		<EOL_SPAN TYPE="COMMENT1">--</EOL_SPAN>
+		
+		<!-- The real grammar:
+		topdecl  -> foreign $fdecl
+		fdecl    -> import $callconv [$safety] $impent $var :: $ftype
+		         |	export $callconv $expent $var :: $ftype
+		callconv -> ccall | stdcall | cplusplus | jvm | dotnet | ...
+		impent   -> [string]
+		expent   -> [string]
+		safety   -> unsafe | safe
+		-->
+		
+		<SPAN TYPE="LITERAL1"
+			NO_LINE_BREAK="TRUE"><BEGIN>"</BEGIN><END>"</END></SPAN>
+		
+		<EOL_SPAN TYPE="MARKUP" DELEGATE="types">::</EOL_SPAN>
+		
+		<KEYWORDS>
+			<KEYWORD1>import</KEYWORD1>
+			<KEYWORD1>export</KEYWORD1>
+			
+			<KEYWORD1>ccall</KEYWORD1>
+			<KEYWORD1>stdcall</KEYWORD1>
+			<KEYWORD1>cplusplus</KEYWORD1>
+			<KEYWORD1>jvm</KEYWORD1>
+			<KEYWORD1>dotnet</KEYWORD1>
+			
+			<KEYWORD1>unsafe</KEYWORD1>
+			<KEYWORD1>safe</KEYWORD1>
+		</KEYWORDS>
+	</RULES>
+</MODE>

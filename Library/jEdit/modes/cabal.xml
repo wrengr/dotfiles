@@ -1,0 +1,246 @@
+<?xml version="1.0"?>
+<!DOCTYPE MODE SYSTEM "xmode.dtd">
+
+<!--
+	jEdit 4.3 mode for Haskell Cabal packages
+	
+	http://www.haskell.org/ghc/docs/latest/html/Cabal/authors.html#general-fields
+	http://hackage.haskell.org/packages/archive/pkg-list.html
+-->
+
+<MODE>
+	<PROPS>
+		<PROPERTY NAME="commentStart" VALUE="{-" />
+		<PROPERTY NAME="commentEnd"   VALUE="-}" />
+		<PROPERTY NAME="lineComment"  VALUE="--" />
+		<PROPERTY NAME="folding"      VALUE="indent" /> <!--sw33t!-->
+		<PROPERTY NAME="noWordSep"    VALUE="_'" /> <!-- does it help? -->
+		
+		<!-- Haskell convention says hard tabs are 8 spaces -->
+		<PROPERTY NAME="tabSize"      VALUE="8" />
+		<PROPERTY NAME="indentSize"   VALUE="8" />
+		<PROPERTY NAME="noTabs"       VALUE="TRUE" /> <!-- make them soft-->
+	</PROPS>
+	
+	
+	<RULES IGNORE_CASE="TRUE">
+		<EOL_SPAN TYPE="COMMENT1" AT_WHITESPACE_END="TRUE">--</EOL_SPAN>
+		
+		<SPAN TYPE="LITERAL1"
+			NO_LINE_BREAK="TRUE"><BEGIN>"</BEGIN><END>"</END></SPAN>
+		
+		<SEQ TYPE="OPERATOR">{</SEQ>
+		<SEQ TYPE="OPERATOR">}</SEQ>
+		<SEQ TYPE="OPERATOR">&lt;</SEQ>
+		<SEQ TYPE="OPERATOR">=</SEQ>
+		<SEQ TYPE="OPERATOR">&gt;</SEQ>
+
+		<!-- TODO: This is super hacky (because it's not case sensitive and AT_WORD_START doesn't mean what you think) -->
+		<SEQ_REGEXP HASH_CHARS="ABCDEFGHIJKLMNOPQRSTUVWXYZ" AT_WORD_START="TRUE"
+			TYPE="LITERAL2">[A-Z][a-zA-Z0-9_]*(\.[A-Z][a-zA-Z0-9_]*)+</SEQ_REGEXP>
+		
+		<!-- Just to EOL is too strict, but it should suffice -->
+		<EOL_SPAN TYPE="KEYWORD2" DELEGATE="categories">Category:</EOL_SPAN>
+		
+		<!-- Just to EOL is too strict, but it should suffice -->
+		<EOL_SPAN AT_WORD_START="TRUE" AT_WHITESPACE_END="TRUE"
+			MATCH_TYPE="KEYWORD1" DELEGATE="conditional">if </EOL_SPAN>
+		
+		<KEYWORDS>
+			<KEYWORD1>Flag</KEYWORD1>
+				<KEYWORD2>Default:</KEYWORD2>
+			<KEYWORD1>Library</KEYWORD1>
+			<KEYWORD1>Executable</KEYWORD1>
+			<KEYWORD1>Test-Suite</KEYWORD1> <!-- (>= 1.9.2) -->
+				<!-- fields are dependent:
+				    (1) type:exitcode-stdio-1.0 & main-is:
+				        where main-is exports main::IO() as usual
+				    (2) type:detailed-0.9 & test-module:
+				        where test-module exports tests::IO[Distribution.TestSuite.Test]
+				-->
+			
+			<KEYWORD1>Benchmark</KEYWORD1> <!-- (version added?) -->
+			<!--
+			<KEYWORD1>if</KEYWORD1>
+			-->
+			<KEYWORD1>else</KEYWORD1>
+		
+			<!-- Package Properties -->
+			<KEYWORD2>Name:</KEYWORD2> <!-- package name -->
+			<KEYWORD2>Version:</KEYWORD2> <!-- numbers -->
+			<KEYWORD2>Cabal-Version:</KEYWORD2>
+			<KEYWORD2>Build-Type:</KEYWORD2>
+				<!-- data Distribution.PackageDescription.BuildType -->
+				<KEYWORD3>Simple</KEYWORD3>
+				<KEYWORD3>Configure</KEYWORD3>
+				<KEYWORD3>Make</KEYWORD3>
+				<KEYWORD3>Custom</KEYWORD3>
+			
+			<KEYWORD2>Stability:</KEYWORD2> <!--alpha-->
+			<KEYWORD2>Copyright:</KEYWORD2>
+			<KEYWORD2>License:</KEYWORD2> <!--GPL-->
+				<!-- data Distribution.License.License -->
+				<KEYWORD3>GPL</KEYWORD3>
+				<KEYWORD3>LGPL</KEYWORD3>
+				<KEYWORD3>BSD3</KEYWORD3>
+				<KEYWORD3>BSD4</KEYWORD3>
+				<KEYWORD3>PublicDomain</KEYWORD3>
+				<KEYWORD3>AllRightsReserved</KEYWORD3>
+				<KEYWORD3>OtherLicense</KEYWORD3>
+
+			<KEYWORD2>License-File:</KEYWORD2> <!-- filename -->
+			<KEYWORD2>Author:</KEYWORD2>
+			<KEYWORD2>Maintainer:</KEYWORD2>  <!-- address -->
+			<KEYWORD2>Homepage:</KEYWORD2>    <!-- URL -->
+			<KEYWORD2>Package-Url:</KEYWORD2> <!-- URL -->
+			<!--<KEYWORD2>Category:</KEYWORD2>-->
+			
+			<KEYWORD2>Synopsis:</KEYWORD2>
+			<KEYWORD2>Description:</KEYWORD2>
+			<KEYWORD2>Tested-With:</KEYWORD2> <!-- compiler list (>= 1.6)-->
+			<KEYWORD2>Data-Files:</KEYWORD2> <!-- filename list -->
+			<KEYWORD2>Extra-Source-Files:</KEYWORD2> <!-- filename list -->
+			<KEYWORD2>Extra-Tmp-Files:</KEYWORD2> <!-- filename list -->
+
+			<KEYWORD1>Source-Repository</KEYWORD1> <!-- (>= 1.6)-->
+				<KEYWORD2>Type:</KEYWORD2>
+				<KEYWORD2>Location:</KEYWORD2> <!-- URL -->
+			
+			<!-- Library flags -->
+			<KEYWORD2>Exposed-Modules:</KEYWORD2> <!-- identifier list -->
+			
+			<!-- Executable flags -->
+			<KEYWORD2>Main-Is:</KEYWORD2>
+			
+			<!-- Build informaton (library or executable) -->
+			<KEYWORD2>Buildable:</KEYWORD2>
+				<KEYWORD3>True</KEYWORD3>
+				<KEYWORD3>False</KEYWORD3>
+			<KEYWORD2>Build-Depends:</KEYWORD2>
+			<KEYWORD2>Other-Modules:</KEYWORD2> <!-- identifier list -->
+			<KEYWORD2>Hs-Source-Dirs:</KEYWORD2> <!-- directory list -->
+			<KEYWORD2>Extensions:</KEYWORD2> <!-- identifier list -->
+			<KEYWORD2>Build-Tools:</KEYWORD2> <!-- program list -->
+			<KEYWORD2>Ghc-Options:</KEYWORD2> <!-- token list -->
+			<KEYWORD2>Ghc-Prof-Options:</KEYWORD2> <!-- token list -->
+			<KEYWORD2>Ghc-Shared-Options:</KEYWORD2> <!-- token list -->
+			<KEYWORD2>Hugs-Options:</KEYWORD2> <!-- token list -->
+			<KEYWORD2>Nhc98-Options:</KEYWORD2> <!-- token list -->
+			<KEYWORD2>Includes:</KEYWORD2> <!-- filename list -->
+			<KEYWORD2>Install-Includes:</KEYWORD2> <!-- filename list -->
+			<KEYWORD2>Include-Dirs:</KEYWORD2> <!-- directory list -->
+			<KEYWORD2>C-Sources:</KEYWORD2> <!-- filename list -->
+			<KEYWORD2>Extra-Libraries:</KEYWORD2>
+			<KEYWORD2>Extra-Lib-Dirs:</KEYWORD2>
+			<KEYWORD2>Cc-Options:</KEYWORD2>
+			<KEYWORD2>Ld-Options:</KEYWORD2>
+			<KEYWORD2>Pkgconfig-depends:</KEYWORD2>
+			<KEYWORD2>Frameworks:</KEYWORD2>
+		</KEYWORDS>
+	</RULES>
+
+
+	<RULES SET="ghcflags" DEFAULT="COMMENT3">
+		<EOL_SPAN TYPE="COMMENT1" AT_WHITESPACE_END="TRUE">--</EOL_SPAN>
+		
+	</RULES>
+
+
+	<RULES SET="conditional" DEFAULT="NULL">
+		<EOL_SPAN TYPE="COMMENT1" AT_WHITESPACE_END="TRUE">--</EOL_SPAN>
+		
+		<!-- This delegation isn't quite right since it allows more operators than just the version guards, but...-->
+		<SPAN MATCH_TYPE="FUNCTION" DELEGATE="conditional">
+			<BEGIN>flag(</BEGIN><END>)</END></SPAN>
+		<SPAN MATCH_TYPE="FUNCTION" DELEGATE="conditional">
+			<BEGIN>os(</BEGIN><END>)</END></SPAN>
+		<SPAN MATCH_TYPE="FUNCTION" DELEGATE="conditional">
+			<BEGIN>arch(</BEGIN><END>)</END></SPAN>
+		<SPAN MATCH_TYPE="FUNCTION" DELEGATE="conditional">
+			<BEGIN>impl(</BEGIN><END>)</END></SPAN>
+		
+		<SEQ TYPE="OPERATOR">{</SEQ>
+		<SEQ TYPE="OPERATOR">}</SEQ>
+		<SEQ TYPE="OPERATOR">!</SEQ>
+		<SEQ TYPE="OPERATOR">||</SEQ>
+		<SEQ TYPE="OPERATOR">&amp;&amp;</SEQ>
+		
+		<SEQ TYPE="OPERATOR">&lt;</SEQ>
+		<SEQ TYPE="OPERATOR">=</SEQ>
+		<SEQ TYPE="OPERATOR">&gt;</SEQ>
+		
+		<KEYWORDS>
+			<KEYWORD1>true</KEYWORD1>
+			<KEYWORD1>false</KEYWORD1>
+		</KEYWORDS>
+	</RULES>
+
+
+	<RULES SET="categories" DEFAULT="NULL">
+		<EOL_SPAN TYPE="COMMENT1" AT_WHITESPACE_END="TRUE">--</EOL_SPAN>
+		
+		<!-- http://hackage.haskell.org/packages/archive/pkg-list.html
+		     As of 2008.07.27
+		-->
+		<SEQ TYPE="LITERAL2">AI</SEQ>
+		<SEQ TYPE="LITERAL2">Algorithms</SEQ>
+		<SEQ TYPE="LITERAL2">Bioinformatics</SEQ>
+		<SEQ TYPE="LITERAL2">Code Generation</SEQ>
+		<SEQ TYPE="LITERAL2">Codec</SEQ>
+		<SEQ TYPE="LITERAL2">Combinators</SEQ>
+		<SEQ TYPE="LITERAL2">Comonads</SEQ>
+		<SEQ TYPE="LITERAL2">Compilers/Interpreters</SEQ>
+		<SEQ TYPE="LITERAL2">Composition</SEQ>
+		<SEQ TYPE="LITERAL2">Concurrency</SEQ>
+		<SEQ TYPE="LITERAL2">Control</SEQ>
+		<SEQ TYPE="LITERAL2">Cryptography</SEQ>
+		<SEQ TYPE="LITERAL2">Data</SEQ>
+		<SEQ TYPE="LITERAL2">Data Mining</SEQ>
+		<SEQ TYPE="LITERAL2">Data Structures</SEQ>
+		<SEQ TYPE="LITERAL2">Database</SEQ>
+		<SEQ TYPE="LITERAL2">Debug</SEQ>
+		<SEQ TYPE="LITERAL2">Desktop</SEQ>
+		<SEQ TYPE="LITERAL2">Development</SEQ>
+		<SEQ TYPE="LITERAL2">Distributed Computing</SEQ>
+		<SEQ TYPE="LITERAL2">Distribution</SEQ>
+		<SEQ TYPE="LITERAL2">Editor</SEQ>
+		<SEQ TYPE="LITERAL2">Foreign</SEQ>
+		<SEQ TYPE="LITERAL2">FRP</SEQ>
+		<SEQ TYPE="LITERAL2">Game</SEQ>
+		<SEQ TYPE="LITERAL2">Generics</SEQ>
+		<SEQ TYPE="LITERAL2">Graphics</SEQ>
+		<SEQ TYPE="LITERAL2">GUI</SEQ>
+		<SEQ TYPE="LITERAL2">Hardware</SEQ>
+		<SEQ TYPE="LITERAL2">Interfaces</SEQ>
+		<SEQ TYPE="LITERAL2">Language</SEQ>
+		<SEQ TYPE="LITERAL2">List</SEQ>
+		<SEQ TYPE="LITERAL2">Math</SEQ>
+		<SEQ TYPE="LITERAL2">Monadic Regions</SEQ>
+		<SEQ TYPE="LITERAL2">Monads</SEQ>
+		<SEQ TYPE="LITERAL2">Music</SEQ>
+		<SEQ TYPE="LITERAL2">Natural Language Processing</SEQ>
+		<SEQ TYPE="LITERAL2">Network</SEQ>
+		<SEQ TYPE="LITERAL2">Networking</SEQ>
+		<SEQ TYPE="LITERAL2">Numerical</SEQ>
+		<SEQ TYPE="LITERAL2">ParserCombinators</SEQ>
+		<SEQ TYPE="LITERAL2">Parsing</SEQ>
+		<SEQ TYPE="LITERAL2">Physics</SEQ>
+		<SEQ TYPE="LITERAL2">Pugs</SEQ>
+		<SEQ TYPE="LITERAL2">Reactivity</SEQ>
+		<SEQ TYPE="LITERAL2">Screensaver</SEQ>
+		<SEQ TYPE="LITERAL2">Scripting</SEQ>
+		<SEQ TYPE="LITERAL2">Search</SEQ>
+		<SEQ TYPE="LITERAL2">Sound</SEQ>
+		<SEQ TYPE="LITERAL2">Source-tools</SEQ>
+		<SEQ TYPE="LITERAL2">System</SEQ>
+		<SEQ TYPE="LITERAL2">System.Console</SEQ>
+		<SEQ TYPE="LITERAL2">Testing</SEQ>
+		<SEQ TYPE="LITERAL2">Text</SEQ>
+		<SEQ TYPE="LITERAL2">Theorem Provers</SEQ>
+		<SEQ TYPE="LITERAL2">User Interfaces</SEQ>
+		<SEQ TYPE="LITERAL2">Utils</SEQ>
+		<SEQ TYPE="LITERAL2">Web</SEQ>
+		<SEQ TYPE="LITERAL2">XML</SEQ>
+		<SEQ TYPE="LITERAL2">Unclassified</SEQ>
+	</RULES>
+</MODE>

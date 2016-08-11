@@ -1,0 +1,120 @@
+<?xml version="1.0"?>
+<!DOCTYPE MODE SYSTEM "xmode.dtd">
+
+<!--
+	Haskell Core mode for jEdit 4.3
+-->
+
+<MODE>
+	<PROPS>
+		<PROPERTY NAME="tabSize"      VALUE="4" />
+		<PROPERTY NAME="indentSize"   VALUE="4" />
+		<PROPERTY NAME="noTabs"       VALUE="TRUE" /> <!-- make them soft-->
+	</PROPS>
+	
+	
+	<RULES IGNORE_CASE="FALSE" ESCAPE="\" HIGHLIGHT_DIGITS="TRUE">
+		
+		<SPAN TYPE="LITERAL1"
+			NO_LINE_BREAK="TRUE"><BEGIN>"</BEGIN><END>"</END></SPAN>
+		<SPAN TYPE="LITERAL1"
+			NO_LINE_BREAK="TRUE"><BEGIN>'</BEGIN><END>'</END></SPAN>
+		
+		<!-- Type signature -->
+		<SEQ TYPE="MARKUP">::</SEQ>
+		
+		<!-- Package names -->
+		<!-- LITERAL3 looks too much like FUNCTION -->
+		<SEQ_REGEXP AT_WORD_START="TRUE" TYPE="LITERAL2"
+			HASH_CHARS="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrtsuvwxyz"
+			>[A-Za-z]+(-[0-9.]+)?(?=:)(?!::)</SEQ_REGEXP>
+		
+		<!-- Module names -->
+		<SEQ_REGEXP AT_WORD_START="FALSE" TYPE="LITERAL2"
+			HASH_CHAR=":"
+			>:([A-Z][a-zA-Z0-9]*)(\.[A-Z][a-zA-Z0-9]*)*(?=\.)</SEQ_REGEXP>
+		
+		<!-- Protect floats -->
+		<SEQ_REGEXP AT_WORD_START="FALSE" TYPE="DIGIT"
+			HASH_CHAR=".">\.[0-9]</SEQ_REGEXP>
+		
+		<!-- Types and Constructors -->
+		<SEQ_REGEXP AT_WORD_START="TRUE" TYPE="KEYWORD3"
+			HASH_CHARS="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+			>[A-Z][a-zA-Z0-9]*</SEQ_REGEXP>
+		
+		<!-- Qualified function names -->
+		<MARK_FOLLOWING TYPE="FUNCTION">.</MARK_FOLLOWING>
+		
+		<!-- Try to highlight them a little -->
+		<SPAN MATCH_TYPE="LITERAL4" DELEGATE="MAIN">
+			<BEGIN>(</BEGIN><END>)</END></SPAN>
+		
+		<SEQ TYPE="OPERATOR">{</SEQ>
+		<SEQ TYPE="OPERATOR">;</SEQ>
+		<SEQ TYPE="OPERATOR">}</SEQ>
+		
+		<SEQ TYPE="OPERATOR">=</SEQ>
+		<!-- We fail to distinguish between function type and lambda abstraction -->
+		<SEQ TYPE="OPERATOR">-&gt;</SEQ>
+		
+		<SEQ TYPE="OPERATOR">*</SEQ>
+		<SEQ TYPE="OPERATOR">#</SEQ>
+		<SEQ TYPE="OPERATOR">?</SEQ>
+		
+		<SEQ TYPE="OPERATOR" DELEGATE="lambda">\</SEQ>
+		<SEQ TYPE="OPERATOR">@</SEQ>
+		
+		<KEYWORDS>
+			<KEYWORD1>%module</KEYWORD1>
+			<KEYWORD1>%local</KEYWORD1>
+			<KEYWORD1>%data</KEYWORD1>
+			<KEYWORD1>%newtype</KEYWORD1>
+			<KEYWORD1>%rec</KEYWORD1>
+			<KEYWORD1>%let</KEYWORD1>
+			<KEYWORD1>%in</KEYWORD1>
+			<KEYWORD1>%case</KEYWORD1>
+			<KEYWORD1>%of</KEYWORD1>
+			<KEYWORD1>%coerce</KEYWORD1>
+			<KEYWORD1>%cast</KEYWORD1>
+			<KEYWORD1>%forall</KEYWORD1>
+			<KEYWORD1>%note</KEYWORD1>
+			<KEYWORD1>%external</KEYWORD1>
+			<KEYWORD2>ccall</KEYWORD2>
+			<KEYWORD1>%_</KEYWORD1>
+		</KEYWORDS>
+	</RULES>
+	
+	
+	<!-- Mark parameters to lambda abstractions as LABEL -->
+	<RULES SET="lambda" DEFAULT="LABEL" IGNORE_CASE="FALSE">
+		
+		<SEQ TYPE="MARKUP">::</SEQ>
+		<SEQ_REGEXP AT_WORD_START="TRUE" TYPE="LITERAL2"
+			HASH_CHARS="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrtsuvwxyz"
+			>[A-Za-z]+(-[0-9.]+)?(?=:)(?!::)</SEQ_REGEXP>
+		<SEQ_REGEXP AT_WORD_START="FALSE" TYPE="LITERAL2"
+			HASH_CHAR=":"
+			>:([A-Z][a-zA-Z0-9]*)(\.[A-Z][a-zA-Z0-9]*)*(?=\.)</SEQ_REGEXP>
+		<SEQ_REGEXP AT_WORD_START="FALSE" TYPE="DIGIT"
+			HASH_CHAR=".">\.[0-9]</SEQ_REGEXP>
+		<SEQ_REGEXP AT_WORD_START="TRUE" TYPE="KEYWORD3"
+			HASH_CHARS="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+			>[A-Z][a-zA-Z0-9]*</SEQ_REGEXP>
+		
+		<SEQ TYPE="LITERAL2">.</SEQ>
+		
+		
+		<!-- Try to highlight them a little -->
+		<SPAN MATCH_TYPE="LITERAL4" TYPE="LABEL" DELEGATE="lambda">
+			<BEGIN>(</BEGIN><END>)</END></SPAN>
+		
+		<SEQ TYPE="OPERATOR">=</SEQ>
+		<SEQ TYPE="OPERATOR">*</SEQ>
+		<SEQ TYPE="OPERATOR">#</SEQ>
+		<SEQ TYPE="OPERATOR">?</SEQ>
+		<SEQ TYPE="OPERATOR">@</SEQ>
+		
+		<SEQ TYPE="OPERATOR" DELEGATE="MAIN">-&gt;</SEQ>
+	</RULES>
+</MODE>

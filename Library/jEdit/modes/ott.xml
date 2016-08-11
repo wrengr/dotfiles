@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<!DOCTYPE MODE SYSTEM "xmode.dtd">
+<!--
+	This is an Ott mode for jEdit 4.3
+	http://www.cl.cam.ac.uk/~pes20/ott/
+-->
+<MODE>
+	<PROPS>
+		<PROPERTY NAME="commentStart" VALUE="(*" />
+		<PROPERTY NAME="commentEnd"   VALUE="*)" />
+		<PROPERTY NAME="folding"      VALUE="indent" /> <!--sw33t!-->
+		<PROPERTY NAME="noWordSep"    VALUE="_'" /> <!-- does it help? -->
+		
+		<!-- Because I like 4. Who knows what the community says? -->
+		<PROPERTY NAME="tabSize"      VALUE="4" />
+		<PROPERTY NAME="indentSize"   VALUE="4" />
+		<PROPERTY NAME="noTabs"       VALUE="TRUE" /> <!-- make them soft-->
+	</PROPS>
+	
+	<RULES IGNORE_CASE="FALSE">
+		
+		<!-- This is somewhat buggy -->
+		<SPAN TYPE="LITERAL1"
+			NO_LINE_BREAK="TRUE"><BEGIN>'</BEGIN><END>'</END></SPAN>
+			
+		<EOL_SPAN TYPE="COMMENT3">%</EOL_SPAN>
+		<EOL_SPAN AT_WHITESPACE_END="TRUE"
+			TYPE="OPERATOR">---</EOL_SPAN>
+			
+		<SEQ TYPE="OPERATOR">::=</SEQ>
+		<SEQ TYPE="OPERATOR">::</SEQ>
+		<SEQ TYPE="OPERATOR">&lt;::</SEQ>
+		<SEQ TYPE="OPERATOR">|</SEQ>
+		<SEQ TYPE="OPERATOR">{{</SEQ>
+		<SEQ TYPE="OPERATOR">}}</SEQ>
+		<SEQ TYPE="OPERATOR">[[</SEQ>
+		<SEQ TYPE="OPERATOR">]]</SEQ>
+		<SEQ TYPE="OPERATOR">(+</SEQ>
+		<SEQ TYPE="OPERATOR">+)</SEQ>
+		
+		<KEYWORDS>
+			<KEYWORD1>metavar</KEYWORD1>
+			<KEYWORD1>indexvar</KEYWORD1>
+			<KEYWORD1>freevars</KEYWORD1>
+			<KEYWORD1>embed</KEYWORD1>
+			<KEYWORD1>grammar</KEYWORD1>
+			<KEYWORD1>terminals</KEYWORD1>
+			<KEYWORD1>subrules</KEYWORD1>
+			<KEYWORD1>substitutions</KEYWORD1>
+			<KEYWORD1>single</KEYWORD1>
+			<KEYWORD1>defns</KEYWORD1>
+			<KEYWORD1>defn</KEYWORD1>
+			<KEYWORD1>by</KEYWORD1>
+			
+			<!-- {{ }} keywords -->
+			<KEYWORD1>com</KEYWORD1>
+			<KEYWORD1>isa</KEYWORD1>
+			<KEYWORD1>icho</KEYWORD1>
+			<KEYWORD1>coq-equality</KEYWORD1>
+			<KEYWORD1>coq</KEYWORD1> <!-- TODO: dispatch to Coq -->
+			<KEYWORD1>hol</KEYWORD1>
+			<KEYWORD1>ocaml</KEYWORD1>
+			<KEYWORD1>lex</KEYWORD1>
+			<KEYWORD1>tex</KEYWORD1> <!-- TODO: dispatch to LaTeX -->
+			
+			<!-- (+ +) keywords -->
+			<KEYWORD1>bind</KEYWORD1>
+			<KEYWORD1>in</KEYWORD1>
+		</KEYWORDS>
+	</RULES>
+</MODE>
