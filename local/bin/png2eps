@@ -2,5 +2,6 @@
 
 file="`basename "$1" .png`"
 
-# from /sw/share/texmf-dist/source/latex/technics/png2eps.sh
+# using the netpbm package
+# (original: /sw/share/texmf-dist/source/latex/technics/png2eps.sh)
 pngtopnm -mix -background=white "$file.png" | pnmtops -noturn -nocenter -scale 1.00 - > "$file.eps"
