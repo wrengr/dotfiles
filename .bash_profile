@@ -1,4 +1,4 @@
-# This is wren gayle romano's bash login script     ~ 2015.09.29
+# This is wren gayle romano's bash login script     ~ 2016.08.08
 #
 # It's fairly generic (with weirder things at the bottom),
 # but it's designed to be usable for all my accounts with no(!)
@@ -71,6 +71,7 @@ case "${_hostname}" in
     
     *.sourceforge.net)             _localhost='sourceforge' ;;
     *.haskell.org | lun)           _localhost='haskell' ;;
+    *.google.com)                  _localhost='google' ;; # BUG: doesn't distinguish between my workstation and my laptop
     
     # If all else fails...
     *)
@@ -173,6 +174,9 @@ fi
 # Because JHU's screen is annoying
 [ "${TERM}" = 'screen' ] && export TERM='xterm-color'
 # TODO: perhaps using 'screen-256color' or 'xterm-256color' would work better?
+
+# Because my Google workstation is also annoying
+[ "${_localhost}" = 'google' ] && export TERM='xterm-color'
 
 # To compare bold vs highlight, use:
 # printf '\e[0;31mplain\n\e[1;31mbold\n\e[0;91mhighlight\n\e[1;91mbold+highlight\n\e[0m'
@@ -343,6 +347,10 @@ case "${_localhost}" in
             _copush MANPATH '/cat/man'
         fi
     ;;
+    google)
+        _push PATH '~/chromium-srcs/depot_tools'
+        _push PATH '~/chromium-srcs/goma'
+	;;
 esac
 
 # Everyone gets my personal scripts and programs
@@ -463,7 +471,8 @@ export GIT_COMMITTER_EMAIL="$GIT_AUTHOR_EMAIL"
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ Set up completion
-# (you don't need to enable this, if it's already enabled in /etc/bash.bashrc and /etc/profile sources /etc/bash.bashrc).
+# (you don't need to enable this, if it's already enabled in
+# /etc/bash.bashrc and /etc/profile sources /etc/bash.bashrc).
 if [ -r '/etc/bash_completion' ]; then
     source '/etc/bash_completion'
     
@@ -480,7 +489,9 @@ fi
 
 case "${_localhost}" in
     ereshkigal | psu )
-        # Surprisingly, I still seem to have access to some of these. But not the ubuntu machines (cat.pdx.edu) nor the bastion machine (reaver.cat.pdx.edu, replacing firefly.cat.pdx.edu)
+        # Surprisingly, I still seem to have access to some of these. But
+        # not the ubuntu machines (cat.pdx.edu) nor the bastion machine
+        # (reaver.cat.pdx.edu, replacing firefly.cat.pdx.edu)
         cat_rita='koninkje@rita.cat.pdx.edu'
         cat_solaris='koninkje@cs.pdx.edu'
     ;;
@@ -511,6 +522,12 @@ case "${_localhost}" in
         alias lv='ls -v' # unicode. opposite is -q (=default)
     ;;
     haskell )
+        # all Debian variants will prolly use this
+        # or more accurately all GNU using systems
+        eval `dircolors -b`
+        alias ls='ls --color=auto'
+    ;;
+    google )
         # all Debian variants will prolly use this
         # or more accurately all GNU using systems
         eval `dircolors -b`
@@ -586,6 +603,9 @@ case "${_localhost}" in
     ;;
     elsamelys | UNKNOWN )
         unalias grep # stupid grep, no color
+    ;;
+    google )
+        alias open='xdg-open &>/dev/null'
     ;;
     psu)
         case "${_uname}" in
