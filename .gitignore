@@ -38,3 +38,23 @@ dist/
 *.vr
 *.vrs
 .depend
+
+# Ignore general homedir specific stuff (mostly history files)
+.bash_history
+.coqtop_history
+.ghc/ghci_history
+.lesshst
+.maple_history
+
+# Ignore OSX-specific homedir specific stuff
+.CFUserTextEncoding
+.Trash
+
+# Ignore Ubuntu/Google-specific homedir stuff
+.ICEauthority
+.Xauthority
+.dmrc
+.gclient
+.gitcookies
+.xsession-errors
+.xsession-errors.old
