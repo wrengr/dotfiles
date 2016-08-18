@@ -528,10 +528,18 @@ case "${_localhost}" in
         alias ls='ls --color=auto'
     ;;
     google )
-        # all Debian variants will prolly use this
-        # or more accurately all GNU using systems
-        eval `dircolors -b`
-        alias ls='ls --color=auto'
+        case "${_uname}" in
+            Darwin)
+                alias ls='ls -G' # turn on color
+                alias lv='ls -v' # unicode. opposite is -q (=default)
+            ;;
+            Linux)
+                # all Debian variants will prolly use this
+                # or more accurately all GNU using systems
+                eval `dircolors -b`
+                alias ls='ls --color=auto'
+            ;;
+        esac
     ;;
     psu)
         case "${_uname}" in
@@ -605,7 +613,11 @@ case "${_localhost}" in
         unalias grep # stupid grep, no color
     ;;
     google )
-        alias open='xdg-open &>/dev/null'
+        case "${_uname}" in
+            Linux)
+                alias open='xdg-open &>/dev/null'
+            ;;
+        esac
     ;;
     psu)
         case "${_uname}" in
