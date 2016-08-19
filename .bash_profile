@@ -1,4 +1,4 @@
-# This is wren gayle romano's bash login script     ~ 2016.08.08
+# This is wren gayle romano's bash login script     ~ 2016.08.18
 #
 # It's fairly generic (with weirder things at the bottom),
 # but it's designed to be usable for all my accounts with no(!)
@@ -22,6 +22,7 @@ fi
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ Load the ssh-agent, if present
 #       (To set the .ssh/agent cache, use the `agent` alias)
+# TODO: update this stuff to work with `gcert` on google machines
 
 if [ -r '.ssh/agent' ]; then
     # We don't need the -e if we're passing the PID directly.
@@ -44,7 +45,8 @@ fi
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ Try to guess where/who we are
-# {ereshkigal, elsamelys, psu, sourceforge, haskell, UNKNOWN}
+# TODO: have separate variables for the general "domain" vs the specific
+# host in that domain. Also, remove all the old now-unused hosts.
 
 # so we don't keep running them all the time
 _uname="`uname`"
@@ -56,8 +58,8 @@ _hostname="`uname -n`"
 
 # Sites who use relative host names instead of FQDNs suck!
 case "${_hostname}" in
-    # Also assume xen if we've been renamed by dhcp (Foo on dhcp!)
-	# TheWitchsBroom == Hopscotch, when it's broken
+    # Also assume eresh if we've been renamed by dhcp (Foo on dhcp!)
+    # TheWitchsBroom == Hopscotch, when it's broken
     ereshkigal* | semiramis* | xenobia* | *.pubnet.pdx.edu | *.dhcp.pdx.edu | remote*.cecs.pdx.edu | *.comcast.net | TheWitchsBroom.att.net )
                                    _localhost='ereshkigal' ;;
     elsamelys*)                    _localhost='elsamelys' ;;
@@ -69,9 +71,12 @@ case "${_hostname}" in
     
     rita | ruby | *.pdx.edu)       _localhost='psu' ;; # both cat & student
     
-    *.sourceforge.net)             _localhost='sourceforge' ;;
     *.haskell.org | lun)           _localhost='haskell' ;;
-    *.google.com)                  _localhost='google' ;; # BUG: doesn't distinguish between my workstation and my laptop
+    *.google.com)
+        # BUG: doesn't distinguish between my workstation and
+        # ciruela (both Goobuntu), vs my laptop (OSX)
+        _localhost='google'
+    ;;
     
     # If all else fails...
     *)
@@ -79,6 +84,9 @@ case "${_hostname}" in
             # Guess that any other OSX is also Ereshkigal, or else
             # supports the same sorts of things in general.
             _localhost='ereshkigal'
+
+            # Debugging. Should usually be left on
+            [ -z "${PS1}" ] || echo "I resorted to guessing I'm on ereshkigal!"
         elif [ "`uname -m`" = 'armv5tel' ]; then
             _localhost='elsamelys'
         else
@@ -171,11 +179,13 @@ if [ "X${USER}" = 'X' ]; then
     export USER='UNKNOWN'
 fi
 
+# TODO: set our own _usecolor variable, rather than changing TERM itself
+
 # Because JHU's screen is annoying
 [ "${TERM}" = 'screen' ] && export TERM='xterm-color'
 # TODO: perhaps using 'screen-256color' or 'xterm-256color' would work better?
 
-# Because my Google workstation is also annoying
+# Because Goobuntu is also annoying
 [ "${_localhost}" = 'google' ] && export TERM='xterm-color'
 
 # To compare bold vs highlight, use:
@@ -350,7 +360,7 @@ case "${_localhost}" in
     google)
         _push PATH '~/chromium-srcs/depot_tools'
         _push PATH '~/chromium-srcs/goma'
-	;;
+    ;;
 esac
 
 # Everyone gets my personal scripts and programs
@@ -428,6 +438,7 @@ export BIBINPUTS=".:${HOME}/local/texmf/bibtex/bib:"
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ Set up CVS
+# TODO: does anyone still use this?
 
 export CVS_RSH='ssh'
 export CVSIGNORE='.DS_Store'
@@ -463,8 +474,16 @@ export DARCS_EMAIL='wren gayle romano <wren@community.haskell.org>'
 # ~~~~~ Set up Git
 
 # N.B., setting these overrides the `git config --global user.*` settings
+case "${_localhost}" in
+    google)
+        # TODO: distinguish between when I shoyuld use @google vs @chromium. But how?
+        export GIT_AUTHOR_EMAIL='wrengr@google.com'
+    ;;
+    *)
+        export GIT_AUTHOR_EMAIL='wren@community.haskell.org'
+    ;;
+esac
 export GIT_AUTHOR_NAME='wren gayle romano'
-export GIT_AUTHOR_EMAIL='wren@community.haskell.org'
 export GIT_COMMITTER_NAME="$GIT_AUTHOR_NAME"
 export GIT_COMMITTER_EMAIL="$GIT_AUTHOR_EMAIL"
 
@@ -498,24 +517,29 @@ case "${_localhost}" in
 esac
 
 
-if [ "${_localhost}" = 'ereshkigal' ]; then
-    elsamelys='zaurus@192.168.129.201'
-    
-    banks='wren@cl.indiana.edu'
-    miller='wrnthorn@nlp.indiana.edu'
-    hri='wrnthorn@hri.cogs.indiana.edu'
-    
-    # TODO: does sourceforge stuff even still work?
-    sourceforge='winterkoninkje@shell.sourceforge.net'
-    pbwdm_sfsite="${sourceforge}:/home/users/w/wi/winterkoninkje/pbwdm/htdocs"
-    haskell_community='wren@community.haskell.org'
-fi
+case "${_localhost}" in
+    ereshkigal)
+        elsamelys='zaurus@192.168.129.201'
+        banks='wren@cl.indiana.edu'
+        # TODO: are these really still wrnthorn, or were they updated to wrengr?
+        miller='wrnthorn@nlp.indiana.edu'
+        hri='wrnthorn@hri.cogs.indiana.edu'
+        # TODO: does sourceforge stuff even still work?
+        #sourceforge='winterkoninkje@shell.sourceforge.net'
+        #pbwdm_sfsite="${sourceforge}:/home/users/w/wi/winterkoninkje/pbwdm/htdocs"
+        haskell_community='wren@community.haskell.org'
+    ;;
+    google)
+        ciruela='wrengr@ciruela.mtv.corp.google.com'
+    ;;
+esac
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ `ls` aliases
 
 # Add color, some way or another!
+# TODO: should prolly distinguish by OS first, and host only secondarily...
 case "${_localhost}" in
     ereshkigal | miller | banks )
         alias ls='ls -G' # turn on color
@@ -710,6 +734,7 @@ if [ "${_localhost}" = 'ereshkigal' ]; then
     # This is fairly dumb (e.g., doesn't check for previous agent),
     # but it's smart enough to get by for now
     # TODO: make it smarter
+    # TODO: update this stuff to work with `gcert` on google machines
     alias agent="ssh-agent > ~/.ssh/agent ; source ~/.ssh/agent ; ssh-add ~/.ssh/{id_dsa,id_rsa}"
     
     # Move something to the trash (rather than unlinking)
