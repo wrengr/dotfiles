@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" This is wren gayle romano's vim config            ~ 2015.09.02
+" This is wren gayle romano's vim config            ~ 2015.09.07
 "
 " For more guidance, see:
 "     http://vim.wikia.com/wiki/Keep_your_vimrc_file_clean
@@ -31,6 +31,12 @@ set showcmd              " Show command in the last line of the screen
 
 
 " ~~~~~ Unicode support
+" N.B., if the occurence of the utf8 characters below glitches out
+" the cursor, then you probably need to adjust your terminal; since
+" the terminal and vim are disagreeing about where the cursor
+" actually is after printing the characters. (I.e., your terminal
+" thinks they are typographically wide, taking up two columns; when
+" in fact they should only take up one column.)
 if has('multi_byte')
 	scriptencoding utf-8
 	set encoding=utf-8
@@ -88,11 +94,17 @@ endif
 
 
 " ~~~~~ Show the final column
+" TODO: make a function that toggles this, rather than assuming
+" always on.
+" N.B., if this glitches out when using non-ASCII characters that
+" aren't actually wide (typographically speaking), then you probably
+" need to adjust your terminal; since the terminal and vim are
+" disagreeing about where the cursor actually is.
 if exists('+colorcolumn')
 	" N.B., this is the column we highlight, hence should be one
 	" more than where we want to wrap.
 	set colorcolumn=80
-	highlight ColorColumn ctermbg=DarkGrey guibg=DarkGrey
+	highlight ColorColumn ctermbg=DarkGrey ctermfg=white guibg=DarkGrey guifg=white
 else
 	" This was suggested by my source for this trick, but dunno if
 	" I really want it or not...
