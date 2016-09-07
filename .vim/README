@@ -1,0 +1,18 @@
+== What the heck goes where in here? ==
+
+This blog post has a nice summary of the directory structure in
+~/.vim/, including a bunch of directories I don't have (yet)
+    <http://www.panozzaj.com/blog/2011/09/09/vim-directory-structure/>
+
+
+== How do I manage all this stuff? ==
+
+There are a plethora of different plugin managers for vim, all in
+various states of deprecation and unmaintinence. For my part, I'm
+going to (try to) use vim-plug, which appears to be the latest and
+greatest of the options.
+    <https://github.com/junegunn/vim-plug>
+
+Of course, I also want to have my own homerolled stuff, and don't
+want it to get trounced by plugin managers. So where should I put
+that stuff?
