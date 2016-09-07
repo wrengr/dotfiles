@@ -92,6 +92,9 @@ if has("syntax") && (&t_Co > 2 || has("gui_running"))
 	colorscheme Tomorrow-Night-Bright
 endif
 
+" TODO: do we ever need to do the following?
+"set t_Co=256
+
 
 " ~~~~~ Show the final column
 " TODO: make a function that toggles this, rather than assuming
@@ -103,16 +106,16 @@ endif
 if exists('+colorcolumn')
 	" N.B., this is the column we highlight, hence should be one
 	" more than where we want to wrap.
-	set colorcolumn=80
+	set colorcolumn=81
 	highlight ColorColumn ctermbg=DarkGrey ctermfg=white guibg=DarkGrey guifg=white
 else
 	" This was suggested by my source for this trick, but dunno if
 	" I really want it or not...
-	"autocmd! BufEnter <buffer> match ColorColumn /\%80v./
+	"autocmd! BufEnter <buffer> match ColorColumn /\%81v./
 
 	" Another source <http://stackoverflow.com/a/235970> suggest:
 	"highlight OverLength ctermbg=red ctermfg=white guibg=#592929
-	"match OverLength /\%80v.\+/
+	"match OverLength /\%81v.\+/
 endif
 " TODO: even better than any of the above, see
 " <http://stackoverflow.com/a/21406581>
@@ -210,6 +213,8 @@ set ignorecase           " Don't care if search for upper or lowercase
 
 " ~~~~~ Quick swap between normal and relative line numbers
 " <https://github.com/alialliallie/vimfiles/blob/master/vimrc>
+" TODO: I like starting the name with "Toggle" for better tab-completion,
+" but everyone else puts the "Toggle" at the end of the function name...
 function! ToggleNumber()
 	if(&relativenumber == 1)
 		set norelativenumber
@@ -230,6 +235,8 @@ nnoremap <C-L> :call ToggleNumber()<cr>
 " TODO: actually make this toggle!
 " BUG: this doesn't seem to work everywhere (e.g., inside `function!`
 " itself; though it works just fine inside `if`)
+" TODO: I like starting the name with "Toggle" for better tab-completion,
+" but everyone else puts the "Toggle" at the end of the function name...
 function! ToggleHighlightSpaces()
 	syn match tab display "\t"
 	hi link tab Error
@@ -242,6 +249,8 @@ endfunc
 "     http://www.tjansson.dk/filer/vimrc.html
 "     http://saulusdotdyndnsdotorg/~david/config/vimrc
 "         This one has a whole hell of a lot of stuff!
+"     https://github.com/mad-raz/dotvim/blob/master/.vimrc
+"     https://github.com/junegunn/dotfiles/blob/8646aae3aec418662d667b36444e771041ad0d23/vimrc#L12-L91
 
 "set lazyredraw          " Don't redraw while running macros for speed
 "set hidden              " Hide buffers when they are abandoned
@@ -442,29 +451,68 @@ endif
 " So beware.
 call plug#begin('~/.vim/bundle')
 " TODO: use 'git@github.com:$WHO/$WHAT.git' formatting instead, to avoid https
+" TODO: see which of these plugins I actually want...
+
+" ~~~~~ Tabline & Statusline (just the basics; see also Buffers & Tabs)
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
-" TODO: will the install script do the right thing for us?
-" N.B., the 'Lokaltog/powerline-fonts' repo redirects to 'powerline/fonts'
-"Plug 'powerline/fonts', { 'do': './install.sh' }
-"
-" TODO: see which of these I actually want...
-" For even more, see
-" <https://github.com/junegunn/dotfiles/blob/8646aae3aec418662d667b36444e771041ad0d23/vimrc#L12-L91>
+" This is necessary for the pretty airline wedges; but doesn't seem
+" to work well on OSX/iTerm2 (see notes below). For Monaco, things
+" are tricky; cf.,
+"     <https://github.com/powerline/fonts/pull/16>
+"     <https://gist.github.com/epegzz/1634235>
+"     <https://gist.github.com/rogual/6824790627960fc93077>
+"     <https://gist.github.com/baopham/1838072>
+"     <https://github.com/robbyrussell/oh-my-zsh/issues/2869>
+"     <https://github.com/powerline/fonts/issues/44>
+"     <https://powerline.readthedocs.io/en/latest/installation/osx.html>
+" N.B., 'Lokaltog/powerline-fonts' redirects to 'powerline/fonts'
+"Plug 'Lokaltog/powerline-fonts', { 'do': './install.sh' }
+
+" ~~~~~ Buffers & Tabs
 "Plug 'bling/vim-bufferline'
+"Plug 'majutsushi/tagbar'
+"Plug 'weynhamz/vim-plugin-minibufexpl'
+
+" ~~~~~ Git
 "Plug 'airblade/vim-gitgutter'
-"Plug 'mhinz/vim-signify'       " like gitgutter, but for other VCSes
+"Plug 'mhinz/vim-signify' " like gitgutter, but for other VCSes
+" <https://bitbucket.org/ludovicchabant/vim-lawrencium> " for Mercurial
 "Plug 'junegunn/vim-github-dashboard'
+"Plug 'tpope/vim-fugitive'
+
+" ~~~~~ File-tree browsing
+"Plug 'scrooloose/nerdtree', { 'on':  'NERDTreeToggle' }
+"Plug 'Xuyuanp/nerdtree-git-plugin', { 'on': 'NERDTreeToggle' }
+
+" ~~~~~ Fuzzy searching
 "Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+"Plug 'Shougo/unite.vim'
+"Plug 'ctrlpvim/ctrlp.vim'
+
+" ~~~~~ Undoing
+"Plug 'sjl/gundo.vim'
+"Plug 'mbbill/undotree'
+
+" ~~~~~ Etc.
 "Plug 'junegunn/seoul256.vim'   " Low-contrast color scheme
 "Plug 'junegunn/goyo.vim'       " A vim variant of OmmWriter?
 "Plug 'junegunn/limelight.vim'  " Colorize only local chunks/paragraphs
 " TODO: cf., the Cond function <https://github.com/junegunn/vim-plug/wiki/faq>
 "Plug 'junegunn/vim-xmark', has('mac') ? {} : { 'on' : [] }
+"Plug 'junegunn/vim-easy-align'
 "Plug 'SirVer/ultisnips' | Plug 'honza/vim-snippets'
 "Plug 'rdnetto/YCM-Generator', { 'branch': 'stable' }
 "Plug 'Valloric/YouCompleteMe', { 'do': './install.py' }
-"Plug 'scrooloose/nerdtree', { 'on':  'NERDTreeToggle' }
+"Plug 'tpope/vim-sensible' " More-sensible defaults
+"Plug 'tomtom/quickfixsigns_vim'
+"Plug 'scrooloose/syntastic'
+"Plug 'jmcantrell/vim-virtualenv' " for Python virtualenvs
+"Plug 'edkolev/tmuxline.vim'
+"Plug 'gcmt/taboo.vim'
+"Plug 'vim-ctrlspace/vim-ctrlspace'
+"Plug 'edkolev/promptline.vim'
+"Plug 'bling/minivimrc'
 call plug#end()
 
 
@@ -482,6 +530,14 @@ let g:airline#extensions#tabline#enabled = 1
 if has('multi_byte')
 	" Populate the g:airline_symbols dictionary with 'powerline/fonts'
 	" symbols. N.B., requires those fonts to be installed first.
+	"
+	" TODO: insert guards to detect whether the powerline fonts
+	" are installed. (Because even after running the ./install.sh
+	" script for 'powerline/fonts' we still get those error glyphs)
+	"
+	" N.B., for iTerm2 on OSX (and probably more generally) you
+	" need to go in and change the terminal's font before this
+	" will actually work (instead of showing error glyphs).
 	"let g:airline_powerline_fonts = 1
 
 	" Or, manually do unicode hackery
@@ -499,6 +555,17 @@ if has('multi_byte')
 	"let g:airline_symbols.notexists = '∄'
 	"let g:airline_symbols.whitespace = 'Ξ'
 endif
+
+
+" ~~~~~ nerdtree configuration
+"map <C-n> :NERDTreeToggle<CR>
+
+" Allow vim to close if the only open window is nerdtree
+"autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
+
+" Highlight based on extensions:
+" <https://github.com/scrooloose/nerdtree/issues/433#issuecomment-92590696>
+
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ fin.
