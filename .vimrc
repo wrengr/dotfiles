@@ -408,5 +408,97 @@ map =jd :.,+1!~/.vim/macro_jd.pl
 "
 "autocmd BufEnter *.hs,*.lhs :call SetToCabalBuild()
 
+
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+" ~~~~~ vim-plug stuff <https://github.com/junegunn/vim-plug>
+
+" Autodownload vim-plug itself, if it's not already installed. That
+" way we don't need to store a copy in our dotfiles git repo. Of
+" course auto-installing opens us up to potential security issues.
+" In lieu of auto-installing, we could just store this single file
+" in the dotfiles repo (after verifying its trustworthiness), and
+" then re-verify it before committing the new version gotten by
+" calling :PlugUpgrade. Then again, auto-updating the other plugins
+" also poses potential security issues; so how paranoid should we be?
+"
+" junegunn himself encourages committing plug.vim to dotfiles repos:
+" <https://github.com/junegunn/vim-plug/issues/69#issuecomment-54735487>
+" <https://github.com/junegunn/vim-plug/pull/240#issuecomment-110538613>
+" To ease that, maybe we should turn this code into a PlugBootstrap function?
+if empty(glob('~/.vim/autoload/plug.vim'))
+	" TODO: detect if we're behind an HTTP proxy and fail with
+	" a message. (Because no way am I going to pass --insecure
+	" to curl, nor set GIT_SSL_NO_VERIFY to true).
+	silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
+		\ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+	" N.B., $MYVIMRC is magically set to point to this ~/.vimrc
+	" file. Alas, there appears to be no equivalent for the
+	" ~/.vim directory
+	autocmd VimEnter * PlugInstall | source $MYVIMRC
+endif
+
+" We use ~/.vim/bundle since that's what most other plugin managers
+" use. However, all the vim-plug docs prefer ~/.vim/plugged instead.
+" So beware.
+call plug#begin('~/.vim/bundle')
+" TODO: use 'git@github.com:$WHO/$WHAT.git' formatting instead, to avoid https
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
+" TODO: will the install script do the right thing for us?
+" N.B., the 'Lokaltog/powerline-fonts' repo redirects to 'powerline/fonts'
+"Plug 'powerline/fonts', { 'do': './install.sh' }
+"
+" TODO: see which of these I actually want...
+" For even more, see
+" <https://github.com/junegunn/dotfiles/blob/8646aae3aec418662d667b36444e771041ad0d23/vimrc#L12-L91>
+"Plug 'bling/vim-bufferline'
+"Plug 'airblade/vim-gitgutter'
+"Plug 'mhinz/vim-signify'       " like gitgutter, but for other VCSes
+"Plug 'junegunn/vim-github-dashboard'
+"Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+"Plug 'junegunn/seoul256.vim'   " Low-contrast color scheme
+"Plug 'junegunn/goyo.vim'       " A vim variant of OmmWriter?
+"Plug 'junegunn/limelight.vim'  " Colorize only local chunks/paragraphs
+" TODO: cf., the Cond function <https://github.com/junegunn/vim-plug/wiki/faq>
+"Plug 'junegunn/vim-xmark', has('mac') ? {} : { 'on' : [] }
+"Plug 'SirVer/ultisnips' | Plug 'honza/vim-snippets'
+"Plug 'rdnetto/YCM-Generator', { 'branch': 'stable' }
+"Plug 'Valloric/YouCompleteMe', { 'do': './install.py' }
+"Plug 'scrooloose/nerdtree', { 'on':  'NERDTreeToggle' }
+call plug#end()
+
+
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+" ~~~~~ airline configuration
+" TODO: guard this section with something like:
+"if not(empty(glob('~/.vim/bundle/vim-airline/autoload/airline.vim')))
+
+" Automatically show the tabline (top), even if there's only one buffer.
+let g:airline#extensions#tabline#enabled = 1
+
+" Automatically show the statusline (bottom), even if there're no splits.
+"set laststatus=2
+
+if has('multi_byte')
+	" Populate the g:airline_symbols dictionary with 'powerline/fonts'
+	" symbols. N.B., requires those fonts to be installed first.
+	"let g:airline_powerline_fonts = 1
+
+	" Or, manually do unicode hackery
+	"if !exists('g:airline_symbols')
+	"	let g:airline_symbols = {}
+	"endif
+	"let g:airline_left_sep = '▶' " '»'
+	"let g:airline_right_sep = '◀' " '«'
+	"let g:airline_symbols.crypt = '🔒'
+	"let g:airline_symbols.linenr = '¶' " '␊', '␤'
+	"let g:airline_symbols.maxlinenr = '' " '☰'
+	"let g:airline_symbols.branch = '⎇'
+	"let g:airline_symbols.paste = 'ρ' " 'Þ', '∥'
+	"let g:airline_symbols.spell = 'Ꞩ'
+	"let g:airline_symbols.notexists = '∄'
+	"let g:airline_symbols.whitespace = 'Ξ'
+endif
+
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ fin.
