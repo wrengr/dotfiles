@@ -1,8 +1,21 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" This is wren gayle romano's vim config            ~ 2015.07.24
+" This is wren gayle romano's vim config            ~ 2015.09.02
 "
 " For more guidance, see:
 "     http://vim.wikia.com/wiki/Keep_your_vimrc_file_clean
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+"
+" What do those funny symbols on :set mean?
+"     :set foo    " turn foo on
+"     :set nofoo  " turn foo off
+"     :set invfoo " toggle foo
+"     :set foo!   " toggle foo
+"     :set foo&   " set foo to its default value
+"     :set foo?   " show the value of foo
+"
+" What do all those variations on :{n,v,}{nore,}map mean?
+"     the full story:    <http://stackoverflow.com/a/11676244>
+"     the short version: <http://stackoverflow.com/a/3776182>
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 " ~~~~~ Basic usability
@@ -51,8 +64,8 @@ set viminfo='20,<100,s100,\"100
 set autowrite            " Autosave before commands like next and make
 set nobackup             " Make a backup file?
 "set patchmode=.orig     " save original file with suffix the first time
-"set backupdir=$HOME/.vim/backup " where to put backup file
-"set directory=$HOME/.vim/temp   " directory is the directory for temp file
+"set backupdir=$HOME/.vim/backup " where to put backup files
+"set directory=$HOME/.vim/temp   " where to put temp files
 
 
 " ~~~~~ Syntax highlighting
@@ -74,9 +87,27 @@ if has("syntax") && (&t_Co > 2 || has("gui_running"))
 endif
 
 
+" ~~~~~ Show the final column
+if exists('+colorcolumn')
+	" N.B., this is the column we highlight, hence should be one
+	" more than where we want to wrap.
+	set colorcolumn=80
+	highlight ColorColumn ctermbg=DarkGrey guibg=DarkGrey
+else
+	" This was suggested by my source for this trick, but dunno if
+	" I really want it or not...
+	"autocmd! BufEnter <buffer> match ColorColumn /\%80v./
+
+	" Another source <http://stackoverflow.com/a/235970> suggest:
+	"highlight OverLength ctermbg=red ctermfg=white guibg=#592929
+	"match OverLength /\%80v.\+/
+endif
+" TODO: even better than any of the above, see
+" <http://stackoverflow.com/a/21406581>
+
+
 " ~~~~~ Spelling
 if v:version > 700
-	" TODO: what does the bang in `set spell!` mean/do?
 	"set spell           " Highlight spelling errors automatically
 	"setlocal spell spelllang=en_us
 	"set spellsuggest=10 " Show top N spell suggestions
@@ -99,8 +130,8 @@ set smartindent          " Tries to indent based on filetype
 
 set shiftwidth=4         " Autoindent N characters (default 2?)
 set tabstop=4            " Display a <Tab> as N characters
-"set softtabstop=4       " Every N positions are treated like one <Tab>
-"set shiftwidth=4        " Indent N positions by shifting text with </>
+set softtabstop=4        " Every N positions are treated like one <Tab>
+set shiftwidth=4         " Indent N positions by shifting text with </>
 
 "set smarttab            " Insert 'shiftwidth' positions at line begin
                          "     and 'tabstop' elsewhere
@@ -142,11 +173,19 @@ set ignorecase           " Don't care if search for upper or lowercase
 
 
 " ~~~~~ Folding
+" By default <z><a> is used for un/folding. but that can be annoying if you
+" accidentally mistype the <z> and so enter append mode. Should use nnoremap
+" to choose some other key combo for un/folding.
+"
+" For Python, you can get faqncy with something like
+" <https://github.com/tmhedberg/SimpylFold>, so you can still see docstrings
+" when folded, etc.
+"
 "set foldenable          " Turn on folding
 " This shows the first line of the fold, with "/*", "*/" and "{{{" removed.
 "set foldtext=v:folddashes.substitute(getline(v:foldstart),'/\\*\\\|\\*/\\\|{{{\\d\\=','','g')
-"set foldmethod=syntax   " Make folding by syntax file
-"set foldlevel=0         " Autofold everything
+"set foldmethod=syntax   " Make folding by: syntax, indent,...
+"set foldlevel=0         " Autofold (0)just this level, (99)all levels
 "set foldlevelstart=0    " Initially close all folds
 "set foldminlines=2      " Don't fold lines that are less than
 "set foldnestmax=3       " Maximum nesting for foldings
@@ -159,7 +198,7 @@ set ignorecase           " Don't care if search for upper or lowercase
 
 " ~~~~~ Quick swap between normal and relative line numbers
 " <https://github.com/alialliallie/vimfiles/blob/master/vimrc>
-function! NumberToggle()
+function! ToggleNumber()
 	if(&relativenumber == 1)
 		set norelativenumber
 		set number
@@ -167,14 +206,14 @@ function! NumberToggle()
 		set relativenumber
 	endif
 endfunc
-nnoremap <C-L> :call NumberToggle()<cr>
+nnoremap <C-L> :call ToggleNumber()<cr>
 
 
 " ~~~~~ Quick swap highlight certain spaces as errors
 " TODO: actually make this toggle!
 " BUG: this doesn't seem to work everywhere (e.g., inside `function!`
 " itself; though it works just fine inside `if`)
-function! SpaceErrorToggle()
+function! ToggleHighlightSpaces()
 	syn match tab display "\t"
 	hi link tab Error
 	syn match trailingWhite display "[[:space:]]\+$"
@@ -227,7 +266,7 @@ set scrolloff=5          " Show N lines in advance when scrolling
 "set grepprg=grep\ -nH\ $*
 
 " Vim Grep
-let Grep_Skip_Dirs = 'RCS CVS SCCS .svn .hg _darcs'
+let Grep_Skip_Dirs = 'RCS CVS SCCS .svn .hg _darcs .git'
 
 " Make p in Visual mode replace the selected text with the "" register.
 vnoremap p <Esc>:let current_reg = @"<CR>gvdi<C-R>=current_reg<CR><Esc>
@@ -240,6 +279,7 @@ noremap <leader>y "*y
 noremap <leader>yy "*Y
 
 " Preserve indentation while pasting text from the OS X clipboard
+" TODO: this doesn't help for my Ubuntu workstation. Need to make smarter
 noremap <leader>p :set paste<CR>:put  *<CR>:set nopaste<CR>
 
 
@@ -261,8 +301,26 @@ if has("autocmd")
 	" Yes, all my *.pro files ARE prolog files
 	autocmd BufNewFile,BufRead *.pro :set ft=prolog
 	autocmd BufNewFile,BufRead *.ecl :set ft=prolog
+
 	" TODO: move this all to ~/.vim/ftplugin/python.vim
-	autocmd BufNewFile,BufRead *.py set smartindent cinwords=if,elif,else,for,while,try,except,finally,def,class
+	" TODO: install <https://github.com/hynek/vim-python-pep8-indent/> ?
+	" TODO: install <https://github.com/nvie/vim-flake8> ?
+	" Some of these bits are redundant with our general settings, but just to
+	" be sure... N.B., Chromium style uses ts=2 in lieu of PEP8's ts=4 !
+	"
+	" N.B., in order to use the leading backslash notation with
+	" multiple commands, you need to also use a trailing pipe,
+	" or you need to avoid any space after the backslash.
+	" <http://stackoverflow.com/a/36742908>
+	autocmd BufNewFile,BufRead *.py
+		\setlocal smartindent cinwords=if,elif,else,for,while,try,except,finally,def,class
+		\setlocal tabstop=2
+		\setlocal softtabstop=2
+		\setlocal shiftwidth=2
+		\setlocal textwidth=79
+		\setlocal expandtab
+		\setlocal autoindent
+		\setlocal fileformat=unix
 	
 	" This causes GHC to type check every time you save the file
 	"autocmd BufWritePost *.hs !ghc -c %
@@ -284,6 +342,9 @@ map =hs :.!sed 's/^-- //; s/^/   /' \| fmt \| sed 's/^  /--/'
 " JavaDoc comment pretty printer.
 " TODO: make this work for indented comments too
 map =jd :.,+1!~/.vim/macro_jd.pl
+
+" TODO: similar smarts for Bash/Perl/Python-stule comments
+" TODO: can I write a single smart macro that does all of them?
 
 
 " ~~~~~ Functions
