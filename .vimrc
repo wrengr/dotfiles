@@ -44,7 +44,7 @@ if has('multi_byte')
 	set fileencodings=ucs-bom,utf-8,latin1
 
 	" Use `:set list` to turn these characters on
-	if version >= 700
+	if v:version >= 700
 		set lcs=tab:»\ ,trail:·,eol:¶,extends:→,precedes:←,nbsp:×
 	else
 		" This line is still giving errors on version 6.2 ...
@@ -119,13 +119,13 @@ endif
 
 
 " ~~~~~ Spelling
-if v:version > 700
-	"set spell           " Highlight spelling errors automatically
-	"setlocal spell spelllang=en_us
-	"set spellsuggest=10 " Show top N spell suggestions
-	" Change to make spellfile.vim ask you again for downloading file
-	"let g:spellfile_URL = 'http://ftp.vim.org/vim/runtime/spell'
-endif
+"if v:version > 700
+"	set spell           " Highlight spelling errors automatically
+"	setlocal spell spelllang=en_us
+"	set spellsuggest=10 " Show top N spell suggestions
+"	" Change to make spellfile.vim ask you again for downloading file
+"	let g:spellfile_URL = 'http://ftp.vim.org/vim/runtime/spell'
+"endif
 
 
 " ~~~~~ Indentation, tabs, whitespace, & linewrapping
@@ -216,6 +216,11 @@ function! ToggleNumber()
 		set number
 	else
 		set relativenumber
+		" Use the new hybrid-mode, if available
+		" <http://jeffkreeftmeijer.com/2013/vims-new-hybrid-line-number-mode/>
+		if v:version >= 704
+			set number
+		endif
 	endif
 endfunc
 nnoremap <C-L> :call ToggleNumber()<cr>
