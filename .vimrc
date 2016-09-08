@@ -164,6 +164,8 @@ set formatoptions-=c
 set formatoptions-=a
 set formatoptions+=l
 set formatoptions+=1
+" See also <http://vi.stackexchange.com/a/1985>. Looks like we may
+" need to install our own after/ hooks to fix up all this nonsense.
 
 
 set autoindent           " Keep indent levels line-to-line
