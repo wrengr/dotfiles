@@ -14,8 +14,13 @@
 "     :set foo?   " show the value of foo
 "
 " What do all those variations on :{n,v,}{nore,}map mean?
-"     the full story:    <http://stackoverflow.com/a/11676244>
-"     the short version: <http://stackoverflow.com/a/3776182>
+"     the official story: <http://vimdoc.sourceforge.net/htmldoc/map.html>
+"     the full story:     <http://stackoverflow.com/a/11676244>
+"     the short version:  <http://stackoverflow.com/a/3776182>
+"
+" What do those {&,@,g:,w:,...} prefixes on variables mean?
+"     <https://codeyarns.com/2010/11/26/how-to-view-variables-in-vim/>
+"     <http://learnvimscriptthehardway.stevelosh.com/chapters/19.html>
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 " ~~~~~ Basic usability
@@ -59,7 +64,7 @@ endif
 " ~~~~~ History, backups, & stupidity
 set history=100          " size of command and search history
 "set undolevels=1000
-" The following line has some sort of typo about "<" for version 6.2
+" The following line has some sort of typo about '<' for version 6.2
 set viminfo='20,<100,s100,\"100
 "           |   |    |    |
 "           |   |    |    +-- lines of history (default 50)
@@ -78,7 +83,7 @@ set nobackup             " Make a backup file?
 if has("syntax") && (&t_Co > 2 || has("gui_running"))
 	syntax on
 	set background=dark  " Optimize the colors to a dark background
-	
+
 	" ~~~~~ <https://github.com/altercation/vim-colors-solarized>
 	"       I'm not sure I like this...
 	"let g:solarized_termtrans=1
@@ -87,13 +92,13 @@ if has("syntax") && (&t_Co > 2 || has("gui_running"))
 	"let g:solarized_italic=0
 	"let g:solarized_underline=0
 	"colorscheme solarized
-	
+
 	" ~~~~~ <https://github.com/chriskempson/tomorrow-theme>
 	colorscheme Tomorrow-Night-Bright
 endif
 
-" TODO: do we ever need to do the following?
-"set t_Co=256
+" TODO: do we ever need to set &t_Co to something large, like 256?
+" Or can we really trust that it's always the right thing?
 
 
 " ~~~~~ Show the final column
@@ -155,16 +160,22 @@ set shiftwidth=4         " Indent N positions by shifting text with </>
 set noexpandtab          " Real <Tab>s please!
 " If you want to convert to/from tabs then do :retab
 
-" Indent and un-indent handled by tab and shift-tab
-" TODO: really? This doesn't seem to work... (using << and >> work fine
-" though)
-vmap <Tab> <C-T>
-vmap <S-Tab> <C-D>
+" Supposedly we can use this to make it so that (shift-)tab in
+" visual mode will un/indent the selection. However,
+" (1) it doesn't seem to work; besides,
+" (2) we never use visual mode, and
+" (3) we can already use > and < like we do all the time in normal mode,
+"     <http://vimdoc.sourceforge.net/htmldoc/visual.html#visual-operators>
+" so why even bother? If we ever do want to start using visual mode, see:
+"     <http://usevim.com/2012/05/11/visual/>
+"vmap <Tab> <C-T>
+"vmap <S-Tab> <C-D>
 
 
 " ~~~~~ Wild
 "set wildchar=<Tab>      " Expand the command line using tab
 "set wildmenu            " Nice tab-completion on the command line
+"set wildcharm=<C-Z>     " cf., <http://vim.wikia.com/wiki/Easier_buffer_switching>
 "set wildignore+=.o      " Ignore some files in completion
 "set wildmode=longest:full,list:full
 "             |            |
@@ -173,7 +184,7 @@ vmap <S-Tab> <C-D>
 
 
 " ~~~~~ Searching
-set nohlsearch           " Highlight searches?
+set nohlsearch           " Should we highlight searches?
 set incsearch            " While typing search command, show matches so far
 set ignorecase           " Don't care if search for upper or lowercase
 "set magic               " Make regex more easy
@@ -281,6 +292,8 @@ set ttyfast              " Indicates a fast terminal connection
 "set timeoutlen=3000     " How long does vim wait for mapping sequences
 "set ttimeoutlen=100     " How long does vim wait for the end of escape sequence
 "set path=$HOME/,.       " Set the basic path (see below)
+" TODO: see <http://www.oualline.com/vim/10/top_10.html> for what
+" these so-called 'tags' are all about.
 "set tags=tags,$HOME/.vim/ctagsproject
 "set shell=bash          " A shell
 set scrolloff=5          " Show N lines in advance when scrolling
@@ -309,6 +322,20 @@ noremap <leader>yy "*Y
 noremap <leader>p :set paste<CR>:put  *<CR>:set nopaste<CR>
 
 
+" Switch between buffers ala tabs in Safari (and other OSX)
+" This is based off <http://vim.wikia.com/wiki/Easier_buffer_switching>, but
+" I'm not entirely sure what the <silent> stuff does...
+" BUG: alas this won't work because apparently terminals can't
+" distinguish <Tab> and <C-Tab> since terminals think <Tab> is
+" identical to <C-i> for legacy reasons. It can only work in gVim...
+"     <http://stackoverflow.com/q/1646819/358069>
+" And apparently using multiple control keys is unreliable as well :(
+"     <http://stackoverflow.com/a/26589192/358069>
+"nnoremap <silent> <C-Tab> :bn<CR>
+"nnoremap <silent> <C-S-Tab> :bp<CR>
+" To switch between vim-tabs, use :tabp and :tabn instead
+
+
 " ~~~~~ FileType stuff
 if has("autocmd")
 	" Enable file type detection
@@ -316,13 +343,13 @@ if has("autocmd")
 	" load indent files, to automatically do language-dependent
 	" indenting, then add 'indent' as well.
 	filetype plugin on
-	
+
 	" Allow filebased indentation 
 	filetype indent on
-	
+
 	" Makes vim capable of guessing based on the filetype 
 	"filetype on
-	
+
 	" http://www.ph.unimelb.edu.au/~ssk/vim/autocmd.html
 	" Yes, all my *.pro files ARE prolog files
 	autocmd BufNewFile,BufRead *.pro :set ft=prolog
@@ -347,12 +374,12 @@ if has("autocmd")
 		\setlocal expandtab
 		\setlocal autoindent
 		\setlocal fileformat=unix
-	
+
 	" This causes GHC to type check every time you save the file
 	"autocmd BufWritePost *.hs !ghc -c %
 	" TODO: similar things for *.hsc, *.lhs,... you can use {,} alternation a-la Bash
 	" N.B., Haskell-specific things are defined in ~/.vim/ftplugin/haskell.vim
-	
+
 	" TODO: actual support for Agda
 	" <http://wiki.portal.chalmers.se/agda/agda.php?n=Main.VIMEditing>
 	autocmd BufNewFile,BufRead *.agda :set ft=haskell
@@ -521,11 +548,16 @@ call plug#end()
 " TODO: guard this section with something like:
 "if not(empty(glob('~/.vim/bundle/vim-airline/autoload/airline.vim')))
 
-" Automatically show the tabline (top), even if there's only one buffer.
+" Show all buffers in the tabline, when there's only one tab.
 let g:airline#extensions#tabline#enabled = 1
 
-" Automatically show the statusline (bottom), even if there're no splits.
+" Automatically show the statusline, even if there're no splits.
 "set laststatus=2
+
+" Some examples of things we may want to put in g:airline_section_N:
+" '%{strftime("%c")}'
+" 'BN: %{bufnr("%")}'
+" '%{airline#util#wrap(airline#parts#ffenc(),0)}' " the default g:airline_section_y
 
 if has('multi_byte')
 	" Populate the g:airline_symbols dictionary with 'powerline/fonts'
