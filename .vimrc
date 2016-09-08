@@ -158,7 +158,12 @@ set nolist               " Because &list disables &linebreak
     " This behavior of &list is a bug deemed a 'feature'
 	" <https://groups.google.com/forum/#!topic/comp.editors/blelxLchTPg>
 set textwidth=0 wrapmargin=0 " can't hard-wrap at column zero, ha!
+" <http://vimdoc.sourceforge.net/htmldoc/change.html#fo-table>
 set formatoptions-=t
+set formatoptions-=c
+set formatoptions-=a
+set formatoptions+=l
+set formatoptions+=1
 
 
 set autoindent           " Keep indent levels line-to-line
