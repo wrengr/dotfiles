@@ -17,6 +17,8 @@
 "     the official story: <http://vimdoc.sourceforge.net/htmldoc/map.html>
 "     the full story:     <http://stackoverflow.com/a/11676244>
 "     the short version:  <http://stackoverflow.com/a/3776182>
+" What does <silent> etc mean on key mappings?
+"     <http://vimdoc.sourceforge.net/htmldoc/map.html#:map-arguments>
 "
 " What do those {&,@,g:,w:,...} prefixes on variables mean?
 "     <https://codeyarns.com/2010/11/26/how-to-view-variables-in-vim/>
@@ -48,7 +50,9 @@ if has('multi_byte')
 	set termencoding=utf-8
 	set fileencodings=ucs-bom,utf-8,latin1
 
-	" Use `:set list` to turn these characters on
+	" Use `:set list` to turn these characters on.
+	" However, note that doing so will disable linewrap:
+	"     <https://groups.google.com/forum/#!topic/comp.editors/blelxLchTPg>
 	if v:version >= 700
 		set lcs=tab:»\ ,trail:·,eol:¶,extends:→,precedes:←,nbsp:×
 	else
@@ -94,6 +98,7 @@ if has("syntax") && (&t_Co > 2 || has("gui_running"))
 	"colorscheme solarized
 
 	" ~~~~~ <https://github.com/chriskempson/tomorrow-theme>
+	" TODO: move this to vim-plug so we don't need a copy in the repo
 	colorscheme Tomorrow-Night-Bright
 endif
 
@@ -138,12 +143,23 @@ endif
 
 " ~~~~~ Indentation, tabs, whitespace, & linewrapping
 "set list                " Show Tabs and spaces and EOL always
+set wrap                 " Soft-wrap overly long lines
 
-"set nu nowrap           " No wrap with line numbering
-"set nu lbr wrap         " Wrap at word with numbering
-"set textwidth=78        " Wrap lines when they reach N characters
-"set linebreak           " Break lines at breakat
-"set breakat=" ^I!@*-+;:,./?"
+" Try really hard to turn off hard-wrapping.
+"     <http://vim.wikia.com/wiki/Word_wrap_without_line_breaks>
+" BUG: none of this seems to do anything whatsoever. For debugging
+" purposes, note that &textwidth is getting re-set back to it's
+" default of 78 somehow. Also, it only seems to happen when inputting
+" lines which are entirely comments (rather than having some code
+" in front of them); wtf?
+set nolinebreak          " (lbr) Only break lines at characters in &breakat, not in the middle of words
+"set breakat=" ^I!@*-+;:,./?" " Note how the default value icludes a space.
+set nolist               " Because &list disables &linebreak
+    " This behavior of &list is a bug deemed a 'feature'
+	" <https://groups.google.com/forum/#!topic/comp.editors/blelxLchTPg>
+set textwidth=0 wrapmargin=0 " can't hard-wrap at column zero, ha!
+set formatoptions-=t
+
 
 set autoindent           " Keep indent levels line-to-line
 set smartindent          " Tries to indent based on filetype
@@ -168,6 +184,8 @@ set noexpandtab          " Real <Tab>s please!
 "     <http://vimdoc.sourceforge.net/htmldoc/visual.html#visual-operators>
 " so why even bother? If we ever do want to start using visual mode, see:
 "     <http://usevim.com/2012/05/11/visual/>
+" Also, looks like in inser mode we can use <C-d> and <C-t> to un/indent...
+"     <http://vim.wikia.com/wiki/Avoid_the_escape_key>
 "vmap <Tab> <C-T>
 "vmap <S-Tab> <C-D>
 
@@ -262,6 +280,7 @@ endfunc
 "         This one has a whole hell of a lot of stuff!
 "     https://github.com/mad-raz/dotvim/blob/master/.vimrc
 "     https://github.com/junegunn/dotfiles/blob/8646aae3aec418662d667b36444e771041ad0d23/vimrc#L12-L91
+"     http://www.apaulodesign.com/vimrc.html
 
 "set lazyredraw          " Don't redraw while running macros for speed
 "set hidden              " Hide buffers when they are abandoned
@@ -334,6 +353,9 @@ noremap <leader>p :set paste<CR>:put  *<CR>:set nopaste<CR>
 "nnoremap <silent> <C-Tab> :bn<CR>
 "nnoremap <silent> <C-S-Tab> :bp<CR>
 " To switch between vim-tabs, use :tabp and :tabn instead
+"
+" BUG: none of the <C-w><h/j/k/l> stuff the internet says actually
+" works on OSX. The commands to do things directly are ':wincmd h/j/k/l'
 
 
 " ~~~~~ FileType stuff
@@ -473,12 +495,21 @@ if empty(glob('~/.vim/autoload/plug.vim'))
 	autocmd VimEnter * PlugInstall | source $MYVIMRC
 endif
 
+
 " We use ~/.vim/bundle since that's what most other plugin managers
 " use. However, all the vim-plug docs prefer ~/.vim/plugged instead.
 " So beware.
 call plug#begin('~/.vim/bundle')
 " TODO: use 'git@github.com:$WHO/$WHAT.git' formatting instead, to avoid https
 " TODO: see which of these plugins I actually want...
+
+" ~~~~~ Automatically use GNU PGP
+" TODO: again, security blah blah. Do we want to do this, or just
+" keep a copy in the dotfiles repo?
+" TODO: This looks like the official git repo for:
+"     <http://www.vim.org/scripts/script.php?script_id=3645>
+" But is it actually organized correctly for use as a plugin?
+"Plug 'jamessan/vim-gnupg'
 
 " ~~~~~ Tabline & Statusline (just the basics; see also Buffers & Tabs)
 Plug 'vim-airline/vim-airline'
@@ -540,6 +571,7 @@ Plug 'vim-airline/vim-airline-themes'
 "Plug 'vim-ctrlspace/vim-ctrlspace'
 "Plug 'edkolev/promptline.vim'
 "Plug 'bling/minivimrc'
+"Plug 'terryma/vim-expand-region' " cf., <https://sheerun.net/2014/03/21/how-to-boost-your-vim-productivity/>
 call plug#end()
 
 
