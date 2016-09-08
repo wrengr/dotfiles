@@ -166,6 +166,20 @@ set formatoptions+=l
 set formatoptions+=1
 " See also <http://vi.stackexchange.com/a/1985>. Looks like we may
 " need to install our own after/ hooks to fix up all this nonsense.
+"
+" BUG: even though autocmd supposedly runs after the ft files, this
+" still isn't showing up. Nor is our error logging message...
+"if has("autocmd")
+"	autocmd FileType *
+"		\set formatoptions-=t
+"		\set formatoptions-=c
+"		\set formatoptions-=a
+"		\set formatoptions+=l
+"else
+"	echom "Can't use autocmd to do posthooks for fixing &formatoptions"
+"endif
+"
+" Maybe we could also try <http://stackoverflow.com/a/23326474/358069>
 
 
 set autoindent           " Keep indent levels line-to-line
