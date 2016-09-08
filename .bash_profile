@@ -1,4 +1,4 @@
-# This is wren gayle romano's bash login script     ~ 2016.08.18
+# This is wren gayle romano's bash login script     ~ 2016.09.08
 #
 # It's fairly generic (with weirder things at the bottom),
 # but it's designed to be usable for all my accounts with no(!)
@@ -476,8 +476,9 @@ export DARCS_EMAIL='wren gayle romano <wren@community.haskell.org>'
 # N.B., setting these overrides the `git config --global user.*` settings
 case "${_localhost}" in
     google)
-        # TODO: distinguish between when I shoyuld use @google vs @chromium. But how?
-        export GIT_AUTHOR_EMAIL='wrengr@google.com'
+        # TODO: there are a few cases where I have to use the @google
+        # account; so is there any way to automatically detect those?
+        export GIT_AUTHOR_EMAIL='wrengr@chromium.org'
     ;;
     *)
         export GIT_AUTHOR_EMAIL='wren@community.haskell.org'
@@ -530,6 +531,7 @@ case "${_localhost}" in
         haskell_community='wren@community.haskell.org'
     ;;
     google)
+        google_workstation='wrengr@wrengr0.mtv.corp.google.com'
         ciruela='wrengr@ciruela.mtv.corp.google.com'
     ;;
 esac
