@@ -44,7 +44,7 @@
 # <http://noamlewis.wordpress.com/2012/05/21/my-git-aliases/>
 # or the very last few at <https://gist.github.com/pksunkara/988716>
 [alias]
-    lol  = log --graph --decorate --pretty=oneline --abbrev-commit
+    lol = log --graph --decorate --pretty=oneline --abbrev-commit
     # TODO: Can we get the %d to show up with multiple colors like
     # it does for --pretty=oneline?
     lola = log --color --graph --pretty=format:'%C(yellow)%h%Creset %Cgreen(%cr)%Creset %C(blue)<%an>%Creset%C(yellow)%d%Creset %s'
@@ -58,8 +58,8 @@
     hw   = help --web
     unpushed = log @{u}..
     # This will unrecord the most recent commit. N.B., you can also
-	# use "~1" instead of "^" at the end; or "~N" to revert the
-	# N most-recent commits. <http://stackoverflow.com/q/927358/358069>
+    # use "~1" instead of "^" at the end; or "~N" to revert the
+    # N most-recent commits. <http://stackoverflow.com/q/927358/358069>
     unrecord = reset --soft 'HEAD^'
     # Undo a 'git reset'. N.B., '{1}' may not always be the one you
     # want; cf 'git reflog' <http://stackoverflow.com/a/2531803/358069>
