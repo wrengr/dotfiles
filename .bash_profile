@@ -452,25 +452,6 @@ esac
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# ~~~~~ Set up Darcs
-
-# Like `grep -R $1 .` <http://wiki.darcs.net/DarcsWiki/HintsAndTips>
-# In general, beware of `find` corrupting your repos
-# BUG: doesn't color like the grep alias
-alias dgrep="find . -path '*/_darcs' -prune -o -print0 | xargs -0 egrep"
-alias svngrep="find . -path '*/.svn' -prune -o -print0 | xargs -0 egrep"
-
-# So `darcs init` doesn't keep prompting me for it
-export DARCS_EMAIL='wren gayle romano <wren@community.haskell.org>'
-
-# To fix postfix on OSX:
-# $> echo 'canonical_maps = hash:/etc/postfix/canonical' >> /etc/postfix/main.cf
-# $> echo 'username bla@example.com' >> /etc/postfix/canonical
-# $> postmap /etc/postfix/canonical
-
-# TODO: Set up Mercurial
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ Set up Git
 
 # N.B., setting these overrides the `git config --global user.*` settings
@@ -484,9 +465,30 @@ case "${_localhost}" in
         export GIT_AUTHOR_EMAIL='wren@community.haskell.org'
     ;;
 esac
-export GIT_AUTHOR_NAME='wren gayle romano'
+export GIT_AUTHOR_NAME='wren romano'
 export GIT_COMMITTER_NAME="$GIT_AUTHOR_NAME"
 export GIT_COMMITTER_EMAIL="$GIT_AUTHOR_EMAIL"
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~ Set up Darcs
+
+# Like `grep -R $1 .` <http://wiki.darcs.net/DarcsWiki/HintsAndTips>
+# In general, beware of `find` corrupting your repos
+# BUG: doesn't color like the grep alias
+alias dgrep="find . -path '*/_darcs' -prune -o -print0 | xargs -0 egrep"
+alias svngrep="find . -path '*/.svn' -prune -o -print0 | xargs -0 egrep"
+
+# So `darcs init` doesn't keep prompting me for it
+# HACK: we reuse the git variables for DRY; but that's weird on google machines
+export DARCS_EMAIL="$GIT_AUTHOR_NAME <$GIT_AUTHOR_EMAIL>"
+
+# To fix postfix on OSX:
+# $> echo 'canonical_maps = hash:/etc/postfix/canonical' >> /etc/postfix/main.cf
+# $> echo 'username bla@example.com' >> /etc/postfix/canonical
+# $> postmap /etc/postfix/canonical
+
+# TODO: Set up Mercurial
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
