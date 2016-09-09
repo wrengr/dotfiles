@@ -45,9 +45,8 @@
 # or the very last few at <https://gist.github.com/pksunkara/988716>
 [alias]
     lol = log --graph --decorate --pretty=oneline --abbrev-commit
-    # TODO: Can we get the %d to show up with multiple colors like
-    # it does for --pretty=oneline?
-    lola = log --color --graph --pretty=format:'%C(yellow)%h%Creset %Cgreen(%cr)%Creset %C(blue)<%an>%Creset%C(yellow)%d%Creset %s'
+	# N.B., the %C(auto) color was introduced in git 1.8.3 (24 May 2013)
+    lola = log --color --graph --pretty=format:'%C(yellow)%h%Creset %Cgreen(%cr)%Creset %C(blue)<%an>%Creset%C(auto)%d%Creset %s'
     # BUG: can't actually set this alias because of the $(), but
     # it gives a nice pretty version of reflog
     #reflol = log --graph --decorate --oneline $(git rev-list -g --all)
