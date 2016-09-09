@@ -1,8 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" This is wren gayle romano's vim config            ~ 2015.09.07
-"
-" For more guidance, see:
-"     http://vim.wikia.com/wiki/Keep_your_vimrc_file_clean
+" This is wren gayle romano's vim config            ~ 2015.09.08
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 "
 " What do those funny symbols on :set mean?
@@ -11,7 +8,7 @@
 "     :set invfoo " toggle foo
 "     :set foo!   " toggle foo
 "     :set foo&   " set foo to its default value
-"     :set foo?   " show the value of foo
+"     :set foo?   " show the current value of foo
 "
 " What do all those variations on :{n,v,}{nore,}map mean?
 "     the official story: <http://vimdoc.sourceforge.net/htmldoc/map.html>
@@ -23,6 +20,9 @@
 " What do those {&,@,g:,w:,...} prefixes on variables mean?
 "     <https://codeyarns.com/2010/11/26/how-to-view-variables-in-vim/>
 "     <http://learnvimscriptthehardway.stevelosh.com/chapters/19.html>
+"
+" For more guidance on style, see:
+"     <http://vim.wikia.com/wiki/Keep_your_vimrc_file_clean>
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 " ~~~~~ Basic usability
@@ -50,19 +50,25 @@ if has('multi_byte')
 	set termencoding=utf-8
 	set fileencodings=ucs-bom,utf-8,latin1
 
-	" Use `:set list` to turn these characters on.
-	" However, note that doing so will disable linewrap:
-	"     <https://groups.google.com/forum/#!topic/comp.editors/blelxLchTPg>
 	if v:version >= 700
 		set lcs=tab:»\ ,trail:·,eol:¶,extends:→,precedes:←,nbsp:×
 	else
-		" This line is still giving errors on version 6.2 ...
+		" BUG: This line is still giving errors on version 6.2 ...
 		set lcs=tab:»\ ,trail:·,eol:¶,extends:>,precedes:<,nbsp:_
 	endif
 endif
+
 " Show ↪ at the beginning of wrapped lines
-" It'd be better if we could get this in the numbering column...
+" TODO: It'd be better if we could put this in the gutter, rather
+" than in the first column.
 "let &sbr = nr2char(8618).' '
+
+" Enable &list to visualize invisible characters (<Tab>, nbsp, EOL, etc)
+" The vizualisations are defined in &lcs. N.B., &list is incompatible
+" with &linewrap, and enabling &list will override &linewrap's setting.
+" This highly unexpected behavior has been deemed 'a feature':
+"     <https://groups.google.com/forum/#!topic/comp.editors/blelxLchTPg>
+"set list                
 
 
 " ~~~~~ History, backups, & stupidity
@@ -89,7 +95,7 @@ if has("syntax") && (&t_Co > 2 || has("gui_running"))
 	set background=dark  " Optimize the colors to a dark background
 
 	" ~~~~~ <https://github.com/altercation/vim-colors-solarized>
-	"       I'm not sure I like this...
+	"       I don't think I like this...
 	"let g:solarized_termtrans=1
 	"let g:solarized_visibility='low' " 'low', 'normal', 'high'
 	"let g:solarized_bold=0
@@ -106,7 +112,7 @@ endif
 " Or can we really trust that it's always the right thing?
 
 
-" ~~~~~ Show the final column
+" ~~~~~ Highlight the final column
 " TODO: make a function that toggles this, rather than assuming
 " always on.
 " N.B., if this glitches out when using non-ASCII characters that
@@ -117,6 +123,9 @@ if exists('+colorcolumn')
 	" N.B., this is the column we highlight, hence should be one
 	" more than where we want to wrap.
 	set colorcolumn=81
+	" BUG: the DarkGrey color looks great on OSX/iTerm2, but
+	" is too dark and doesn't show up against the background
+	" on Goobuntu.
 	highlight ColorColumn ctermbg=DarkGrey ctermfg=white guibg=DarkGrey guifg=white
 else
 	" This was suggested by my source for this trick, but dunno if
@@ -141,9 +150,8 @@ endif
 "endif
 
 
-" ~~~~~ Indentation, tabs, whitespace, & linewrapping
-"set list                " Show Tabs and spaces and EOL always
-set wrap                 " Soft-wrap overly long lines
+" ~~~~~ Line wrapping (or not, as the case may be)
+set wrap               " Enable &wrap to soft-wrap overly long lines.
 
 " Try really hard to turn off hard-wrapping.
 "     <http://vim.wikia.com/wiki/Word_wrap_without_line_breaks>
@@ -157,7 +165,7 @@ set linebreak          " (lbr) Only break lines at characters in &breakat;
                        " N.B., the default &breakat contains a space.
 "set breakat=" ^I!@*-+;:,./?"
 set nolist               " Because &list disables &linebreak
-    " This behavior of &list is a bug deemed a 'feature'
+    " This behavior is deemed to be 'a feature':
     " <https://groups.google.com/forum/#!topic/comp.editors/blelxLchTPg>
 set textwidth=0 wrapmargin=0 " can't hard-wrap at column zero, ha!
 " <http://vimdoc.sourceforge.net/htmldoc/change.html#fo-table>
@@ -187,20 +195,29 @@ set formatoptions+=1
 " Maybe we could also try <http://stackoverflow.com/a/23326474/358069>
 
 
+" ~~~~~ Indentation & tabs
 set autoindent           " Keep indent levels line-to-line
-set smartindent          " Tries to indent based on filetype
+set smartindent          " Try to indent based on filetype
 
-set shiftwidth=4         " Autoindent N characters (default 2?)
 set tabstop=4            " Display a <Tab> as N characters
 set softtabstop=4        " Every N positions are treated like one <Tab>
-set shiftwidth=4         " Indent N positions by shifting text with </>
+set shiftwidth=4         " Indent N positions by shifting text with < and >
 
-"set smarttab            " Insert 'shiftwidth' positions at line begin
-                         "     and 'tabstop' elsewhere
-"set nosmarttab          " A <Tab> always inserts 'tabstop' positions
-"set expandtab           " Always insert positions --- no <Tab>s at all
-set noexpandtab          " Real <Tab>s please!
-" If you want to convert to/from tabs then do :retab
+" Enabling smarttab means we will use &shiftwidth for how many
+" positions to insert for <Tab> at the beginning of a line (instead
+" of only using &shiftwith for the shift commands; i.e., < and >).
+" N.B., <Tab> will still use &tabstop when *not* at the beginning
+" of the line. Disabling smarttab means we will use &tabstop everywhere.
+set smarttab
+" Enabling expandtab means we will *always* convert <Tab> to positions
+" (either &shiftwidth or &tabstop, depending on &smarttab). Disabling
+" it means we will *never* convert <Tab> to positions. N.B., if you
+" want to convert <Tab> manually, use the :retab command.
+"
+" We're disabling expandtab by default (will be overridden by
+" filetype stuff), so we don't muck up Makefiles and other things
+" that actually do need the literal <Tab> character.
+set noexpandtab
 
 " Supposedly we can use this to make it so that (shift-)tab in
 " visual mode will un/indent the selection. However,
@@ -309,10 +326,10 @@ endfunc
 "     http://www.apaulodesign.com/vimrc.html
 "     https://github.com/thoughtbot/dotfiles/blob/master/vimrc
 
-"set lazyredraw          " Don't redraw while running macros for speed
+"set lazyredraw          " Don't redraw while running macros, for speed
 "set hidden              " Hide buffers when they are abandoned
 set title                " Set terminal title to Vim + filename
-set ttyfast              " Indicates a fast terminal connection
+set ttyfast              " Is our terminal connection 'fast'? (hint: yes)
 "set modeline            " Do interpret modelines
 "set showmode            " Show what's happening
 "set autochdir           " Change directory to the file in the current window
@@ -329,7 +346,6 @@ set ttyfast              " Indicates a fast terminal connection
 "set cmdheight=1         " The command bar is 1 high
 "set statusline=%F%m%r%h%w\ [%{&ff}\|%Y\|%03.3b\|%04l,%04v\|%p%%\|LEN=%L] "\ %{Tlist_Get_Tag_Prototype_By_Line()}
 "set laststatus=2        " Always show the status line
-"set formatoptions=1crql " See Help (complex)
 "set pastetoggle=<F9>
 "set modelines=5         " Search in the first N lines for modes
 
@@ -346,7 +362,7 @@ set scrolloff=5          " Show N lines in advance when scrolling
 "set sidescrolloff=5     " Lines visible to the left/right of cursor when scrolling
 "set winminheight=0      " Let splitted windows get as small as only the titlebar
 "set splitright          " When splitting vertically, split to the right
-"set splitbelow          " When splitting horizontally, split below
+set splitbelow           " When splitting horizontally, split below
 "set browsedir=buffer    " :browse e starts in %:h, not in $PWD
 "set grepprg=grep\ -nH\ $*
 
@@ -364,7 +380,7 @@ noremap <leader>y "*y
 noremap <leader>yy "*Y
 
 " Preserve indentation while pasting text from the OS X clipboard
-" TODO: this doesn't help for my Ubuntu workstation. Need to make smarter
+" TODO: this doesn't help for my Goobuntu workstation. Need to make smarter
 noremap <leader>p :set paste<CR>:put  *<CR>:set nopaste<CR>
 
 
@@ -386,6 +402,8 @@ noremap <leader>p :set paste<CR>:put  *<CR>:set nopaste<CR>
 
 
 " ~~~~~ FileType stuff
+" TODO: Most of this stuff should go into its own ft files. Not in here! 
+"     <http://vim.wikia.com/wiki/Keep_your_vimrc_file_clean>
 if has("autocmd")
 	" Enable file type detection
 	" Use the default filetype settings. If you also want to
@@ -530,6 +548,7 @@ call plug#begin('~/.vim/bundle')
 " TODO: use 'git@github.com:$WHO/$WHAT.git' formatting instead, to avoid https
 " TODO: see which of these plugins I actually want...
 
+
 " ~~~~~ Automatically use GNU PGP
 " TODO: again, security blah blah. Do we want to do this, or just
 " keep a copy in the dotfiles repo?
@@ -537,6 +556,7 @@ call plug#begin('~/.vim/bundle')
 "     <http://www.vim.org/scripts/script.php?script_id=3645>
 " But is it actually organized correctly for use as a plugin?
 "Plug 'jamessan/vim-gnupg'
+
 
 " ~~~~~ Tabline & Statusline (just the basics; see also Buffers & Tabs)
 Plug 'vim-airline/vim-airline'
@@ -554,10 +574,12 @@ Plug 'vim-airline/vim-airline-themes'
 " N.B., 'Lokaltog/powerline-fonts' redirects to 'powerline/fonts'
 "Plug 'Lokaltog/powerline-fonts', { 'do': './install.sh' }
 
+
 " ~~~~~ Buffers & Tabs
 "Plug 'bling/vim-bufferline'
 "Plug 'majutsushi/tagbar'
 "Plug 'weynhamz/vim-plugin-minibufexpl'
+
 
 " ~~~~~ Git
 "Plug 'airblade/vim-gitgutter'
@@ -589,6 +611,7 @@ Plug 'vim-airline/vim-airline-themes'
 "Plug 'SirVer/ultisnips' | Plug 'honza/vim-snippets'
 "Plug 'rdnetto/YCM-Generator', { 'branch': 'stable' }
 "Plug 'Valloric/YouCompleteMe', { 'do': './install.py' }
+" or maybe: { 'do': './install.sh --gocode-completer  --tern-completer' }
 "Plug 'tpope/vim-sensible' " More-sensible defaults
 "Plug 'tomtom/quickfixsigns_vim'
 "Plug 'scrooloose/syntastic'
@@ -598,7 +621,52 @@ Plug 'vim-airline/vim-airline-themes'
 "Plug 'vim-ctrlspace/vim-ctrlspace'
 "Plug 'edkolev/promptline.vim'
 "Plug 'bling/minivimrc'
-"Plug 'terryma/vim-expand-region' " cf., <https://sheerun.net/2014/03/21/how-to-boost-your-vim-productivity/>
+" ~~~~~ cf., <https://sheerun.net/2014/03/21/how-to-boost-your-vim-productivity/>
+" and <https://github.com/sheerun/dotfiles/blob/master/vimrc>
+" and <https://github.com/sheerun/vimrc>
+"Plug 'wellle/targets.vim'
+"Plug 'sheerun/vim-polyglot'
+"Plug 'sjl/vitality.vim'
+"Plug 'grassdog/tagman.vim'
+"Plug 'justinmk/vim-dirvish' " in lieu of nerdtree
+"Plug 'terryma/vim-expand-region'
+"Plug 'rking/ag.vim' " Lightning fast :Ag searcher
+"Plug 'tomtom/tcomment_vim'
+"Plug 'tpope/vim-rsi'
+"Plug 'tpope/vim-endwise'
+"Plug 'tpope/vim-repeat'
+"Plug 'tpope/vim-sleuth'
+"Plug 'tpope/vim-unimpaired'
+"Plug 'danro/rename.vim' " Allow to :Rename files
+"Plug 'flowtype/vim-flow'
+"Plug 'airblade/vim-rooter' " Automatically find root project directory
+"let g:rooter_disable_map = 1
+"let g:rooter_silent_chdir = 1
+"Plug 'AndrewRadev/splitjoin.vim' " Expand / wrap hashes etc.
+"Plug 'fatih/vim-go', { 'for': 'go' }
+"let g:go_fmt_command = "goimports"
+"Plug 'nsf/gocode', { 'rtp': 'vim', 'do': '~/.vim/plugged/gocode/vim/symlink.sh', 'for': 'go' }
+"Plug 'moll/vim-node', { 'for': 'javascript' }
+"Plug 'christoomey/vim-tmux-navigator' " Navitate freely between tmux and vim
+"Plug 'michaeljsmith/vim-indent-object' " ii / ai
+"
+"" For more reliable indenting and performance
+"set foldmethod=indent
+"set fillchars="fold: "
+"
+"" Nice file browsing with -
+"Plug 'eiginn/netrw'
+"let g:netrw_altfile = 1
+"Plug 'tpope/vim-vinegar'
+"
+"" Set nice 80-characters limiter
+"" execute "set colorcolumn=" . join(range(81,335), ',')
+"" hi ColorColumn guibg=#262626 ctermbg=235
+"
+"" Better search tools
+"Plug 'vim-scripts/IndexedSearch'
+"Plug 'vim-scripts/SmartCase'
+"Plug 'vim-scripts/gitignore'
 call plug#end()
 
 
