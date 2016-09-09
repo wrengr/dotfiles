@@ -1,24 +1,24 @@
 # N.B., the [user] values are overridden by the GIT_*_{NAME,EMAIL}
-# variables. Thus, evne though we set them here, we can still change
+# variables. Thus, even though we set them here, we can still change
 # them on each individual machine in our ~/.bash_profile.
 [user]
-	name = wren gayle romano
-	email = wren@community.haskell.org
+    name = wren romano
+    email = wren@community.haskell.org
 [github]
-	user = wrengr
+    user = wrengr
 [color]
     branch = auto
     diff = auto
     interactive = auto
     status = auto
-	ui = true
+    ui = true
 [push]
-	default = simple
+    default = simple
 [merge]
-	ff = only
+    ff = only
 [core]
-	autocrlf = false
-	filemode = false
+    autocrlf = false
+    filemode = false
 
 # Have newly-created branches starting from a branch, set their
 # start point as upstream (as oppose to the default 'true' setting
@@ -26,7 +26,7 @@
 # branch)
 # <http://grimoire.ca/git/config>
 [branch]
-	autoSetupMerge = always
+    autoSetupMerge = always
 
 # There are ways of making 'pull --rebase' the default, but it seems
 # to take a non-trivial amount of work; so I'm just using an alias
@@ -45,44 +45,46 @@
 # or the very last few at <https://gist.github.com/pksunkara/988716>
 [alias]
     lol  = log --graph --decorate --pretty=oneline --abbrev-commit
-    lola = log --graph --decorate --pretty=oneline --abbrev-commit --all
-# BUG: can't actually set this alias because of the $(), but it
-# gives a nice pretty version of reflog
-#	reflol = log --graph --decorate --oneline $(git rev-list -g --all)
-	st   = status --branch
-	ci   = commit --all
-	pr   = pull --rebase
-	rc   = rebase --continue
-	hw   = help --web
-	unpushed = log @{u}..
-# This will unrecord the most recent commit. Can also use "~1"
-# instead of "^" at the end
-# <http://stackoverflow.com/questions/927358/how-to-undo-the-last-commit>
-	unrecord = reset --soft 'HEAD^'
-# Undo a 'git reset'. N.B., '{1}' may not always be the oe you want;
-# cf 'git reflog'
-# <http://stackoverflow.com/a/2531803/358069>
-	unreset = reset 'HEAD@{1}'
-	amend = commit --amend --all
-# Revert all unstaged changes
-# * To revert staged files, use 'git reset -- .'
-# * To remove untracked files, use 'git clean -df'
-# * To revert only some chunks, use 'git checkout -p'
-# In all cases, you can give a specific file name instead of '.'
-# <http://stackoverflow.com/questions/52704/how-do-you-discard-unstaged-changes-in-git>
-	revert-all = checkout -- .
-# Then pass the name of the new branch in the local repo.
-	push-new-branch = push --set-upstream origin
+    # TODO: Can we get the %d to show up with multiple colors like
+    # it does for --pretty=oneline?
+    lola = log --color --graph --pretty=format:'%C(yellow)%h%Creset %Cgreen(%cr)%Creset %C(blue)<%an>%Creset%C(yellow)%d%Creset %s'
+    # BUG: can't actually set this alias because of the $(), but
+    # it gives a nice pretty version of reflog
+    #reflol = log --graph --decorate --oneline $(git rev-list -g --all)
+    st   = status --branch
+    ci   = commit --all
+    pr   = pull --rebase
+    rc   = rebase --continue
+    hw   = help --web
+    unpushed = log @{u}..
+    # This will unrecord the most recent commit. N.B., you can also
+	# use "~1" instead of "^" at the end; or "~N" to revert the
+	# N most-recent commits. <http://stackoverflow.com/q/927358/358069>
+    unrecord = reset --soft 'HEAD^'
+    # Undo a 'git reset'. N.B., '{1}' may not always be the one you
+    # want; cf 'git reflog' <http://stackoverflow.com/a/2531803/358069>
+    unreset = reset 'HEAD@{1}'
+    amend = commit --amend --all
+    # Revert all unstaged changes
+    # * To revert staged files, use 'git reset -- .'
+    # * To remove untracked files, use 'git clean -df'
+    # * To revert only some chunks, use 'git checkout -p'
+    # In all cases, you can give a specific file name instead of '.'
+    # <http://stackoverflow.com/q/52704/358069>
+    revert-all = checkout -- .
+    # Then pass the name of the new branch in the local repo.
+    push-new-branch = push --set-upstream origin
+
 
 # Trying to solve this problem
 # <http://stackoverflow.com/questions/11403407/git-asks-for-username-everytime-i-push>
 # <http://stackoverflow.com/questions/6565357/git-push-requires-username-and-password/6565661#6565661>
 # <http://stackoverflow.com/questions/5343068/is-there-a-way-to-skip-password-typing-when-using-https-github/5343146#5343146>
 #[credential "https://github.iu.edu/"]
-#	username = wrengr
+#    username = wrengr
 
 # TODO: is there a way to set this http info differently for various
 # hosts, while using the same file (so I don't need to postprocess
 # the stuff in my dotfiles repo)?
 #[http]
-#	cookiefile = /usr/local/google/home/wrengr/.gitcookies
+#    cookiefile = /usr/local/google/home/wrengr/.gitcookies
