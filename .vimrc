@@ -152,11 +152,13 @@ set wrap                 " Soft-wrap overly long lines
 " default of 78 somehow. Also, it only seems to happen when inputting
 " lines which are entirely comments (rather than having some code
 " in front of them); wtf?
-set nolinebreak          " (lbr) Only break lines at characters in &breakat, not in the middle of words
-"set breakat=" ^I!@*-+;:,./?" " Note how the default value icludes a space.
+set linebreak          " (lbr) Only break lines at characters in &breakat;
+                       " i.e., not in the middle of words.
+                       " N.B., the default &breakat contains a space.
+"set breakat=" ^I!@*-+;:,./?"
 set nolist               " Because &list disables &linebreak
     " This behavior of &list is a bug deemed a 'feature'
-	" <https://groups.google.com/forum/#!topic/comp.editors/blelxLchTPg>
+    " <https://groups.google.com/forum/#!topic/comp.editors/blelxLchTPg>
 set textwidth=0 wrapmargin=0 " can't hard-wrap at column zero, ha!
 " <http://vimdoc.sourceforge.net/htmldoc/change.html#fo-table>
 set formatoptions-=t
@@ -168,9 +170,12 @@ set formatoptions+=1
 " need to install our own after/ hooks to fix up all this nonsense.
 "
 " BUG: even though autocmd supposedly runs after the ft files, this
-" still isn't showing up. Nor is our error logging message...
+" still isn't showing up. Nor is our error logging message... cf.,
+" <http://stackoverflow.com/a/2312888/358069>
 "if has("autocmd")
 "	autocmd FileType *
+"		\set textwidth=0
+"		\set wrapmargin=0
 "		\set formatoptions-=t
 "		\set formatoptions-=c
 "		\set formatoptions-=a
@@ -302,6 +307,7 @@ endfunc
 "     https://github.com/mad-raz/dotvim/blob/master/.vimrc
 "     https://github.com/junegunn/dotfiles/blob/8646aae3aec418662d667b36444e771041ad0d23/vimrc#L12-L91
 "     http://www.apaulodesign.com/vimrc.html
+"     https://github.com/thoughtbot/dotfiles/blob/master/vimrc
 
 "set lazyredraw          " Don't redraw while running macros for speed
 "set hidden              " Hide buffers when they are abandoned
@@ -640,6 +646,13 @@ if has('multi_byte')
 	"let g:airline_symbols.notexists = '∄'
 	"let g:airline_symbols.whitespace = 'Ξ'
 endif
+
+" From <https://sheerun.net/2014/03/21/how-to-boost-your-vim-productivity/>
+" TODO: For consideration...
+let g:airline_theme='powerlineish'
+let g:airline_left_sep=''
+let g:airline_right_sep=''
+let g:airline_section_z=''
 
 
 " ~~~~~ nerdtree configuration
