@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" This is wren gayle romano's vim config            ~ 2015.09.08
+" This is wren gayle romano's vim config            ~ 2015.09.10
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 "
 " What do those funny symbols on :set mean?
@@ -33,8 +33,25 @@ set number               " Show line numbers?
 set showmatch            " When inserting a bracket, briefly jump to the match
 "set matchtime=5         " how long (N/10 secs) to blink on matching bracket
 "set updatetime=4000     " how long (N/10 secs) to highlight matching & save swp if nothing done
+
+
+" ~~~~~ Commandline, Statusline, & Tabline
+set showcmd              " Show the commandline
+set cmdheight=1          " The commandline is N rows high
+set noshowmode           " Don't show the mode in the commandline
 set ruler                " Show line and column position of the cursor
-set showcmd              " Show command in the last line of the screen
+                         " (N.B., is in commandline iff laststatus=1.
+						 " Otherwise is in the statusline?)
+set laststatus=2         " Always show statusline, even if there're no splits
+"set statusline=%F%m%r%h%w\ [%{&ff}\|%Y\|%03.3b\|%04l,%04v\|%p%%\|LEN=%L] "\ %{Tlist_Get_Tag_Prototype_By_Line()}
+
+
+" ~~~~~ Modes & Modelines
+" One should never parse modelines by default, it's a security
+" vulnerability. <http://usevim.com/2012/03/28/modelines/>
+set nomodeline
+"set modelines=5         " Search in the first N lines for modes
+
 
 
 " ~~~~~ Unicode support
@@ -56,12 +73,12 @@ if has('multi_byte')
 		" BUG: This line is still giving errors on version 6.2 ...
 		set lcs=tab:»\ ,trail:·,eol:¶,extends:>,precedes:<,nbsp:_
 	endif
-endif
 
-" Show ↪ at the beginning of wrapped lines
-" TODO: It'd be better if we could put this in the gutter, rather
-" than in the first column.
-"let &sbr = nr2char(8618).' '
+	" Show ↪ at the beginning of wrapped lines
+	" TODO: It'd be better if we could put this in the gutter, rather
+	" than in the first column.
+	"let &sbr = nr2char(8618).' '
+endif
 
 " Enable &list to visualize invisible characters (<Tab>, nbsp, EOL, etc)
 " The vizualisations are defined in &lcs. N.B., &list is incompatible
@@ -123,9 +140,10 @@ if exists('+colorcolumn')
 	" N.B., this is the column we highlight, hence should be one
 	" more than where we want to wrap.
 	set colorcolumn=81
-	" BUG: the DarkGrey color looks great on OSX/iTerm2, but
-	" is too dark and doesn't show up against the background
-	" on Goobuntu.
+	" BUG: the DarkGrey color looks like this awesome bluish
+	" grey thing on Goobuntu, but on OSX/iTerm2 it's basically
+	" the same color as comment text (with syntax highlighting
+	" on). We should use some hex code instead to fix this.
 	highlight ColorColumn ctermbg=DarkGrey ctermfg=white guibg=DarkGrey guifg=white
 else
 	" This was suggested by my source for this trick, but dunno if
@@ -238,6 +256,11 @@ set noexpandtab
 "set wildmenu            " Nice tab-completion on the command line
 "set wildcharm=<C-Z>     " cf., <http://vim.wikia.com/wiki/Easier_buffer_switching>
 "set wildignore+=.o      " Ignore some files in completion
+"set wildignore+=*.o,*.out,*.obj,.git,*.rbc,*.rbo,*.class,.svn,*.gem
+"set wildignore+=*.zip,*.tar.gz,*.tar.bz2,*.rar,*.tar.xz
+"set wildignore+=*/vendor/gems/*,*/vendor/cache/*,*/.bundle/*,*/.sass-cache/*
+"set wildignore+=*.swp,*~,._*
+"
 "set wildmode=longest:full,list:full
 "             |            |
 "             |            +-- List matches, complete first match, use wildmenu
@@ -253,9 +276,7 @@ set ignorecase           " Don't care if search for upper or lowercase
 
 
 " ~~~~~ Bells
-"set novisualbell t_vb=  " Don't use the visual bell
-"set vb t_vb=            " (what does the vb add to t_vb= ?)
-"set novisualbell
+"set novisualbell t_vb=  " Don't use the visual bell. (What does `t_vb=` do?)
 "set noerrorbells        " Error bells are annoying
 
 
@@ -330,24 +351,18 @@ endfunc
 "set hidden              " Hide buffers when they are abandoned
 set title                " Set terminal title to Vim + filename
 set ttyfast              " Is our terminal connection 'fast'? (hint: yes)
-"set modeline            " Do interpret modelines
-"set showmode            " Show what's happening
 "set autochdir           " Change directory to the file in the current window
 "set nojoinspaces        " No additional spaces when joining lines with <J>
 "set esckeys             " Allow cursor keys within insert mode
 "set debug=msg,throw     " msg, throw, beep --- combinable
 "set report=0            " Always report the number of lines changed
 "set display=lastline    " Show as much of the last line as possible
-"set noinsertmode        " Don't start in insert mode
 "set nofsync             " Less power consumption *DANGEROUS* doesnt sync IO
 "set swapsync=           "     this could result in data loss, so beware!
 "set mouse=a             " Copy/paste in "* register, normal behaviour with shift key pressed
 "set mousehide           " Hide mouse while typing
-"set cmdheight=1         " The command bar is 1 high
-"set statusline=%F%m%r%h%w\ [%{&ff}\|%Y\|%03.3b\|%04l,%04v\|%p%%\|LEN=%L] "\ %{Tlist_Get_Tag_Prototype_By_Line()}
-"set laststatus=2        " Always show the status line
 "set pastetoggle=<F9>
-"set modelines=5         " Search in the first N lines for modes
+set noinsertmode         " Don't start in insert mode. That's some emacs kinda silliness.
 
 "set fileformat=unix
 "set ttimeout            " Let vim wait for timeouts
@@ -357,31 +372,37 @@ set ttyfast              " Is our terminal connection 'fast'? (hint: yes)
 " TODO: see <http://www.oualline.com/vim/10/top_10.html> for what
 " these so-called 'tags' are all about.
 "set tags=tags,$HOME/.vim/ctagsproject
-"set shell=bash          " A shell
+"set shell=/bin/bash     " A shell
 set scrolloff=5          " Show N lines in advance when scrolling
-"set sidescrolloff=5     " Lines visible to the left/right of cursor when scrolling
+"set sidescrolloff=5     " Columns visible to the left/right of cursor when scrolling
 "set winminheight=0      " Let splitted windows get as small as only the titlebar
 "set splitright          " When splitting vertically, split to the right
 set splitbelow           " When splitting horizontally, split below
 "set browsedir=buffer    " :browse e starts in %:h, not in $PWD
 "set grepprg=grep\ -nH\ $*
+"set cursorline          " highlight the whole line the cursor is on
 
 " Vim Grep
 let Grep_Skip_Dirs = 'RCS CVS SCCS .svn .hg _darcs .git'
 
+
+" ~~~~~ Copying & Pasting
 " Make p in Visual mode replace the selected text with the "" register.
 vnoremap p <Esc>:let current_reg = @"<CR>gvdi<C-R>=current_reg<CR><Esc>
-
 
 " TODO: guard this stuff to be OSX-only?
 " <http://www.drbunsen.org/text-triumvirate.html>
 " Yank text to the OS X clipboard
-noremap <leader>y "*y
-noremap <leader>yy "*Y
+noremap <Leader>y "*y
+noremap <Leader>yy "*Y
+
+" Make <S-y> yank from cursor to end of line (a la <S-d>), rather
+" than yanking the whole line (a la traditional vi).
+nnoremap Y y$
 
 " Preserve indentation while pasting text from the OS X clipboard
 " TODO: this doesn't help for my Goobuntu workstation. Need to make smarter
-noremap <leader>p :set paste<CR>:put  *<CR>:set nopaste<CR>
+noremap <Leader>p :set paste<CR>:put  *<CR>:set nopaste<CR>
 
 
 " Switch between buffers ala tabs in Safari (and other OSX)
@@ -399,6 +420,12 @@ noremap <leader>p :set paste<CR>:put  *<CR>:set nopaste<CR>
 "
 " BUG: none of the <C-w><h/j/k/l> stuff the internet says actually
 " works on OSX. The commands to do things directly are ':wincmd h/j/k/l'
+
+
+" Enable OSX-like command for saving
+" BUG: this doesn't seem to be working either :(
+"nnoremap <C-s> :w<CR>
+"inoremap <C-s> <ESC>:w<CR>
 
 
 " ~~~~~ FileType stuff
@@ -626,7 +653,7 @@ Plug 'vim-airline/vim-airline-themes'
 " and <https://github.com/sheerun/vimrc>
 "Plug 'wellle/targets.vim'
 "Plug 'sheerun/vim-polyglot'
-"Plug 'sjl/vitality.vim'
+"Plug 'sjl/vitality.vim'  " for Vim + iTerm2 (+ tmux)
 "Plug 'grassdog/tagman.vim'
 "Plug 'justinmk/vim-dirvish' " in lieu of nerdtree
 "Plug 'terryma/vim-expand-region'
@@ -678,8 +705,6 @@ call plug#end()
 " Show all buffers in the tabline, when there's only one tab.
 let g:airline#extensions#tabline#enabled = 1
 
-" Automatically show the statusline, even if there're no splits.
-"set laststatus=2
 
 " Some examples of things we may want to put in g:airline_section_N:
 " '%{strftime("%c")}'

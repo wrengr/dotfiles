@@ -47,6 +47,7 @@ dist/
 .maple_history
 .vim/.netrwhist
 .vim/bundle
+.motd
 
 # Ignore OSX-specific homedir specific stuff
 .CFUserTextEncoding
