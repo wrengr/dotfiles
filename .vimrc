@@ -1,28 +1,7 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " This is wren gayle romano's vim config            ~ 2015.09.12
-" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-"
-" What do those funny symbols on :set mean?
-"     :set foo    " turn foo on
-"     :set nofoo  " turn foo off
-"     :set invfoo " toggle foo
-"     :set foo!   " toggle foo
-"     :set foo&   " set foo to its default value
-"     :set foo?   " show the current value of foo
-"
-" What do all those variations on :{n,v,}{nore,}map mean?
-"     the official story: <http://vimdoc.sourceforge.net/htmldoc/map.html>
-"     the full story:     <http://stackoverflow.com/a/11676244>
-"     the short version:  <http://stackoverflow.com/a/3776182>
-" What does <silent> etc mean on key mappings?
-"     <http://vimdoc.sourceforge.net/htmldoc/map.html#:map-arguments>
-"
-" What do those {&,@,g:,w:,...} prefixes on variables mean?
-"     <https://codeyarns.com/2010/11/26/how-to-view-variables-in-vim/>
-"     <http://learnvimscriptthehardway.stevelosh.com/chapters/19.html>
-"
-" For more guidance on style, see:
-"     <http://vim.wikia.com/wiki/Keep_your_vimrc_file_clean>
+" 
+" For guidance, see ~/.vim/README
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 " ~~~~~ Basic usability
@@ -657,6 +636,7 @@ Plug 'vim-airline/vim-airline-themes'
 "Plug 'mbbill/undotree'
 
 " ~~~~~ Etc.
+"Plug 'godlygeek/tabular' | Plug 'plasticboy/vim-markdown' " Syntax highlighting for Markdown
 "Plug 'junegunn/seoul256.vim'   " Low-contrast color scheme
 "Plug 'junegunn/goyo.vim'       " A vim variant of OmmWriter?
 "Plug 'junegunn/limelight.vim'  " Colorize only local chunks/paragraphs

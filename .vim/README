@@ -1,11 +1,37 @@
-== What the heck goes where in here? ==
+=== What the heck does {...} mean in vimscript? ===
+
+* What do those funny symbols on :set mean?
+	:set foo    " turn foo on
+	:set nofoo  " turn foo off
+	:set invfoo " toggle foo
+	:set foo!   " toggle foo
+	:set foo&   " set foo to its default value
+	:set foo?   " show the current value of foo
+
+* What do all those variations on :{n,v,}{nore,}map mean?
+	the official story: <http://vimdoc.sourceforge.net/htmldoc/map.html>
+	the full story:     <http://stackoverflow.com/a/11676244>
+	the short version:  <http://stackoverflow.com/a/3776182>
+
+* What does <silent> etc mean on key mappings?
+	<http://vimdoc.sourceforge.net/htmldoc/map.html#:map-arguments>
+
+* What do those {&,@,g:,w:,...} prefixes on variables mean?
+	<https://codeyarns.com/2010/11/26/how-to-view-variables-in-vim/>
+	<http://learnvimscriptthehardway.stevelosh.com/chapters/19.html>
+
+* What is good style for your ~/.vimrc file?
+	<http://vim.wikia.com/wiki/Keep_your_vimrc_file_clean>
+
+
+=== What the heck goes where in the ~/.vim directory? ===
 
 This blog post has a nice summary of the directory structure in
 ~/.vim/, including a bunch of directories I don't have (yet)
     <http://www.panozzaj.com/blog/2011/09/09/vim-directory-structure/>
 
 
-== How do I manage all this stuff? ==
+=== How do I manage all this stuff? ===
 
 There are a plethora of different plugin managers for vim, all in
 various states of deprecation and unmaintinence. For my part, I'm
@@ -16,3 +42,4 @@ greatest of the options.
 Of course, I also want to have my own homerolled stuff, and don't
 want it to get trounced by plugin managers. So where should I put
 that stuff?
+
