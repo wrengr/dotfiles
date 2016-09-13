@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" This is wren gayle romano's vim config            ~ 2015.09.10
+" This is wren gayle romano's vim config            ~ 2015.09.12
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 "
 " What do those funny symbols on :set mean?
@@ -51,7 +51,9 @@ set laststatus=2         " Always show statusline, even if there're no splits
 " vulnerability. <http://usevim.com/2012/03/28/modelines/>
 set nomodeline
 "set modelines=5         " Search in the first N lines for modes
-
+" TODO: is there a way to only parse modelines for detecting the
+" filetype whenever our other ways of detecting it fail? Is that
+" still insecure?
 
 
 " ~~~~~ Unicode support
@@ -86,6 +88,32 @@ endif
 " This highly unexpected behavior has been deemed 'a feature':
 "     <https://groups.google.com/forum/#!topic/comp.editors/blelxLchTPg>
 "set list                
+
+
+" ~~~~~ Mouse support
+" Setting this will make it so that selecting things with the mouse
+" doesn't grab the numbers (etc) in the gutter!
+" <http://vim.wikia.com/wiki/Using_the_mouse_for_Vim_in_an_xterm>
+" BUG: alas, it seems to break something about using the OSX clipboard...
+" <http://unix.stackexchange.com/q/139578>
+"set mouse=a
+
+" TODO: If we really want to go the mouse route, see also:
+"
+"if has('mouse')
+"	(1) <https://iterm2.com/faq.html>
+"	if has('mouse_sgr')
+"		set ttymouse=sgr
+"	(2) <http://usevim.com/2012/05/16/mouse/>
+"	elseif has('mac')
+"		set ttymouse=xterm2
+"	else
+"		...
+"	endif
+"endif
+"
+" (3) <https://github.com/nvie/vim-togglemouse>
+" (4) <http://unix.stackexchange.com/q/44513> re Gnome terminal bugginess
 
 
 " ~~~~~ History, backups, & stupidity
@@ -702,7 +730,8 @@ call plug#end()
 " TODO: guard this section with something like:
 "if not(empty(glob('~/.vim/bundle/vim-airline/autoload/airline.vim')))
 
-" Show all buffers in the tabline, when there's only one tab.
+" Show all buffers in the tabline, when there's only one tab. Only
+" looks good if your terminal has enough colors.
 let g:airline#extensions#tabline#enabled = 1
 
 
