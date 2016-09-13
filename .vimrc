@@ -25,7 +25,7 @@ set laststatus=2         " Always show statusline, even if there're no splits
 "set statusline=%F%m%r%h%w\ [%{&ff}\|%Y\|%03.3b\|%04l,%04v\|%p%%\|LEN=%L] "\ %{Tlist_Get_Tag_Prototype_By_Line()}
 
 
-" ~~~~~ Modes & Modelines
+" ~~~~~ Modelines
 " One should never parse modelines by default, it's a security
 " vulnerability. <http://usevim.com/2012/03/28/modelines/>
 set nomodeline
@@ -33,6 +33,11 @@ set nomodeline
 " TODO: is there a way to only parse modelines for detecting the
 " filetype whenever our other ways of detecting it fail? Is that
 " still insecure?
+
+
+" ~~~~~ Bells
+"set novisualbell t_vb=  " Don't use the visual bell. (What does `t_vb=` do?)
+"set noerrorbells        " Error bells are annoying
 
 
 " ~~~~~ Unicode support
@@ -75,10 +80,9 @@ endif
 " <http://vim.wikia.com/wiki/Using_the_mouse_for_Vim_in_an_xterm>
 " BUG: alas, it seems to break something about using the OSX clipboard...
 " <http://unix.stackexchange.com/q/139578>
-"set mouse=a
+"set mouse=a             " Copy/paste in "* register, normal behaviour with shift key pressed
 
 " TODO: If we really want to go the mouse route, see also:
-"
 "if has('mouse')
 "	(1) <https://iterm2.com/faq.html>
 "	if has('mouse_sgr')
@@ -90,9 +94,10 @@ endif
 "		...
 "	endif
 "endif
-"
 " (3) <https://github.com/nvie/vim-togglemouse>
 " (4) <http://unix.stackexchange.com/q/44513> re Gnome terminal bugginess
+
+"set mousehide           " Hide mouse while typing
 
 
 " ~~~~~ History, backups, & stupidity
@@ -131,9 +136,12 @@ if has("syntax") && (&t_Co > 2 || has("gui_running"))
 	" TODO: move this to vim-plug so we don't need a copy in the repo
 	colorscheme Tomorrow-Night-Bright
 endif
-
-" TODO: do we ever need to set &t_Co to something large, like 256?
-" Or can we really trust that it's always the right thing?
+" TODO: &t_Co is often wrong. We need to set up our ~/.bash_profile
+" to try to detect how many colors any given terminal actually
+" supports, and then set the $TERM and other global variables
+" accordingly, so that tput and vi and everyone else actually picks
+" up the right thing. If that fails, then maybe we'll need to
+" actually set &t_Co ourselves...
 
 
 " ~~~~~ Highlight the final column
@@ -147,10 +155,14 @@ if exists('+colorcolumn')
 	" N.B., this is the column we highlight, hence should be one
 	" more than where we want to wrap.
 	set colorcolumn=81
-	" BUG: the DarkGrey color looks like this awesome bluish
-	" grey thing on Goobuntu, but on OSX/iTerm2 it's basically
-	" the same color as comment text (with syntax highlighting
-	" on). We should use some hex code instead to fix this.
+	" BUG: the DarkGrey color constantly shows up differently
+	" between Goobuntu and OSX/iTerm2. Sometimes it's an awesome
+	" bluish grey thing, sometimes it's the same grey as comment
+	" text, sometimes it's bright red. We need to figure out
+	" what's causing all the issues and fix it. Probably something
+	" about &t_Co being wrong, would be my guess. In any case,
+	" if we can't fix &t_Co or whatever, then we should try
+	" using a hexcode color instead.
 	highlight ColorColumn ctermbg=DarkGrey ctermfg=white guibg=DarkGrey guifg=white
 else
 	" This was suggested by my source for this trick, but dunno if
@@ -165,14 +177,42 @@ endif
 " <http://stackoverflow.com/a/21406581>
 
 
-" ~~~~~ Spelling
-"if v:version > 700
-"	set spell           " Highlight spelling errors automatically
-"	setlocal spell spelllang=en_us
-"	set spellsuggest=10 " Show top N spell suggestions
-"	" Change to make spellfile.vim ask you again for downloading file
-"	let g:spellfile_URL = 'http://ftp.vim.org/vim/runtime/spell'
-"endif
+" ~~~~~ Indentation & tabs
+set autoindent           " Keep indent levels line-to-line
+set smartindent          " Try to indent based on filetype
+
+set tabstop=4            " Display a <Tab> as N characters
+set softtabstop=0        " Don't pretend N positions are a <Tab>
+set shiftwidth=4         " Indent N positions by shifting text with < and >
+
+" Enabling smarttab means we will use &shiftwidth for how many
+" positions to insert for <Tab> at the beginning of a line (instead
+" of only using &shiftwith for the shift commands; i.e., < and >).
+" N.B., <Tab> will still use &tabstop when *not* at the beginning
+" of the line. Disabling smarttab means we will use &tabstop everywhere.
+set smarttab
+" Enabling expandtab means we will *always* convert <Tab> to positions
+" (either &shiftwidth or &tabstop, depending on &smarttab). Disabling
+" it means we will *never* convert <Tab> to positions. N.B., if you
+" want to convert <Tab> manually, use the :retab command.
+"
+" We're disabling expandtab by default (will be overridden by
+" filetype stuff), so we don't muck up Makefiles and other things
+" that actually do need the literal <Tab> character.
+set noexpandtab
+
+" Supposedly we can use this to make it so that (shift-)tab in
+" visual mode will un/indent the selection. However,
+" (1) it doesn't seem to work; besides,
+" (2) we never use visual mode, and
+" (3) we can already use > and < like we do all the time in normal mode,
+"     <http://vimdoc.sourceforge.net/htmldoc/visual.html#visual-operators>
+" so why even bother? If we ever do want to start using visual mode, see:
+"     <http://usevim.com/2012/05/11/visual/>
+" Also, looks like in inser mode we can use <C-d> and <C-t> to un/indent...
+"     <http://vim.wikia.com/wiki/Avoid_the_escape_key>
+"vmap <Tab> <C-T>
+"vmap <S-Tab> <C-D>
 
 
 " ~~~~~ Line wrapping (or not, as the case may be)
@@ -220,42 +260,12 @@ set formatoptions+=1
 " Maybe we could also try <http://stackoverflow.com/a/23326474/358069>
 
 
-" ~~~~~ Indentation & tabs
-set autoindent           " Keep indent levels line-to-line
-set smartindent          " Try to indent based on filetype
-
-set tabstop=4            " Display a <Tab> as N characters
-set softtabstop=4        " Every N positions are treated like one <Tab>
-set shiftwidth=4         " Indent N positions by shifting text with < and >
-
-" Enabling smarttab means we will use &shiftwidth for how many
-" positions to insert for <Tab> at the beginning of a line (instead
-" of only using &shiftwith for the shift commands; i.e., < and >).
-" N.B., <Tab> will still use &tabstop when *not* at the beginning
-" of the line. Disabling smarttab means we will use &tabstop everywhere.
-set smarttab
-" Enabling expandtab means we will *always* convert <Tab> to positions
-" (either &shiftwidth or &tabstop, depending on &smarttab). Disabling
-" it means we will *never* convert <Tab> to positions. N.B., if you
-" want to convert <Tab> manually, use the :retab command.
-"
-" We're disabling expandtab by default (will be overridden by
-" filetype stuff), so we don't muck up Makefiles and other things
-" that actually do need the literal <Tab> character.
-set noexpandtab
-
-" Supposedly we can use this to make it so that (shift-)tab in
-" visual mode will un/indent the selection. However,
-" (1) it doesn't seem to work; besides,
-" (2) we never use visual mode, and
-" (3) we can already use > and < like we do all the time in normal mode,
-"     <http://vimdoc.sourceforge.net/htmldoc/visual.html#visual-operators>
-" so why even bother? If we ever do want to start using visual mode, see:
-"     <http://usevim.com/2012/05/11/visual/>
-" Also, looks like in inser mode we can use <C-d> and <C-t> to un/indent...
-"     <http://vim.wikia.com/wiki/Avoid_the_escape_key>
-"vmap <Tab> <C-T>
-"vmap <S-Tab> <C-D>
+" ~~~~~ Searching
+set nohlsearch           " Should we highlight searches?
+set incsearch            " While typing search command, show matches so far
+set ignorecase           " Don't care if search for upper or lowercase
+"set magic               " Make regex more easy
+"set smartcase           " Only look for case when uppercases are used
 
 
 " ~~~~~ Wild
@@ -274,17 +284,15 @@ set noexpandtab
 "             +--------------- Complete longest prefix, use wildmenu
 
 
-" ~~~~~ Searching
-set nohlsearch           " Should we highlight searches?
-set incsearch            " While typing search command, show matches so far
-set ignorecase           " Don't care if search for upper or lowercase
-"set magic               " Make regex more easy
-"set smartcase           " Only look for case when uppercases are used
-
-
-" ~~~~~ Bells
-"set novisualbell t_vb=  " Don't use the visual bell. (What does `t_vb=` do?)
-"set noerrorbells        " Error bells are annoying
+" ~~~~~ Spelling
+" TODO: make a function/keybinding for toggling &spell
+"if v:version > 700
+"	set spell           " Highlight spelling errors automatically
+"	setlocal spell spelllang=en_us
+"	set spellsuggest=10 " Show top N spell suggestions
+"	" Change to make spellfile.vim ask you again for downloading file
+"	let g:spellfile_URL = 'http://ftp.vim.org/vim/runtime/spell'
+"endif
 
 
 " ~~~~~ Folding
@@ -311,7 +319,7 @@ set ignorecase           " Don't care if search for upper or lowercase
 "set foldclose=all       " Automatically close folds when leving
 
 
-" ~~~~~ Quick swap between normal and relative line numbers
+" ~~~~~ Toggle between normal and relative line numbers
 " <https://github.com/alialliallie/vimfiles/blob/master/vimrc>
 " TODO: I like starting the name with "Toggle" for better tab-completion,
 " but everyone else puts the "Toggle" at the end of the function name...
@@ -331,7 +339,7 @@ endfunc
 nnoremap <C-L> :call ToggleNumber()<cr>
 
 
-" ~~~~~ Quick swap highlight certain spaces as errors
+" ~~~~~ Toggle highlighting certain whitespace as errors
 " TODO: actually make this toggle!
 " BUG: this doesn't seem to work everywhere (e.g., inside `function!`
 " itself; though it works just fine inside `if`)
@@ -366,9 +374,6 @@ set ttyfast              " Is our terminal connection 'fast'? (hint: yes)
 "set display=lastline    " Show as much of the last line as possible
 "set nofsync             " Less power consumption *DANGEROUS* doesnt sync IO
 "set swapsync=           "     this could result in data loss, so beware!
-"set mouse=a             " Copy/paste in "* register, normal behaviour with shift key pressed
-"set mousehide           " Hide mouse while typing
-"set pastetoggle=<F9>
 set noinsertmode         " Don't start in insert mode. That's some emacs kinda silliness.
 
 "set fileformat=unix
@@ -381,7 +386,7 @@ set noinsertmode         " Don't start in insert mode. That's some emacs kinda s
 "set tags=tags,$HOME/.vim/ctagsproject
 "set shell=/bin/bash     " A shell
 set scrolloff=5          " Show N lines in advance when scrolling
-"set sidescrolloff=5     " Columns visible to the left/right of cursor when scrolling
+"set sidescrolloff=10    " Columns visible to the left/right of cursor when scrolling
 "set winminheight=0      " Let splitted windows get as small as only the titlebar
 "set splitright          " When splitting vertically, split to the right
 set splitbelow           " When splitting horizontally, split below
@@ -394,6 +399,8 @@ let Grep_Skip_Dirs = 'RCS CVS SCCS .svn .hg _darcs .git'
 
 
 " ~~~~~ Copying & Pasting
+"set pastetoggle=<F9>
+
 " Make p in Visual mode replace the selected text with the "" register.
 vnoremap p <Esc>:let current_reg = @"<CR>gvdi<C-R>=current_reg<CR><Esc>
 
@@ -582,7 +589,6 @@ call plug#begin('~/.vim/bundle')
 " TODO: use 'git@github.com:$WHO/$WHAT.git' formatting instead, to avoid https
 " TODO: see which of these plugins I actually want...
 
-
 " ~~~~~ Automatically use GNU PGP
 " TODO: again, security blah blah. Do we want to do this, or just
 " keep a copy in the dotfiles repo?
@@ -590,7 +596,6 @@ call plug#begin('~/.vim/bundle')
 "     <http://www.vim.org/scripts/script.php?script_id=3645>
 " But is it actually organized correctly for use as a plugin?
 "Plug 'jamessan/vim-gnupg'
-
 
 " ~~~~~ Tabline & Statusline (just the basics; see also Buffers & Tabs)
 Plug 'vim-airline/vim-airline'
@@ -608,12 +613,10 @@ Plug 'vim-airline/vim-airline-themes'
 " N.B., 'Lokaltog/powerline-fonts' redirects to 'powerline/fonts'
 "Plug 'Lokaltog/powerline-fonts', { 'do': './install.sh' }
 
-
 " ~~~~~ Buffers & Tabs
 "Plug 'bling/vim-bufferline'
 "Plug 'majutsushi/tagbar'
 "Plug 'weynhamz/vim-plugin-minibufexpl'
-
 
 " ~~~~~ Git
 "Plug 'airblade/vim-gitgutter'
@@ -713,7 +716,6 @@ call plug#end()
 " Show all buffers in the tabline, when there's only one tab. Only
 " looks good if your terminal has enough colors.
 let g:airline#extensions#tabline#enabled = 1
-
 
 " Some examples of things we may want to put in g:airline_section_N:
 " '%{strftime("%c")}'
