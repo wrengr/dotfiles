@@ -1,3 +1,12 @@
+# TODO: upgrade to a new version, cf:
+# <https://github.com/znxster/irssi-scripts/blob/master/hilightwin.pl>
+# <https://github.com/irssi/scripts.irssi.org/blob/master/scripts/hilightwin.pl>
+#
+# TODO: it looks like neither of them actually supports only
+# highlighting things that're complete words, so we'll have to fork
+# our own version...
+
+
 # Print hilighted messages & private messages to window named "hilight"
 # for irssi 0.7.99 by Timo Sirainen
 use Irssi;
