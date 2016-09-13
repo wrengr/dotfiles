@@ -1,5 +1,9 @@
 ;;; Use Evil instead of emacs...
-;; BUG: Evil doesn't play nicely with AgdaMode nor ProofGeneral
+;;; Was at <git://gitorious.org/evil/evil.git> now it seems to be
+;;; at <https://github.com/emacsmirror/evil> instead.
+;; BUG: Evil doesn't play nicely with AgdaMode nor ProofGeneral,
+;; which is all we use emacs for anyways. Still This stuff is left
+;; here for posterity ...for now at least.
 ; (add-to-list 'load-path "~/.emacs.d/evil")
 ; (setq evil-default-cursor #'cofi/evil-cursor);; BUG: this isn't enough, but what else do we need to do??
 ; ;(require 'undo-tree)
@@ -66,6 +70,7 @@
 
 
 ;;; Haskell-mode
+;;; <https://github.com/haskell/haskell-mode.git>
 (setq load-path (cons "~/.emacs.d/haskell-mode" load-path)) ;; TODO: how does this differ from using add-to-list ?
 
 
