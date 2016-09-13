@@ -1,6 +1,6 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " This is wren gayle romano's vim config            ~ 2015.09.12
-" 
+"
 " For guidance, see ~/.vim/README
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -20,7 +20,7 @@ set cmdheight=1          " The commandline is N rows high
 set noshowmode           " Don't show the mode in the commandline
 set ruler                " Show line and column position of the cursor
                          " (N.B., is in commandline iff laststatus=1.
-						 " Otherwise is in the statusline?)
+                         " Otherwise is in the statusline?)
 set laststatus=2         " Always show statusline, even if there're no splits
 "set statusline=%F%m%r%h%w\ [%{&ff}\|%Y\|%03.3b\|%04l,%04v\|%p%%\|LEN=%L] "\ %{Tlist_Get_Tag_Prototype_By_Line()}
 
@@ -66,7 +66,7 @@ endif
 " with &linewrap, and enabling &list will override &linewrap's setting.
 " This highly unexpected behavior has been deemed 'a feature':
 "     <https://groups.google.com/forum/#!topic/comp.editors/blelxLchTPg>
-"set list                
+"set list
 
 
 " ~~~~~ Mouse support
@@ -436,7 +436,7 @@ noremap <Leader>p :set paste<CR>:put  *<CR>:set nopaste<CR>
 
 
 " ~~~~~ FileType stuff
-" TODO: Most of this stuff should go into its own ft files. Not in here! 
+" TODO: Most of this stuff should go into its own ft files. Not in here!
 "     <http://vim.wikia.com/wiki/Keep_your_vimrc_file_clean>
 if has("autocmd")
 	" Enable file type detection
@@ -445,10 +445,10 @@ if has("autocmd")
 	" indenting, then add 'indent' as well.
 	filetype plugin on
 
-	" Allow filebased indentation 
+	" Allow filebased indentation
 	filetype indent on
 
-	" Makes vim capable of guessing based on the filetype 
+	" Makes vim capable of guessing based on the filetype
 	"filetype on
 
 	" http://www.ph.unimelb.edu.au/~ssk/vim/autocmd.html
