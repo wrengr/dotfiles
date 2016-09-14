@@ -1,0 +1,14 @@
+I often want to disable the capslock button because it's annoying and
+too easily hit on my keyboard at work. The way to do this is:
+
+    # <http://askubuntu.com/a/527385>
+    $ setxkbmap -option caps:none
+
+Which we can auto-run at startup via either: (1) going to "Startup
+Applications > Add" and creating a "custom command" there for running it.
+Or, (2) we can edit the crontab to add a @reboot line for running it.
+I've done the former on my workstation, but we should prolly put something
+in the dotfiles repo about this, so I don't lose it whenever they upgrade.
+
+Or, if we'd rather remap it to something instead of disabling it, see
+<http://askubuntu.com/a/574246>

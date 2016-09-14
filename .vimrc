@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" This is wren gayle romano's vim config            ~ 2015.09.12
+" This is wren gayle romano's vim config            ~ 2015.09.13
 "
 " For guidance, see ~/.vim/README
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -142,6 +142,12 @@ endif
 " accordingly, so that tput and vi and everyone else actually picks
 " up the right thing. If that fails, then maybe we'll need to
 " actually set &t_Co ourselves...
+"
+" Update 2016-09-12: Looks like my google workstation defaults to
+" t_Co=8, even though it (seems to) actually supports 256. However,
+" setting it to higher values causes the text to always be thin (never
+" bold); and there's some bug with 32--128 where the yellow and teal
+" colors get swapped.
 
 
 " ~~~~~ Highlight the final column
@@ -179,8 +185,8 @@ endif
 
 " ~~~~~ Indentation & tabs
 set autoindent           " Keep indent levels line-to-line
-set smartindent          " Try to indent based on filetype
-
+set nosmartindent        " Don't be stupid about hash. Instead use ft stuff.
+                         " <http://vim.wikia.com/wiki/Restoring_indent_after_typing_hash>
 set tabstop=4            " Display a <Tab> as N characters
 set softtabstop=0        " Don't pretend N positions are a <Tab>
 set shiftwidth=4         " Indent N positions by shifting text with < and >
@@ -194,7 +200,8 @@ set smarttab
 " Enabling expandtab means we will *always* convert <Tab> to positions
 " (either &shiftwidth or &tabstop, depending on &smarttab). Disabling
 " it means we will *never* convert <Tab> to positions. N.B., if you
-" want to convert <Tab> manually, use the :retab command.
+" want to convert <Tab> manually, you should reset the &expandtab
+" value and then use the :retab command.
 "
 " We're disabling expandtab by default (will be overridden by
 " filetype stuff), so we don't muck up Makefiles and other things

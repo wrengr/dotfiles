@@ -1,4 +1,4 @@
-# This is wren gayle romano's bash login script     ~ 2016.09.08
+# This is wren gayle romano's bash login script     ~ 2016.09.13
 #
 # It's fairly generic (with weirder things at the bottom),
 # but it's designed to be usable for all my accounts with no(!)
@@ -63,21 +63,21 @@ case "${_hostname}" in
     ereshkigal* | semiramis* | xenobia* | *.pubnet.pdx.edu | *.dhcp.pdx.edu | remote*.cecs.pdx.edu | *.comcast.net | TheWitchsBroom.att.net )
                                    _localhost='ereshkigal' ;;
     elsamelys*)                    _localhost='elsamelys' ;;
-    
+
     hri.cogs.indiana.edu)          _localhost='hri' ;;
     cl.indiana.edu)                _localhost='banks' ;;
     nlp.indiana.edu)               _localhost='miller' ;;
     # TODO: *.karst.uits.iu.edu x86_64 GNU/Linux
-    
+
     rita | ruby | *.pdx.edu)       _localhost='psu' ;; # both cat & student
-    
+
     *.haskell.org | lun)           _localhost='haskell' ;;
     *.google.com)
         # BUG: doesn't distinguish between my workstation and
         # ciruela (both Goobuntu), vs my laptop (OSX)
         _localhost='google'
     ;;
-    
+
     # If all else fails...
     *)
         if [ "${_uname}" = 'Darwin' ]; then
@@ -121,7 +121,7 @@ function _push() {
     # Get the old value by double evaluation.
     # N.B. using `` instead of $() breaks the quoting/escaping
     local var="$(eval echo $(echo "\$$1"))"
-    
+
     # BUG: the eval is necessary for the $1= to be interpreted
     #      but it means the rhs will be evaluated too. The
     #      single ticks will work to escape this so long as
@@ -139,7 +139,7 @@ function _copush() {
     # Get the old value by double evaluation.
     # N.B. using `` instead of $() breaks the quoting/escaping
     local var="$(eval echo $(echo "\$$1"))"
-    
+
     # BUG: the eval is necessary for the $1= to be interpreted
     #      but it means the rhs will be evaluated too. The
     #      single ticks will work to escape this so long as
@@ -158,7 +158,7 @@ function _copush() {
 #    since it munges them and we want the final dictate on prefixing
 if [ "${_localhost}" = 'ereshkigal' ]; then
     [ -r '/sw/bin/init.sh' ] && source '/sw/bin/init.sh'
-    
+
     # This is needed for some linkers, like Cabal which can't
     # correctly pass -optl-L* to GHC (which would pass -L* to ld)
     _push  LD_LIBRARY_PATH '/sw/lib'
@@ -200,13 +200,13 @@ if [ ! -z "${PS1}" ]; then
                 _color1='\[\e[01;31m\]' ;; # bold red
             *)  _color1='\[\e[01;34m\]' ;; # bold blue
         esac
-        
+
         _color2='\[\e[01;36m\]' # bold teal
     fi
 
     _bold='\[\e[01;00m\]'
     _off='\[\e[00m\]'
-    
+
     # If we ever find non-color terminals may want to adjust this
     _j="${_color1}\j${_off}"  # \j was added in Bash version 2+
     _u="${_color1}\u${_off}"
@@ -219,22 +219,22 @@ if [ ! -z "${PS1}" ]; then
     # postprocessing a la the _pwd_shorten function?
     #_s="${_color1}\$(_getrepo_icon)${_off}"
     _s="${_color1}\\\$${_off}"
-    
+
     # Get the exit code of last program, iff it failed
     # BUG: doesn't account for non-color terminals.
     _exit="\$(x=\$?; [ \$x -ne 0 ] && echo -n \"\[\e[01;31m\]\$x${_off} \")"
-    
+
     # The actual prompt itself
-    # TODO: factor out the [ ] @ : 
+    # TODO: factor out the [ ] @ :
     PS1="${_bold}[${_off}${_j}${_bold}]${_off} ${_u}${_bold}@${_off}${_h}${_bold}:${_off}${_w} ${_s} ${_exit}"
-    
+
     # Short prompt for elys, but only when logged in directly
     if [ "${_localhost}" = 'elsamelys' ]; then
         if tty | grep ttya >/dev/null ; then
             PS1="[${_j}] ${_w} ${_s} ${_exit}"
         fi
     fi
-    
+
     export PS1
     unset  _color1 _color2 _bold _off _j _u _h _w _s _exit
 fi
@@ -253,13 +253,13 @@ fi
 function _pwd_shorten() {
     local _length=30
     [ "$1" != '' ] && _length="$1"
-    
+
     # This is to fix munging on marquise since it doesn't auto $HOME -> "~"
     # Only performs the substitution when there's a following slash,
     #     in case your username is a prefix of someone else's. Could be fixed with better regex
     local _home="$(echo "${HOME}" | sed 's/\\/\\\\/g; s/\//\\\//g')"
     _PWD="$(pwd | sed "s/^${_home}\//~\//; s/^${_home}$/~/")"
-    
+
     # ${#_PWD} == $(echo -n "${_PWD}" | wc -c | tr -d ' ')
     if [ ${#_PWD} -gt ${_length} ]; then
         echo "${_PWD}" | sed "s/.*\(.\{`expr ${_length} - 3`\}\)$/...\1/"
@@ -280,7 +280,7 @@ export PROMPT_COMMAND='declare -F _pwd_shorten >/dev/null && _PWD="`_pwd_shorten
 
 case "${_localhost}" in
     ereshkigal)
-        
+
         # Dunno why this isn't done by default...
         #export JAVA_HOME='/Library/Java/Home'
         # Now we'll use Java6 (needed for ADE) instead of the default Java5
@@ -288,23 +288,23 @@ case "${_localhost}" in
         JAVA_HOME='/System/Library/Frameworks/JavaVM.framework/Versions/1.6/Home'
         _push PATH    "$JAVA_HOME/bin"
         _push MANPATH "$JAVA_HOME/man"
-        
-        
+
+
         MAPLE_HOME='/Library/Frameworks/Maple.framework/Versions/2015'
         _push PATH    "$MAPLE_HOME/bin"
         _push MANPATH "$MAPLE_HOME/man"
         # LOCAL_MAPLE is for Hakaru. Dunno what the usual env-variables for Maple are
         export LOCAL_MAPLE="$MAPLE_HOME/bin/maple"
         unset MAPLE_HOME
-        
-        
+
+
         # Various things we've installed (and stowed) without Fink.
         _push  PATH       '/usr/local/bin'
         _push  MANPATH    '/usr/local/share/man'
         _push  MANPATH    '/usr/local/man'
         _push  PYTHONPATH '/usr/local/lib/python2.7/site-packages/'
         export PYTHONPATH
-        
+
         # Links to Haskell utils in order to keep things up to date
         _push PATH '~/local/haskell/bin'
         # Cabal-installed programs
@@ -331,7 +331,7 @@ case "${_localhost}" in
     ;;
     miller)
         # Miller has Java-1.6 by default
-        
+
         # Include Anaconda for SciPy
         _push PATH '/Library/anaconda/bin'
     ;;
@@ -376,14 +376,14 @@ _push MANPATH '~/local/man'
 if [ ! -z "`which sed`" -a -x "`which sed`" ]; then
     # Debugging, should usually be turned off
     #echo "Before cleaning: $PATH"
-    
+
     # Do our best to remove '.' from our path in case it managed to sneak in
     # N.B. don't add -n to echo!! don't add ""s around the ``s!!
     PATH=`echo "${PATH}" | sed '
         s/:\.:/:/g; s/::/:/g;
         s/^\.://;   s/^://;
         s/:\.$//;   s/:$//; '`
-    
+
     # Convert ~/ so that `which` works properly. Otherwise ~/ is fine.
     # Doesn't deal with the ~user/ construct though.
     #    The $_home is in the subshell and so not exported
@@ -394,7 +394,7 @@ if [ ! -z "`which sed`" -a -x "`which sed`" ]; then
         _home=$(echo "${HOME}" | sed 's/\\/\\\\/g; s/\//\\\//g')
         echo "${PATH}" | sed "s/~\//${_home}\//g; s/~:/${_home}:/g"
     )
-    
+
     # Debugging, should usually be turned off
     #echo "Final path: $PATH"
 fi
@@ -497,7 +497,7 @@ export DARCS_EMAIL="$GIT_AUTHOR_NAME <$GIT_AUTHOR_EMAIL>"
 # /etc/bash.bashrc and /etc/profile sources /etc/bash.bashrc).
 if [ -r '/etc/bash_completion' ]; then
     source '/etc/bash_completion'
-    
+
     # Import bash completions for darcs
     # Seems to have a few issues though re normal tab file-completion...
     ### bash-completion is severely broken!!
@@ -581,11 +581,11 @@ case "${_localhost}" in
             SunOS)
                 # Color ls doesn't exist on Solaris,
                 # unless we install/use GNU
-                
+
                 # drkatz and walt are "special" and lack `dircolors`
                 [ -x /pkgs/gnu/bin/dircolors ] &&
                     eval `/pkgs/gnu/bin/dircolors -b`
-                
+
                 # `ls` is a symlink to `gls` on drkatz, real elsewhere
                 # `gls` is used on drkatz, walt, chandra($cat_solaris)...
                 if [ -x /pkgs/gnu/bin/ls ]; then
@@ -652,7 +652,7 @@ case "${_localhost}" in
             SunOS)
                 [ "${USER}" = 'wren' ] &&
                     alias prolog='sicstus' # for cs.pdx.edu only
-                
+
                 unalias grep # stupid grep, no color
                 [ -e /pkgs/gnu/bin/grep ] && # try gnu for color
                     alias grep='/pkgs/gnu/bin/grep --color'
@@ -686,8 +686,41 @@ alias fmt='fmt -l 0 -t 4' # Turn off space2tab conversion and set tabstop=4
 
 alias rd='rmdir'
 alias md='mkdir'
-alias cl='clear'
-alias cll='cl;ll'     # uses `cl` and `ll` aliases
+# HACK: trying to work around `clear` not behaving properly on
+# Ubuntu/gnome-terminal. This is a gross hack because whenever we
+# ssh into somewhere, the version of `cl` there is going to be based
+# on *that* machine's ${_uname} rather than being based on the
+# terminal of the machine we're sshing *from*. Really need to figure
+# out if there's a way to fix that and actually work based on terminals.
+#
+# N.B., how to actually clear things is highly terminal-specific.
+# So if this stops working, you may want to try some other approaches
+# like `reset`, `clear && printf '\e[3J'`, etc. <http://askubuntu.com/q/25077>
+if [ "${_localhost}" = 'google' ]; then
+    case "${_uname}" in
+        Darwin)
+            # `clear` works just fine on OSX/iTerm2. Or rather, it
+            # looks like the same problem occurs here too, but I
+            # always use <Apple-k> to clear the scrollback so I never
+            # actually notice it.
+            alias cl='clear'
+        ;;
+        Linux)
+            # But `clear` is busted on my Goobuntu/gnome-terminal
+            # machine.
+            alias cl='echo -e "\033c"'
+        ;;
+        *)
+            # Debugging. Should usually be left on
+            echo "Can't set \`cl\` alias for unknown google OS: ${_uname}"
+        ;;
+    esac
+else
+    # Assuming everywhere else works fine. (But prolly not)
+    alias cl='clear'
+fi
+# uses `cl` and `ll` aliases
+alias cll='cl;ll'
 alias q='exit'
 alias :q='exit'
 alias :q!='exit'
@@ -728,24 +761,24 @@ if [ "${_localhost}" = 'ereshkigal' ]; then
         local line
         for f in "$@" ; do echo "$f" ; done | sort -r | xargs open
     }
-    
+
     # TODO: combine shutdown with some osascript for softer shutdown when possible...
     alias goodnight='sudo shutdown -h +90'
-    
+
     alias motoko='su motoko'
     alias root="su motoko -c 'sudo su'"
-    
+
     # This is fairly dumb (e.g., doesn't check for previous agent),
     # but it's smart enough to get by for now
     # TODO: make it smarter
     # TODO: update this stuff to work with `gcert` on google machines
     alias agent="ssh-agent > ~/.ssh/agent ; source ~/.ssh/agent ; ssh-add ~/.ssh/{id_dsa,id_rsa}"
-    
+
     # Move something to the trash (rather than unlinking)
     function del() { mv "$@" ~/.Trash ; }
-    
+
     alias cpan="echo 'Make sure FTP is not blocked by firewall'; su motoko -c '/sw/bin/perl -MCPAN -e shell'"
-    
+
     # Use screen saver for desktop "image"
     alias ssbg='echo "Hit ^C to quit"; /System/Library/Frameworks/ScreenSaver.framework/Resources/ScreenSaverEngine.app/Contents/MacOS/ScreenSaverEngine -background'
 
@@ -806,7 +839,7 @@ export HISTIGNORE='ls:ll:lh:la:lla:lha:l.:ll.:lh.:l:cl:cll:q:x:cd:ghci'
 case "${TERM}" in
     xterm* | rxvt* )
         #export PROMPT_COMMAND='echo -ne "\033]0;${USER}@${HOSTNAME}: ${PWD}\007"'
-        
+
         # This is so we can combine this with the short $PWD
         # for some reason [ -n $PROMPT_COMMAND ] comes up true even if it's empty
         export PROMPT_COMMAND=$(

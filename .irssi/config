@@ -436,6 +436,7 @@ settings = {
   "fe-text" = { actlist_sort = "refnum"; };
 };
 hilights = (
+  # BUG: the word=yes bit is not working!
   { text = "koninkje"; nick = "no"; word = "yes"; },
   { text = "wrengr";   nick = "no"; word = "yes"; },
   { text = "wren";     nick = "no"; word = "yes"; },
@@ -448,10 +449,12 @@ ignores = (
     "#coq", "#agda", "#epigram", "##categorytheory", "#chromium",
     "#lambdaladies", "#transspace", "#transgender", "#kink", "#star",
     "#soic", "#nlp" ); },
-  { mask = "Wren";           level = "ALL"; channels = ( "#meow" ); },
-  { mask = "Wren";           level = "ALL"; channels = ( "#freegeek" ); },
   { mask = "ghcbot";         level = "ALL"; channels = ( "#ghc" ); },
   { mask = "darcscommitbot"; level = "ALL"; channels = ( "#darcs" ); },
+  # HACK: to try and fix brokennes of hilightwin
+  { mask = "Wren";           level = "ALL"; channels = ( "#meow" ); },
+  { mask = "Wren";           level = "ALL"; channels = ( "#freegeek" ); },
+  { mask = "lawrencewu";     level = "ALL"; channels = ( "#chromium" ); },
 );
 windows = {
   1 = { 

@@ -44,6 +44,8 @@
 # <http://noamlewis.wordpress.com/2012/05/21/my-git-aliases/>
 # or the very last few at <https://gist.github.com/pksunkara/988716>
 [alias]
+    # For more details on the files affected, try adding --name-status,
+    # --stat, or --numstat.
     lol = log --graph --decorate --pretty=oneline --abbrev-commit
     # N.B., the %C(auto) color was introduced in git 1.8.3 (24 May 2013)
     lola = log --color --graph --pretty=format:'%C(yellow)%h%Creset %Cgreen(%cr)%Creset %C(blue)<%an>%Creset%C(auto)%d%Creset %s'
@@ -51,6 +53,10 @@
     # it gives a nice pretty version of reflog
     #reflol = log --graph --decorate --oneline $(git rev-list -g --all)
     st   = status --branch
+    # TODO: make aliases for patch mode, since that's really what we want
+    # most of the time. Prolly should take over the `ci` alias;
+    # with some separate alias (or typing out the full thing) to get
+    # `commit --all`
     ci   = commit --all
     pr   = pull --rebase
     rc   = rebase --continue
@@ -63,7 +69,9 @@
     # Undo a 'git reset'. N.B., '{1}' may not always be the one you
     # want; cf 'git reflog' <http://stackoverflow.com/a/2531803/358069>
     unreset = reset 'HEAD@{1}'
-    amend = commit --amend --all
+    # N.B., we do *not* pass the --all flag here! Instead we use --patch
+    # to selectively choose changes.
+    amend = commit --amend --patch
     # Revert all unstaged changes
     # * To revert staged files, use 'git reset -- .'
     # * To remove untracked files, use 'git clean -df'
@@ -76,9 +84,9 @@
 
 
 # Trying to solve this problem
-# <http://stackoverflow.com/questions/11403407/git-asks-for-username-everytime-i-push>
-# <http://stackoverflow.com/questions/6565357/git-push-requires-username-and-password/6565661#6565661>
-# <http://stackoverflow.com/questions/5343068/is-there-a-way-to-skip-password-typing-when-using-https-github/5343146#5343146>
+# <http://stackoverflow.com/q/11403407>
+# <http://stackoverflow.com/a/6565661>
+# <http://stackoverflow.com/a/5343146>
 #[credential "https://github.iu.edu/"]
 #    username = wrengr
 
