@@ -48,12 +48,19 @@ fi
 # TODO: have separate variables for the general "domain" vs the specific
 # host in that domain. Also, remove all the old now-unused hosts.
 
-# so we don't keep running them all the time
+# We cache the results of various calls to `uname` so we don't keep
+# spawning off processes.
+
 _uname="`uname`"
-# On *.haskell.org we can use `hostname --fqdn` instead, but OSX
-# doesn't recognize --fqdn (nor does any other non-GNU I'm sure).
-# Of course, `uname -n` and `hostname` only give the local name of
-# the machine on *.haskell.org ...
+
+# On some systems (e.g., *.haskell.org, and very new versions of
+# OSX) we can use `hostname -f` to get the FQDN; but older OSX, and
+# most other *NIXes don't have the `-f` flag. The `uname` utility
+# is defined by POSIX/SUSv4; whereas the `hostname` has no spec,
+# and so is different everywhere. (On GNU/Linux, `hostname` happens
+# to coincide with `uname -n`, but that's just a coincidence, not
+# guaranteed.) Notably, `uname -n` is just a very thin wrapper that
+# just calls gethostname(2), which is why it doesn't resolve FQDNs.
 _hostname="`uname -n`"
 
 # Sites who use relative host names instead of FQDNs suck!
@@ -84,7 +91,6 @@ case "${_hostname}" in
             # Guess that any other OSX is also Ereshkigal, or else
             # supports the same sorts of things in general.
             _localhost='ereshkigal'
-
             # Debugging. Should usually be left on
             [ -z "${PS1}" ] || echo "I resorted to guessing I'm on ereshkigal!"
         elif [ "`uname -m`" = 'armv5tel' ]; then
@@ -192,6 +198,15 @@ fi
 # printf '\e[0;31mplain\n\e[1;31mbold\n\e[0;91mhighlight\n\e[1;91mbold+highlight\n\e[0m'
 
 if [ ! -z "${PS1}" ]; then
+	# TODO: use [ "`tput colors`" -gt 2 ] instead, to abstract
+	# over the exact value of $TERM and just get the number of
+	# colors for that $TERM. Or if we're being really persnickety,
+	# we should use tput to test for the existence of each
+	# particular color we want to use.
+	# 
+	# TODO: more generally, we should probably use tput to get
+	# the escape codes for the desired colors, rather than
+	# hard-coding them directly.
     if [ "${TERM}" = 'xterm-color' ] || [ "${TERM}" = 'xterm-256color' ]; then
         # A better way even is to use [ `id -u` = 0 ]
         # ...though that doesn't find non-root users

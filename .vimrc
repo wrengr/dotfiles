@@ -247,47 +247,34 @@ set noexpandtab
 
 " ~~~~~ Line wrapping (or not, as the case may be)
 set wrap               " Enable &wrap to soft-wrap overly long lines.
-
-" Try really hard to turn off hard-wrapping.
-"     <http://vim.wikia.com/wiki/Word_wrap_without_line_breaks>
-" BUG: none of this seems to do anything whatsoever. For debugging
-" purposes, note that &textwidth is getting re-set back to it's
-" default of 78 somehow. Also, it only seems to happen when inputting
-" lines which are entirely comments (rather than having some code
-" in front of them); wtf?
 set linebreak          " (lbr) Only break lines at characters in &breakat;
                        " i.e., not in the middle of words.
                        " N.B., the default &breakat contains a space.
 "set breakat=" ^I!@*-+;:,./?"
-set nolist               " Because &list disables &linebreak
+set nolist             " Disable &list because it invalidates &linebreak
     " This behavior is deemed to be 'a feature':
     " <https://groups.google.com/forum/#!topic/comp.editors/blelxLchTPg>
-set textwidth=0 wrapmargin=0 " can't hard-wrap at column zero, ha!
-" <http://vimdoc.sourceforge.net/htmldoc/change.html#fo-table>
-set formatoptions-=t
-set formatoptions-=c
-set formatoptions-=a
-set formatoptions+=l
-set formatoptions+=1
-" See also <http://vi.stackexchange.com/a/1985>. Looks like we may
-" need to install our own after/ hooks to fix up all this nonsense.
+
+" Try really hard to turn off hard-wrapping.
 "
-" BUG: even though autocmd supposedly runs after the ft files, this
-" still isn't showing up. Nor is our error logging message... cf.,
-" <http://stackoverflow.com/a/2312888/358069>
-"if has("autocmd")
-"	autocmd FileType *
-"		\set textwidth=0
-"		\set wrapmargin=0
-"		\set formatoptions-=t
-"		\set formatoptions-=c
-"		\set formatoptions-=a
-"		\set formatoptions+=l
-"else
-"	echom "Can't use autocmd to do posthooks for fixing &formatoptions"
-"endif
-"
-" Maybe we could also try <http://stackoverflow.com/a/23326474/358069>
+" We break this out as a function, in case we need to invoke it
+" manually or in a bunch of different .vim/after/ftplugin/*.vim
+" files. Some sources for what we're doing are:
+"     <http://vim.wikia.com/wiki/Word_wrap_without_line_breaks>
+"     <http://vimdoc.sourceforge.net/htmldoc/change.html#fo-table>
+"     <http://vi.stackexchange.com/a/1985>
+"     <http://stackoverflow.com/a/2312888/358069>
+"     <http://stackoverflow.com/a/23326474/358069>
+function! DisableHardWrapping() 
+	set textwidth=0 wrapmargin=0 " can't hard-wrap at column zero, ha!
+	" Must remove each one individually, because -= is string-based.
+	set formatoptions-=t
+	set formatoptions-=c
+	set formatoptions-=a
+	set formatoptions+=l
+	set formatoptions+=1
+endfunc
+call DisableHardWrapping()
 
 
 " ~~~~~ Searching
