@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" This is wren gayle romano's vim config            ~ 2015.09.13
+" This is wren gayle romano's vim config            ~ 2015.09.14
 "
 " For guidance, see ~/.vim/README
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -72,6 +72,29 @@ endif
 " This highly unexpected behavior has been deemed 'a feature':
 "     <https://groups.google.com/forum/#!topic/comp.editors/blelxLchTPg>
 "set list
+
+
+" ~~~~~ Terminal title
+" <http://vim.wikia.com/wiki/Automatically_set_screen_title>
+" <http://usevim.com/2012/06/13/set-title/>
+if has('title')
+	if &term == "screen"
+		set t_ts=^[k
+		set t_fs=^[\
+	endif
+	set title
+	" BUG: how do we get the 'is edited' bit to use the format it
+	" does in the default? (instead of with the square brackets and with
+	" a bunch of space, I mean)
+	" BUG: how do we get help pages to show up as appropriate,
+	" rather than actually giving the path to the file where they're
+	" stored?
+	" N.B., the list of codes is at `:help statusline` not at the
+	" helppage for titlestring
+	"set titlestring=VIM\ %-25.55F\ %a%r%m
+	set titlestring=VIM\ \ %t\ (%{expand(\"%:~:.:h\")})\ %a%r%m
+	set titlelen=70
+endif
 
 
 " ~~~~~ Mouse support
@@ -371,7 +394,6 @@ endfunc
 
 "set lazyredraw          " Don't redraw while running macros, for speed
 "set hidden              " Hide buffers when they are abandoned
-set title                " Set terminal title to Vim + filename
 set ttyfast              " Is our terminal connection 'fast'? (hint: yes)
 "set autochdir           " Change directory to the file in the current window
 "set nojoinspaces        " No additional spaces when joining lines with <J>
@@ -395,7 +417,7 @@ set noinsertmode         " Don't start in insert mode. That's some emacs kinda s
 set scrolloff=5          " Show N lines in advance when scrolling
 "set sidescrolloff=10    " Columns visible to the left/right of cursor when scrolling
 "set winminheight=0      " Let splitted windows get as small as only the titlebar
-"set splitright          " When splitting vertically, split to the right
+set splitright           " When splitting vertically, split to the right
 set splitbelow           " When splitting horizontally, split below
 "set browsedir=buffer    " :browse e starts in %:h, not in $PWD
 "set grepprg=grep\ -nH\ $*
@@ -722,7 +744,7 @@ call plug#end()
 
 " Show all buffers in the tabline, when there's only one tab. Only
 " looks good if your terminal has enough colors.
-let g:airline#extensions#tabline#enabled = 1
+"let g:airline#extensions#tabline#enabled = 1
 
 " Some examples of things we may want to put in g:airline_section_N:
 " '%{strftime("%c")}'
