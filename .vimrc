@@ -36,8 +36,8 @@ set nomodeline
 
 
 " ~~~~~ Bells
-"set novisualbell t_vb=  " Don't use the visual bell. (What does `t_vb=` do?)
-"set noerrorbells        " Error bells are annoying
+"set novisualbell t_vb=  " Don't use the visual bell.
+"set noerrorbells        " Error bells are annoying.
 
 
 " ~~~~~ Unicode support
@@ -78,6 +78,8 @@ endif
 " <http://vim.wikia.com/wiki/Automatically_set_screen_title>
 " <http://usevim.com/2012/06/13/set-title/>
 if has('title')
+	" BUG: many times screen doesn't set TERM to say that; and
+	" even when it does, our ~/.bash_profile changes it.
 	if &term == "screen"
 		set t_ts=^[k
 		set t_fs=^[\
@@ -265,7 +267,7 @@ set nolist             " Disable &list because it invalidates &linebreak
 "     <http://vi.stackexchange.com/a/1985>
 "     <http://stackoverflow.com/a/2312888/358069>
 "     <http://stackoverflow.com/a/23326474/358069>
-function! DisableHardWrapping() 
+function! DisableHardWrapping()
 	set textwidth=0 wrapmargin=0 " can't hard-wrap at column zero, ha!
 	" Must remove each one individually, because -= is string-based.
 	set formatoptions-=t
