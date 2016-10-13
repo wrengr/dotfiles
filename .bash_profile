@@ -1,4 +1,4 @@
-# This is wren gayle romano's bash login script     ~ 2016.09.13
+# This is wren gayle romano's bash login script     ~ 2016.10.13
 #
 # It's fairly generic (with weirder things at the bottom),
 # but it's designed to be usable for all my accounts with no(!)
@@ -12,45 +12,25 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ Personalized MOTD so I stop forgetting shit
 #       (Unless the shell is non-interactive)
-
 if [ ! -z "${PS1}" -a -r '.motd' ]; then
     echo
     cat '.motd'
     echo
 fi
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# ~~~~~ Load the ssh-agent, if present
-#       (To set the .ssh/agent cache, use the `agent` alias)
-# TODO: update this stuff to work with `gcert` on google machines
-
-if [ -r '.ssh/agent' ]; then
-    # We don't need the -e if we're passing the PID directly.
-    # N.B., passing -e or -U (or -u?) overrides the -p flag.
-    if ps -co pid,user,command -p `
-            cat .ssh/agent |
-            perl -nle '
-                BEGIN {$pid = 0;}
-                $pid = $1 if m/^SSH_AGENT_PID=(\d+)/;
-                END {print $pid;}'` |
-        grep "${USER}" |
-        grep 'ssh-agent' >/dev/null 2>&1
-        # N.B., don't use -s or -q, for portability
-    then
-        source '.ssh/agent'
-    else
-        rm '.ssh/agent'
-    fi
-fi
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# ~~~~~ Try to guess where/who we are
+# ~~~~~ By default let new files be readable by everyone.
+umask 0022
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~ Try to guess who/where we are
 # TODO: have separate variables for the general "domain" vs the specific
 # host in that domain. Also, remove all the old now-unused hosts.
 
 # We cache the results of various calls to `uname` so we don't keep
 # spawning off processes.
-
 _uname="`uname`"
 
 # On some systems (e.g., *.haskell.org, and very new versions of
@@ -71,12 +51,9 @@ case "${_hostname}" in
                                    _localhost='ereshkigal' ;;
     elsamelys*)                    _localhost='elsamelys' ;;
 
-    hri.cogs.indiana.edu)          _localhost='hri' ;;
     cl.indiana.edu)                _localhost='banks' ;;
     nlp.indiana.edu)               _localhost='miller' ;;
     # TODO: *.karst.uits.iu.edu x86_64 GNU/Linux
-
-    rita | ruby | *.pdx.edu)       _localhost='psu' ;; # both cat & student
 
     *.haskell.org | lun)           _localhost='haskell' ;;
     *.google.com)
@@ -108,71 +85,6 @@ esac
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# ~~~~~ Hack to fix CAT Solaris environment since .bashrc is ignored
-if [ "${_localhost}" = 'psu' -a "${_uname}" = 'SunOS' ]; then
-    [ -r '/usr/local/lib/user-env/Shrc' ] &&
-        source '/usr/local/lib/user-env/Shrc'
-fi
-
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# ~~~~~ Moved down here to override Shrc. Ahh promiscuity
-umask 0022
-
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# ~~~~~ Add a new colon-delimited value to the front of a variable
-#       Usage: `_push varname value`
-function _push() {
-    # Get the old value by double evaluation.
-    # N.B. using `` instead of $() breaks the quoting/escaping
-    local var="$(eval echo $(echo "\$$1"))"
-
-    # BUG: the eval is necessary for the $1= to be interpreted
-    #      but it means the rhs will be evaluated too. The
-    #      single ticks will work to escape this so long as
-    #      there're no single ticks in the expansions.
-    if [ "X$var" = 'X' ]; then
-        eval $1=\'"$2"\'
-    else
-        eval $1=\'"$2:$var"\'
-    fi
-}
-
-# ~~~~~ Add a new colon-delimited value to the back of a variable
-#       Usage: `_copush varname value`
-function _copush() {
-    # Get the old value by double evaluation.
-    # N.B. using `` instead of $() breaks the quoting/escaping
-    local var="$(eval echo $(echo "\$$1"))"
-
-    # BUG: the eval is necessary for the $1= to be interpreted
-    #      but it means the rhs will be evaluated too. The
-    #      single ticks will work to escape this so long as
-    #      there're no single ticks in the expansions.
-    if [ "X$var" = 'X' ]; then
-        eval $1=\'"$2"\'
-    else
-        eval $1=\'"$var:$2"\'
-    fi
-}
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# ~~~~~ Set up Fink
-
-# We do this before setting up our carefully designed paths
-#    since it munges them and we want the final dictate on prefixing
-if [ "${_localhost}" = 'ereshkigal' ]; then
-    [ -r '/sw/bin/init.sh' ] && source '/sw/bin/init.sh'
-
-    # This is needed for some linkers, like Cabal which can't
-    # correctly pass -optl-L* to GHC (which would pass -L* to ld)
-    _push  LD_LIBRARY_PATH '/sw/lib'
-    export LD_LIBRARY_PATH
-fi
-
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ Fancy Prompt
 
 # N.B. some `su`s don't reset $USER properly without `-` or `-l`,
@@ -198,15 +110,15 @@ fi
 # printf '\e[0;31mplain\n\e[1;31mbold\n\e[0;91mhighlight\n\e[1;91mbold+highlight\n\e[0m'
 
 if [ ! -z "${PS1}" ]; then
-	# TODO: use [ "`tput colors`" -gt 2 ] instead, to abstract
-	# over the exact value of $TERM and just get the number of
-	# colors for that $TERM. Or if we're being really persnickety,
-	# we should use tput to test for the existence of each
-	# particular color we want to use.
-	# 
-	# TODO: more generally, we should probably use tput to get
-	# the escape codes for the desired colors, rather than
-	# hard-coding them directly.
+    # TODO: use [ "`tput colors`" -gt 2 ] instead, to abstract
+    # over the exact value of $TERM and just get the number of
+    # colors for that $TERM. Or if we're being really persnickety,
+    # we should use tput to test for the existence of each
+    # particular color we want to use.
+    #
+    # TODO: more generally, we should probably use tput to get
+    # the escape codes for the desired colors, rather than
+    # hard-coding them directly.
     if [ "${TERM}" = 'xterm-color' ] || [ "${TERM}" = 'xterm-256color' ]; then
         # A better way even is to use [ `id -u` = 0 ]
         # ...though that doesn't find non-root users
@@ -288,22 +200,98 @@ export PROMPT_COMMAND='declare -F _pwd_shorten >/dev/null && _PWD="`_pwd_shorten
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# ~~~~~ Set up env
+# ~~~~~ Load the ssh-agent, if present
+#       (To set the .ssh/agent cache, use the `agent` alias)
+# TODO: update this stuff to work with `gcert` on google machines
+
+if [ -r '.ssh/agent' ]; then
+    # We don't need the -e if we're passing the PID directly.
+    # N.B., passing -e or -U (or -u?) overrides the -p flag.
+    if ps -co pid,user,command -p `
+            cat .ssh/agent |
+            perl -nle '
+                BEGIN {$pid = 0;}
+                $pid = $1 if m/^SSH_AGENT_PID=(\d+)/;
+                END {print $pid;}'` |
+        grep "${USER}" |
+        grep 'ssh-agent' >/dev/null 2>&1
+        # N.B., don't use -s or -q, for portability
+    then
+        source '.ssh/agent'
+    else
+        rm '.ssh/agent'
+    fi
+fi
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~ Add a new colon-delimited value to the front of a variable
+#       Usage: `_push varname value`
+function _push() {
+    # Get the old value by double evaluation.
+    # N.B. using `` instead of $() breaks the quoting/escaping
+    local var="$(eval echo $(echo "\$$1"))"
+
+    # BUG: the eval is necessary for the $1= to be interpreted
+    #      but it means the rhs will be evaluated too. The
+    #      single ticks will work to escape this so long as
+    #      there're no single ticks in the expansions.
+    if [ "X$var" = 'X' ]; then
+        eval $1=\'"$2"\'
+    else
+        eval $1=\'"$2:$var"\'
+    fi
+}
+
+# ~~~~~ Add a new colon-delimited value to the back of a variable
+#       Usage: `_copush varname value`
+function _copush() {
+    # Get the old value by double evaluation.
+    # N.B. using `` instead of $() breaks the quoting/escaping
+    local var="$(eval echo $(echo "\$$1"))"
+
+    # BUG: the eval is necessary for the $1= to be interpreted
+    #      but it means the rhs will be evaluated too. The
+    #      single ticks will work to escape this so long as
+    #      there're no single ticks in the expansions.
+    if [ "X$var" = 'X' ]; then
+        eval $1=\'"$2"\'
+    else
+        eval $1=\'"$var:$2"\'
+    fi
+}
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~ Set up Fink
+
+# We do this before setting up our carefully designed paths
+#    since it munges them and we want the final dictate on prefixing
+if [ "${_localhost}" = 'ereshkigal' ]; then
+    [ -r '/sw/bin/init.sh' ] && source '/sw/bin/init.sh'
+
+    # This is needed for some linkers, like Cabal which can't
+    # correctly pass -optl-L* to GHC (which would pass -L* to ld)
+    _push  LD_LIBRARY_PATH '/sw/lib'
+    export LD_LIBRARY_PATH
+fi
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~ Set up paths
 
 # Debugging, should usually be turned off
 #echo "Beginning path: $PATH"
 
 case "${_localhost}" in
     ereshkigal)
-
-        # Dunno why this isn't done by default...
-        #export JAVA_HOME='/Library/Java/Home'
-        # Now we'll use Java6 (needed for ADE) instead of the default Java5
-        # But it's recommended not to alter OSX's default.
+        # We use Java6 (needed for ADE) instead of the default
+        # Java5. But we don't actually alter OSX's default Java
+        # (i.e., '/Library/Java/Home') since doing that can cause
+        # problems with built-in OS stuff.
         JAVA_HOME='/System/Library/Frameworks/JavaVM.framework/Versions/1.6/Home'
         _push PATH    "$JAVA_HOME/bin"
         _push MANPATH "$JAVA_HOME/man"
-
 
         MAPLE_HOME='/Library/Frameworks/Maple.framework/Versions/2015'
         _push PATH    "$MAPLE_HOME/bin"
@@ -311,7 +299,6 @@ case "${_localhost}" in
         # LOCAL_MAPLE is for Hakaru. Dunno what the usual env-variables for Maple are
         export LOCAL_MAPLE="$MAPLE_HOME/bin/maple"
         unset MAPLE_HOME
-
 
         # Various things we've installed (and stowed) without Fink.
         _push  PATH       '/usr/local/bin'
@@ -324,6 +311,10 @@ case "${_localhost}" in
         _push PATH '~/local/haskell/bin'
         # Cabal-installed programs
         _push PATH '~/.cabal/bin/'
+    ;;
+    elsamelys)
+        # add path to gcc tools, assuming the cramfs is mounted
+        _copush PATH '/mnt/gcc/bin'
     ;;
     banks)
         JAVA_HOME='/System/Library/Frameworks/JavaVM.framework/Versions/1.6/Home'
@@ -350,45 +341,27 @@ case "${_localhost}" in
         # Include Anaconda for SciPy
         _push PATH '/Library/anaconda/bin'
     ;;
-    elsamelys)
-        # add path to gcc tools, assuming the cramfs is mounted
-        _copush PATH '/mnt/gcc/bin'
-    ;;
-    hri)
-        # Use a Java that has 64-bit mode since hri is a 64-bit platform
-        # (N.B., we can switch on `uname -m` as necessary...)
-        JAVA_HOME='/usr/lib/jvm/java-1.6.0-openjdk-1.6.0.0.x86_64'
-        _push PATH    "$JAVA_HOME/bin"
-        _push MANPATH "$JAVA_HOME/man"
-    ;;
-    psu)
-        if [ "${USER}" = 'koninkje' ]; then
-            # /cat/bin has to go after /usr/bin so Solaris'
-            # xchat doesn't mask linux's, and similar.
-            # GNU's before original path so we get gnu versions if available.
-            _push   PATH    '/pkgs/gnu/bin'
-            _copush PATH    '/cat/bin'
-            _push   MANPATH '/pkgs/gnu/man'
-            _copush MANPATH '/cat/man'
-        fi
-    ;;
     google)
         _push PATH '~/chromium-srcs/depot_tools'
         _push PATH '~/chromium-srcs/goma'
     ;;
 esac
 
-# Everyone gets my personal scripts and programs
+
+# ~~~~~ Last step: Everyone gets my personal scripts and programs
 _push PATH    '~/local/bin'
 _push MANPATH '~/local/man'
 
-# BUG: we don't ~-expand MANPATH (not that anything is there...)
 
-# Just to be safe so we don't obliterate out $PATH
-#    Of course, we prolly want to bail out if it fails...
-# N.B. [ ! -z ] and [ ! -z "" ] and [ -s "" ] return false
+# ~~~~~ Finally: Sanitize paths
+# This guard is to be safe so we don't obliterate our $PATH. Of
+# course, if this fails then we prolly want to bail out entirely
+# (since something is seriously wrong).
+# N.B. [ ! -z ] and [ ! -z "" ] and [ -s "" ] all return false
 #      But [ -s ] returns true!!!
 if [ ! -z "`which sed`" -a -x "`which sed`" ]; then
+    # BUG: we don't ~-expand MANPATH (not that anything is there...)
+
     # Debugging, should usually be turned off
     #echo "Before cleaning: $PATH"
 
@@ -414,8 +387,8 @@ if [ ! -z "`which sed`" -a -x "`which sed`" ]; then
     #echo "Final path: $PATH"
 fi
 
-# This version is a lot more sane and complete, but it requires
-# perl which isn't always available
+# This version is a lot cleaner and more complete, but it requires
+# perl which is expensive and isn't always available.
 #export PATH=`echo "$PATH" | perl -pe '
 #    1 while s/:\.?:/:/g;
 #    s/^\.?://;
@@ -423,10 +396,15 @@ fi
 #    s/^\.$//;
 #    s/(^|:)~(\/|:|$)/$1$ENV{HOME}$2/g; '`
 
+export PATH MANPATH LD_LIBRARY_PATH JAVA_HOME
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~ Set up other common env variables
+
 export PAGER='less -is'
 export MANPAGER="${PAGER}"
 export EDITOR='vim'
-export PATH MANPATH LD_LIBRARY_PATH JAVA_HOME
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -488,9 +466,13 @@ export GIT_COMMITTER_EMAIL="$GIT_AUTHOR_EMAIL"
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ Set up Darcs
 
-# Like `grep -R $1 .` <http://wiki.darcs.net/DarcsWiki/HintsAndTips>
+# Like `grep -R $1 .`; cf.,
+# <http://darcs.net/HintsAndTips#excluding-the-_darcs-directory-when-searching>
+# TODO: We may want to switch to using a real script, like xwrn's version there.
+#
 # In general, beware of `find` corrupting your repos
 # BUG: doesn't color like the grep alias
+# BUG: egrep is giving a lot of "Is a directory" errors
 alias dgrep="find . -path '*/_darcs' -prune -o -print0 | xargs -0 egrep"
 alias svngrep="find . -path '*/.svn' -prune -o -print0 | xargs -0 egrep"
 
@@ -522,26 +504,13 @@ fi
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ Server variables
-# TODO: remove the redundant string comparisons, while maintaining legibility
-
-case "${_localhost}" in
-    ereshkigal | psu )
-        # Surprisingly, I still seem to have access to some of these. But
-        # not the ubuntu machines (cat.pdx.edu) nor the bastion machine
-        # (reaver.cat.pdx.edu, replacing firefly.cat.pdx.edu)
-        cat_rita='koninkje@rita.cat.pdx.edu'
-        cat_solaris='koninkje@cs.pdx.edu'
-    ;;
-esac
-
 
 case "${_localhost}" in
     ereshkigal)
         elsamelys='zaurus@192.168.129.201'
         banks='wren@cl.indiana.edu'
-        # TODO: are these really still wrnthorn, or were they updated to wrengr?
+        # TODO: We should switch this one to wrengr, like everything else.
         miller='wrnthorn@nlp.indiana.edu'
-        hri='wrnthorn@hri.cogs.indiana.edu'
         # TODO: does sourceforge stuff even still work?
         #sourceforge='winterkoninkje@shell.sourceforge.net'
         #pbwdm_sfsite="${sourceforge}:/home/users/w/wi/winterkoninkje/pbwdm/htdocs"
@@ -557,61 +526,45 @@ esac
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ `ls` aliases
 
-# Add color, some way or another!
-# TODO: should prolly distinguish by OS first, and host only secondarily...
-case "${_localhost}" in
-    ereshkigal | miller | banks )
+# Apparently Bash>=4.0 adds a new ";&" thing for allowing fallthrough.
+# That'd help us DRY for Darwin vs FreeBSD, but it isn't portable
+# to systems with older versions of Bash.
+case "${_uname}" in
+    Darwin)
         alias ls='ls -G' # turn on color
         alias lv='ls -v' # unicode. opposite is -q (=default)
     ;;
-    haskell )
-        # all Debian variants will prolly use this
-        # or more accurately all GNU using systems
+    FreeBSD)
+        alias ls='ls -G'
+        # TODO: does 'ls -v' work here too?
+    ;;
+    Linux)
+        # This should work for all GNU-using systems (e.g., Debian
+        # variants), but may not work for other Linuxes.
+        #
+        # TODO: guard against it not working; e.g., dircolors not
+        # existing. Can use the _exists function defined below.
         eval `dircolors -b`
         alias ls='ls --color=auto'
     ;;
-    google )
-        case "${_uname}" in
-            Darwin)
-                alias ls='ls -G' # turn on color
-                alias lv='ls -v' # unicode. opposite is -q (=default)
-            ;;
-            Linux)
-                # all Debian variants will prolly use this
-                # or more accurately all GNU using systems
-                eval `dircolors -b`
-                alias ls='ls --color=auto'
-            ;;
-        esac
-    ;;
-    psu)
-        case "${_uname}" in
-            Linux)
-                eval `dircolors -b`
-                alias ls='ls --color=auto'
-            ;;
-            FreeBSD)
-                alias ls='ls -G'
-            ;;
-            SunOS)
-                # Color ls doesn't exist on Solaris,
-                # unless we install/use GNU
+    SunOS)
+        # Color ls doesn't exist on Solaris, unless we install/use GNU
+        case "${_localhost}" in
+        psu)
+            # drkatz and walt are "special" and lack `dircolors`
+            [ -x /pkgs/gnu/bin/dircolors ] &&
+                eval `/pkgs/gnu/bin/dircolors -b`
 
-                # drkatz and walt are "special" and lack `dircolors`
-                [ -x /pkgs/gnu/bin/dircolors ] &&
-                    eval `/pkgs/gnu/bin/dircolors -b`
-
-                # `ls` is a symlink to `gls` on drkatz, real elsewhere
-                # `gls` is used on drkatz, walt, chandra($cat_solaris)...
-                if [ -x /pkgs/gnu/bin/ls ]; then
-                    alias ls='/pkgs/gnu/bin/ls  --color=auto'
-                elif [ -x /pkgs/gnu/bin/gls ]; then
-                    alias ls='/pkgs/gnu/bin/gls --color=auto'
-                # This is for Chandra ($cat_solaris)
-                elif [ -x /opt/csw/bin/gls ]; then
-                    alias ls='/opt/csw/bin/gls  --color=auto'
-                fi
-            ;;
+            # `ls` is a symlink to `gls` on drkatz, real elsewhere
+            # `gls` is used on drkatz, walt, chandra($cat_solaris)...
+            if [ -x /pkgs/gnu/bin/ls ]; then
+                alias ls='/pkgs/gnu/bin/ls  --color=auto'
+            elif [ -x /pkgs/gnu/bin/gls ]; then
+                alias ls='/pkgs/gnu/bin/gls --color=auto'
+            # This is for Chandra ($cat_solaris)
+            elif [ -x /opt/csw/bin/gls ]; then
+                alias ls='/opt/csw/bin/gls  --color=auto'
+            fi
         esac
     ;;
 esac
@@ -751,14 +704,17 @@ function tarcp() {
         ( cd "$2" && tar xpf - )
  }
 
-# Enumerate from 1 to N
-function enum() { perl -e 'print "$_\n" foreach 1..'"$1" ; }
+# Actually, we can use the seq program for this; which also allows
+# setting the lower bound. Dunno if that's available on Debian, but
+# it is on Darwin/BSD.
+#function enum() { perl -e 'print "$_\n" foreach 1..'"$1" ; }
 
 # Do `time` some number of times and average the results
 # TODO: it's better to use Criterion for this
+# BUG: Bash has a built-in with this name...
 function times() {
     local n=$1 ; shift
-    ( for _n in `enum $n` ; do
+    ( for _n in `seq $n` ; do
         time "$@" >>/dev/null
     done ) 2>&1 | perl -ne'
         $h{$1} += $2*60+$3
@@ -838,7 +794,7 @@ export HISTIGNORE='ls:ll:lh:la:lla:lha:l.:ll.:lh.:l:cl:cll:q:x:cd:ghci'
 #export CDPATH='.:~'
 
 # Colon-seperated file suffixes ignored for tab completion
-#export FIGNORE='.o:~'
+#export FIGNORE='.o:.hi:.swp:~'
 
 # "/etc/hosts"-like file to be read for completing hostnames
 #export HOSTFILE=''
