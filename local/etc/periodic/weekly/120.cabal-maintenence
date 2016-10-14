@@ -1,0 +1,6 @@
+#!/bin/sh
+# Perform some regular maintinence of Cabal
+
+rc=0
+/Users/wren/.cabal/bin/cabal update || rc=3
+exit $rc

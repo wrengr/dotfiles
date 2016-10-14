@@ -1,0 +1,8 @@
+#!/bin/sh
+# This command rebuilds the "OpenWith" menue on OSX
+echo ''
+echo 'Rebuilding LaunchServices:'
+
+rc=0
+/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill -r -domain local -domain system -domain user || rc=3
+exit $rc

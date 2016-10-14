@@ -1,0 +1,9 @@
+#!/bin/sh
+# Perform some regular maintinence of Fink
+
+rc=0
+/sw/bin/fink cleanup || rc=3
+[ $rc -ne 0] && exit $rc
+
+/sw/bin/fink selfupdate || rc=3
+exit $rc

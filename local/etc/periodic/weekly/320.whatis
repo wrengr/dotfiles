@@ -1,0 +1,34 @@
+#!/bin/sh
+# The built-in periodic whatis script seems to be somewhat buggy,
+# so we do it ourselves. N.B., this doesn't entirely replace the
+# old script, since we don't bother doing anything with locales.
+# We may want to add that in the future.
+
+rc=0
+
+# We do this to make sure we get everything in my standard setup.
+# We might want to factor out the part that sets up the MANPATH so
+# as to avoid running all the rest of it.
+# BUG: this complains about our `l.` functions not being valid identifiers!
+. /Users/wren/.bash_profile || rc=2
+[ $rc -ne 0 ] && exit $rc
+
+echo ''
+echo 'Rebuilding whatis database (for real this time):'
+
+# The original uses MANPATH=`/usr/bin/manpath -q` rather than
+# trusting the environment variable. What is the force of doing
+# that? It drops a bunch of the stuf we set in .bash_profile, so
+# how can we make .bash_profile update what manpath returns?
+cleaned_manpath="`echo "$MANPATH" |
+    sed 's/:/\n/g' |
+    sort |
+    uniq |
+    grep -v '^$' |
+    paste -s -d':' -`"
+# TODO: use `sed -e :a -e 'N;s/\n/,/;ba'` (or perhaps with `ta` in
+# lieu of `ba`) in lieu of the paste command? Or maybe use tr in
+# lieu of paste?
+
+/usr/libexec/makewhatis.local "$cleaned_manpath" || rc=3
+exit $rc

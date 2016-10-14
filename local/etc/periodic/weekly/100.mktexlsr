@@ -1,0 +1,7 @@
+#!/bin/sh
+# Re-index my local LaTeX stuff
+
+rc=0
+cd /Users/wren/local
+/sw/bin/mktexlsr ./texmf || rc=3
+exit $rc
