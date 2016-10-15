@@ -4,6 +4,11 @@
 [user]
     name = wren romano
     email = wren@community.haskell.org
+    # TODO: set up GPG stuff. Not that any project I work on uses
+    # it... Once this is enabled here, always pass -S or -s to
+    # commit and -s to tag.
+    # Cf., <https://mikegerwitz.com/papers/git-horror-story>
+    #signingkey = 00000000
 [github]
     user = wrengr
 [color]
@@ -17,8 +22,25 @@
 [merge]
     ff = only
 [core]
+    # Chromium style demands we disable autocrlf
     autocrlf = false
     filemode = false
+    whitespace = trailing-space,space-before-tab
+    # TODO: we want something like this, but we don't want to use
+    # ~/.gitignore per se, since that's likely to be the one in my
+    # dotfiles repo, which ignores a bunch of homedir-specific stuff
+    # we may not want to ignore elsewhere. So we should add some file
+    # like ~/.gitconfig.ignore to the dotfiles repo, and then use that
+    # one here:
+    #excludesfile = '~/.gitignore'
+[advice]
+    # Disable `git status`'s "how to stage/unstage/add" hints
+    statusHints = false
+    # Disable `git push`'s hints about non-fastforward-able patches
+    #pushNonFastForward = false
+
+# TODO: cf., <http://nuclearsquid.com/writings/git-tricks-tips-workflows/>
+
 
 # Have newly-created branches starting from a branch, set their
 # start point as upstream (as oppose to the default 'true' setting
@@ -27,6 +49,7 @@
 # <http://grimoire.ca/git/config>
 [branch]
     autoSetupMerge = always
+
 
 # There are ways of making 'pull --rebase' the default, but it seems
 # to take a non-trivial amount of work; so I'm just using an alias
@@ -58,8 +81,14 @@
     # with some separate alias (or typing out the full thing) to get
     # `commit --all`
     ci   = commit --all
+    # N.B., we do *not* pass the --all flag here! Instead we use --patch
+    # to selectively choose changes.
+    amend = commit --amend --patch
+    # We use "oo" rather than the standard "co" to avoid typo issues.
+    oo   = checkout
     pr   = pull --rebase
     rc   = rebase --continue
+    ra   = rebase --abort
     hw   = help --web
     unpushed = log @{u}..
     # This will unrecord the most recent commit. N.B., you can also
@@ -69,18 +98,20 @@
     # Undo a 'git reset'. N.B., '{1}' may not always be the one you
     # want; cf 'git reflog' <http://stackoverflow.com/a/2531803/358069>
     unreset = reset 'HEAD@{1}'
-    # N.B., we do *not* pass the --all flag here! Instead we use --patch
-    # to selectively choose changes.
-    amend = commit --amend --patch
-    # Revert all unstaged changes
+    # Revert all unstaged changes (I.e., discard them entirely).
     # * To revert staged files, use 'git reset -- .'
     # * To remove untracked files, use 'git clean -df'
     # * To revert only some chunks, use 'git checkout -p'
     # In all cases, you can give a specific file name instead of '.'
     # <http://stackoverflow.com/q/52704/358069>
     revert-all = checkout -- .
+    new-branch = checkout -b
     # Then pass the name of the new branch in the local repo.
     push-new-branch = push --set-upstream origin
+    # Chromium/Google-only things.
+    # TODO: how to guard these so they don't break on my other systems?
+    mb = map-branches
+    ru = rebase-update
 
 
 # Trying to solve this problem
@@ -105,3 +136,4 @@
 #[url "git@github.com:"]
 #    pushInsteadOf = https://github.com/
 #    pushInsteadOf = git://github.com/
+
