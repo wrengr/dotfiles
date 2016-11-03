@@ -3,7 +3,7 @@
 # them on each individual machine in our ~/.bash_profile.
 [user]
     name = wren romano
-    email = wren@community.haskell.org
+    email = 2998727+wrengr@users.noreply.github.com
     # Instruct Git to not try guessing name and email, but yource
     # you to specify them when you set up a new repo:
     #useConfigOnly = true
@@ -342,6 +342,10 @@
     assumed = "!git ls-files -v | grep ^h | cut -c 3-"
     unassume-all = "!git assumed | xargs git update-index --no-assume-unchanged"
     assume-all = "!git st -s | awk {'print $2'} | xargs git assume"
+    # TODO: <https://stackoverflow.com/a/11768843> though beware
+    # the warning in <https://git-scm.com/docs/git-filter-branch>
+    # so instead maybe try using <https://github.com/newren/git-filter-repo/>
+    #
     # Chromium depot-tools stuff.
     # TODO: how to guard these so they don't break on my other systems?
     # TODO: will this work with Google/Perforce, or need we re-write our own version?
@@ -359,8 +363,8 @@
 # TODO: is there a way to set this http info differently for various
 # hosts, while using the same file (so I don't need to postprocess
 # the stuff in my dotfiles repo)?
-#[http]
-#    cookiefile = /usr/local/google/home/wrengr/.gitcookies
+[http]
+    cookiefile = /usr/local/google/home/wrengr/.gitcookies
 
 # Speed up pulling from repos by pulling from the read-only version
 # (so you don't need to authenticate) but can still push to the
@@ -374,5 +378,5 @@
 
 # For git-on-borg at google. The way the config looks is confusing; what
 # this means is whenever we type "gob:" that'll get rewritten to the url.
-#[url "sso://user/wrengr/"]
-#    insteadOf = gob:
+[url "sso://user/wrengr/"]
+    insteadOf = gob:

@@ -1,4 +1,4 @@
-# wren gayle romano's bash login script             ~ 2018.05.23
+# wren gayle romano's bash login script             ~ 2021.08.03
 #
 # It's fairly generic (with weirder things at the bottom),
 # but it's designed to be usable for all my accounts with no(!)
@@ -511,22 +511,28 @@ export BIBINPUTS=".:${HOME}/local/texmf/bibtex/bib:"
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ Set up Git
 
-# N.B., setting these overrides the `git config --global user.*` settings
-case "${_localhost}" in
-    google)
-        export GIT_AUTHOR_EMAIL='wrengr@google.com'
-        # TODO: How to dynamically set the following on a repo-by-repo basis?
-        #export GIT_AUTHOR_EMAIL='wrengr@chromium.org'
-    ;;
-    *)
-        # TODO: they're retiring that email server; so need to
-        # switch to a different email now...
-        export GIT_AUTHOR_EMAIL='wren@community.haskell.org'
-    ;;
-esac
-export GIT_AUTHOR_NAME='wren romano'
-export GIT_COMMITTER_NAME="$GIT_AUTHOR_NAME"
-export GIT_COMMITTER_EMAIL="$GIT_AUTHOR_EMAIL"
+# N.B., setting these overrides the `git config --global user.*`
+# settings; not sure about the repo specific `git config user.*`
+# though.
+#
+# Thus we are henceforth removing all this, so that the git config
+# files work as intended (and to avoid issues about having made github
+# email private).
+# TODO: At some future date, after fixing any breakage, actually remove this.
+#case "${_localhost}" in
+#    google)
+#        export GIT_AUTHOR_EMAIL='wrengr@google.com'
+#        # TODO: How to dynamically set the following on a repo-by-repo basis?
+#        #export GIT_AUTHOR_EMAIL='wrengr@chromium.org'
+#    ;;
+#    *)
+#        # Actually, this is already the global user.email now...
+#        export GIT_AUTHOR_EMAIL='2998727+wrengr@users.noreply.github.com'
+#    ;;
+#esac
+#export GIT_AUTHOR_NAME='wren romano'
+#export GIT_COMMITTER_NAME="$GIT_AUTHOR_NAME"
+#export GIT_COMMITTER_EMAIL="$GIT_AUTHOR_EMAIL"
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -544,8 +550,8 @@ alias dgrep="find . -path '*/_darcs' -prune -o -print0 | xargs -0 egrep"
 alias svngrep="find . -path '*/.svn' -prune -o -print0 | xargs -0 egrep"
 
 # So `darcs init` doesn't keep prompting me for it
-# HACK: we reuse the git variables for DRY; but that's weird on google machines
-export DARCS_EMAIL="$GIT_AUTHOR_NAME <$GIT_AUTHOR_EMAIL>"
+# HACK: we reuse the git variables for DRY; but that's weird
+export DARCS_EMAIL="wren romano <2998727+wrengr@users.noreply.github.com>"
 
 # To fix postfix on OSX:
 # $> echo 'canonical_maps = hash:/etc/postfix/canonical' >> /etc/postfix/main.cf
