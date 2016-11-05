@@ -17,12 +17,12 @@
     interactive = auto
     status = auto
     ui = true
-[push]
-    default = simple
-[merge]
-    ff = only
 [core]
-    # Chromium style demands we disable autocrlf
+    # Just to be sure.
+    editor = vim
+    # Chromium style demands we disable autocrlf.
+    # TODO: do we want this everywhere else? Can we guard it to be
+    # Chromium-only?
     autocrlf = false
     filemode = false
     whitespace = trailing-space,space-before-tab
@@ -39,15 +39,16 @@
     # Disable `git push`'s hints about non-fastforward-able patches
     #pushNonFastForward = false
 
-# TODO: cf., <http://nuclearsquid.com/writings/git-tricks-tips-workflows/>
 
-
-# Have newly-created branches starting from a branch, set their
-# start point as upstream (as oppose to the default 'true' setting
-# where this only happens when the start point is a remote-tracking
-# branch)
-# <http://grimoire.ca/git/config>
+[push]
+    default = simple
+[merge]
+    ff = only
 [branch]
+    # Have newly-created branches starting from a branch, set their
+    # start point as upstream (as oppose to the default 'true' setting
+    # where this only happens when the start point is a remote-tracking
+    # branch). <http://grimoire.ca/git/config>
     autoSetupMerge = always
 
 
@@ -63,20 +64,25 @@
 # <http://randyfay.com/content/rebase-workflow-git>
 
 
+# TODO: cf., <http://nuclearsquid.com/writings/git-tricks-tips-workflows/>
+
+
 # For more alias ideas, see:
 # <http://noamlewis.wordpress.com/2012/05/21/my-git-aliases/>
-# or the very last few at <https://gist.github.com/pksunkara/988716>
+# <http://durdn.com/blog/2012/11/22/must-have-git-aliases-advanced-examples/>
 [alias]
     # For more details on the files affected, try adding --name-status,
-    # --stat, or --numstat.
-    lol = log --graph --decorate --pretty=oneline --abbrev-commit
+    # --stat, or --numstat. To only show N files, pass -N.
+    lol  = log --graph --decorate --pretty=oneline --abbrev-commit
     # N.B., the %C(auto) color was introduced in git 1.8.3 (24 May 2013)
     lola = log --color --graph --pretty=format:'%C(yellow)%h%Creset %Cgreen(%cr)%Creset %C(blue)<%an>%Creset%C(auto)%d%Creset %s'
-    # BUG: can't actually set this alias because of the $(), but
-    # it gives a nice pretty version of reflog
-    #reflol = log --graph --decorate --oneline $(git rev-list -g --all)
+    # TODO: I forget how this one actually differs from `lol`?`
+    rofl = "!git log --graph --decorate --oneline $(git rev-list -g --all)"
+    # Show more details of the most recent patch:
+    # (To show the diff, try `git diff --cached HEAD^`)
+    top  = log --stat -1
     st   = status --branch
-    # TODO: make aliases for patch mode, since that's really what we want
+    # TODO: make alias for patch mode, since that's really what we want
     # most of the time. Prolly should take over the `ci` alias;
     # with some separate alias (or typing out the full thing) to get
     # `commit --all`
@@ -105,11 +111,39 @@
     # In all cases, you can give a specific file name instead of '.'
     # <http://stackoverflow.com/q/52704/358069>
     revert-all = checkout -- .
-    new-branch = checkout -b
-    # Then pass the name of the new branch in the local repo.
+    # In principle, passing the second argument to `checkout -b` should
+    # set the upstream; but for some reason that doesn't always work. So
+    # we explicitly set the upstream after creating the branch.
+    # TODO: is this finally robust?
+    new-branch = "!f(){ \
+        old=\"`git rev-parse --abbrev-ref HEAD)\"; \
+        git checkout -b \"$1\" \"$old\" ; \
+        git branch --set-upstream-to=\"$old\"; \
+        }; f"
     push-new-branch = push --set-upstream origin
+    # TODO: a version of del-branch that automatically switches to
+    # the upstream branch if we're on the branch to be
+    # deleted. (Rather than just erroring out, as `branch -d` does.)
+    # N.B., can use -D as a shorthand for -d and --force
+    del-branch = branch -d
+    push-del-branch = push origin --delete
+    # List branches in order last modified:
+    # (N.B., for-each-ref doesn't support --color nor %cr)
+    # What fields are supported: <http://stackoverflow.com/a/21868228>
+    # HT: <https://gist.github.com/mwhite/6887990>
+    # TODO: is there a way to combine this info with the map-branches info?
+    lm = "!git for-each-ref \
+        --sort='-authordate' \
+        --format='%(authordate:short)%09%(objectname:short)%09%(refname)' \
+        refs/heads | sed -e 's@refs/heads/@@'"
+    # HT: <https://gist.github.com/pksunkara/988716>
+    whois = "!sh -c 'git log -i -1 --pretty=\"format:%an <%ae>%n\" --author=\"$1\"' -"
+    # HT: <https://gist.github.com/mwhite/6887990>
+    aliases = "!git config -l | grep alias | cut -c 7-"
     # Chromium/Google-only things.
     # TODO: how to guard these so they don't break on my other systems?
+    # N.B., `git map` comes from the same place as `git map-branches`
+    # (I think), so it's also Chromium-specific.
     mb = map-branches
     ru = rebase-update
 
@@ -137,3 +171,7 @@
 #    pushInsteadOf = https://github.com/
 #    pushInsteadOf = git://github.com/
 
+# For git-on-borg at google. The way the config looks is confusing; what
+# this means is whenever we type "me:" that'll get rewritten to the url.
+[url "sso://user/wrengr/"]
+    insteadOf = me:

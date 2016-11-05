@@ -454,10 +454,9 @@ ignores = (
   # HACK: to try and fix brokennes of hilightwin
   { mask = "Wren";           level = "ALL"; channels = ( "#meow" ); },
   { mask = "Wren";           level = "ALL"; channels = ( "#freegeek" ); },
-  { mask = "lawrencewu";     level = "ALL"; channels = ( "#chromium" ); },
 );
 windows = {
-  1 = { 
+  1 = {
     immortal = "yes";
     name = "(status)";
     level = "ALL";
