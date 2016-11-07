@@ -76,7 +76,7 @@
     lol  = log --graph --decorate --pretty=oneline --abbrev-commit
     # N.B., the %C(auto) color was introduced in git 1.8.3 (24 May 2013)
     lola = log --color --graph --pretty=format:'%C(yellow)%h%Creset %Cgreen(%cr)%Creset %C(blue)<%an>%Creset%C(auto)%d%Creset %s'
-    # TODO: I forget how this one actually differs from `lol`?`
+    # This one also shows stashes and abandoned branches/heads
     rofl = "!git log --graph --decorate --oneline $(git rev-list -g --all)"
     # Show more details of the most recent patch:
     # (To show the diff, try `git diff --cached HEAD^`)
