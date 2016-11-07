@@ -111,10 +111,14 @@
     # In all cases, you can give a specific file name instead of '.'
     # <http://stackoverflow.com/q/52704/358069>
     revert-all = checkout -- .
-    # In principle, passing the second argument to `checkout -b` should
-    # set the upstream; but for some reason that doesn't always work. So
-    # we explicitly set the upstream after creating the branch.
-    # TODO: is this finally robust?
+    # BUG: the second argument to `checkout -b` should be the
+    # *remote* branch it tracks... I think. In any case, just passing
+    # the second argument isn't enough to cause the new local-branch
+    # to track the old local-branch (as we want for Chromium stuff).
+    # Whence the additional call to `branch -u`.
+    # For more info, cf:
+    # <https://www.git-tower.com/learn/git/faq/track-remote-upstream-branch>
+    # <https://git-scm.com/book/en/v2/Git-Branching-Remote-Branches>
     new-branch = "!f(){ \
         old=\"`git rev-parse --abbrev-ref HEAD)\"; \
         git checkout -b \"$1\" \"$old\" ; \
