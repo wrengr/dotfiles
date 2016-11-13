@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" This is wren gayle romano's vim config            ~ 2015.10.14
+" This is wren gayle romano's vim config            ~ 2016.11.13
 "
 " For guidance, see ~/.vim/README
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -206,6 +206,10 @@ endif
 set autoindent           " Keep indent levels line-to-line
 set nosmartindent        " Don't be stupid about hash. Instead use ft stuff.
                          " <http://vim.wikia.com/wiki/Restoring_indent_after_typing_hash>
+" Stop stupid unindenting when typing the hash key (e.g., in Python)
+" cf., <http://stackoverflow.com/a/2360284/358069> or :help smartindent
+"inoremap # X#
+
 set tabstop=4            " Display a <Tab> as N characters
 set softtabstop=0        " Don't pretend N positions are a <Tab>
 set shiftwidth=4         " Indent N positions by shifting text with < and >
@@ -534,7 +538,7 @@ map =jd :.,+1!~/.vim/macro_jd.pl
 "" Removes all trailing spaces
 "" If you want to just do it manually, then type what's between the quotes
 "function! RmTrailingSpace()
-"   silent! execute ":%s#\s\+$##"
+"   silent! execute ":%s/\s\+$//"
 "endfun
 
 " Add type signatures to top-level functions
