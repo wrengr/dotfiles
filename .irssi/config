@@ -165,6 +165,7 @@ channels = (
   { name = "#coq";               chatnet = "freenode";  autojoin = "yes"; },
   { name = "#agda";              chatnet = "freenode";  autojoin = "yes"; },
   { name = "#epigram";           chatnet = "freenode";  autojoin = "yes"; },
+  { name = "##typetheory";       chatnet = "freenode";  autojoin = "yes"; },
   { name = "##categorytheory";   chatnet = "freenode";  autojoin = "yes"; },
   { name = "#chromium";          chatnet = "freenode";  autojoin = "yes"; },
   { name = "#transspace";        chatnet = "freenode";  autojoin = "no"; },
@@ -445,10 +446,10 @@ ignores = (
   { level = "JOINS PARTS QUITS KICKS"
   ; channels = (
     "#meow", "#freegeek", "#haskell", "#haskell-ops", "#lambdanow",
-    "#haskell-in-depth", "#numerical-haskell", "#ghc", "#darcs", "#hakyll",
-    "#coq", "#agda", "#epigram", "##categorytheory", "#chromium",
-    "#lambdaladies", "#transspace", "#transgender", "#kink", "#star",
-    "#soic", "#nlp" ); },
+    "#haskell-in-depth", "#numerical-haskell", "#ghc", "#darcs",
+    "#hakyll", "#coq", "#agda", "#epigram", "##typetheory",
+    "##categorytheory", "#chromium", "#lambdaladies", "#transspace",
+    "#transgender", "#kink", "#star", "#soic", "#nlp" ); },
   { mask = "ghcbot";         level = "ALL"; channels = ( "#ghc" ); },
   { mask = "darcscommitbot"; level = "ALL"; channels = ( "#darcs" ); },
   # HACK: to try and fix brokennes of hilightwin
@@ -568,7 +569,7 @@ windows = {
       {
         type = "CHANNEL";
         chat_type = "IRC";
-        name = "##categorytheory";
+        name = "##typetheory";
         tag = "freenode";
       }
     );
@@ -580,7 +581,7 @@ windows = {
       {
         type = "CHANNEL";
         chat_type = "IRC";
-        name = "#chromium";
+        name = "##categorytheory";
         tag = "freenode";
       }
     );
@@ -588,6 +589,18 @@ windows = {
     parent = "1";
   };
   13 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#chromium";
+        tag = "freenode";
+      }
+    );
+    sticky = "yes";
+    parent = "1";
+  };
+  14 = {
     items = (
       {
         type = "CHANNEL";
