@@ -176,6 +176,6 @@
 #    pushInsteadOf = git://github.com/
 
 # For git-on-borg at google. The way the config looks is confusing; what
-# this means is whenever we type "me:" that'll get rewritten to the url.
+# this means is whenever we type "gob:" that'll get rewritten to the url.
 [url "sso://user/wrengr/"]
-    insteadOf = me:
+    insteadOf = gob:
