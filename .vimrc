@@ -174,7 +174,8 @@ endif
 " N.B., has(...) checks for compiled "features"; exists(...) checks options.
 if exists('+colorcolumn')
     " N.B., this is the column we highlight, hence should be one
-    " more than where we want to wrap.
+    " more than where we want to wrap. You can also use "+n" to set
+    " it automatically based on &textwidth.
     set colorcolumn=81
     " Or, to shade everything beyond 81 instead of only 81 itself:
     "execute "set colorcolumn=" . join(range(81,335), ',')
@@ -360,7 +361,13 @@ function! ToggleNumber()
     endif
 endfunc
 " TODO: use <leader> instead of <C>?
-nnoremap <C-l> :call ToggleNumber()<cr>
+nnoremap <C-n> :call ToggleNumber()<cr>
+
+" This should be set by default, but just to make sure. This is
+" particularly helpful when dealing with ssh+screen, since that seems to
+" cause issues with redrawing.
+" TODO: might consider adding :nohlsearch<cr> before the redraw.
+nnoremap <C-l> :redraw!<cr>
 
 
 " ~~~~~ Toggle highlighting certain whitespace as errors
@@ -826,7 +833,7 @@ endif
 
 " ~~~~~ nerdtree configuration
 "if exists(":NERDTree")
-    "map <C-n> :NERDTreeToggle<CR>
+    "map <C-t> :NERDTreeToggle<CR>
 
     " Allow vim to close if the only open window is nerdtree
     "autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
