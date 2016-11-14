@@ -1,5 +1,5 @@
 #!/bin/sh
-# This command rebuilds the "OpenWith" menue on OSX
+# This command rebuilds the "OpenWith" menu on OSX
 echo ''
 echo 'Rebuilding LaunchServices:'
 

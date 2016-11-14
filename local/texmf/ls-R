@@ -25,6 +25,7 @@ logictex_bib.tex
 
 ./bibtex/bib/wrengr:
 600.425-heterounify.bib
+README
 athenaeum.bib
 b629.bib
 b659.bib
@@ -279,6 +280,7 @@ wokluwer.sty
 ./tex/latex/wrengr:
 PPRfyma2.sty
 PPRricoDeux.sty
+README
 ThorntonStyle.sty
 categorytheory.sty
 cmd-latin.sty
