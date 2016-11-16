@@ -1,4 +1,4 @@
-# This is wren gayle romano's bash login script     ~ 2016.10.13
+# This is wren gayle romano's bash login script     ~ 2016.11.15
 #
 # It's fairly generic (with weirder things at the bottom),
 # but it's designed to be usable for all my accounts with no(!)
@@ -97,14 +97,21 @@ if [ "X${USER}" = 'X' ]; then
     export USER='UNKNOWN'
 fi
 
-# TODO: set our own _usecolor variable, rather than changing TERM itself
+# TODO: set our own _usecolor variable, rather than changing TERM itself.
+
+# N.B., using 'xterm-color' results in vim setting t_Co=8. Thus,
+# to get termcap to say the right thing so that vim does the right
+# thing, we need to use 'xterm-256color' instead. (Where "right thing"
+# is assuming the terminal emulator actually supports 256 colors. Try
+# running `256colors.pl` to make sure.) Some common cases are handled
+# below, but we don't address everything.
 
 # Because JHU's screen is annoying
-[ "${TERM}" = 'screen' ] && export TERM='xterm-color'
+[ "${TERM}" = 'screen' ] && export TERM='xterm-256color'
 # TODO: perhaps using 'screen-256color' or 'xterm-256color' would work better?
 
 # Because Goobuntu is also annoying
-[ "${_localhost}" = 'google' ] && export TERM='xterm-color'
+[ "${_localhost}" = 'google' ] && export TERM='xterm-256color'
 
 # To compare bold vs highlight, use:
 # printf '\e[0;31mplain\n\e[1;31mbold\n\e[0;91mhighlight\n\e[1;91mbold+highlight\n\e[0m'
