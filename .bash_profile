@@ -85,6 +85,43 @@ esac
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~ Configure TERM to be (more) correct
+
+# N.B., using 'xterm-color' results in vim setting t_Co=8. Thus,
+# to get termcap to say the right thing so that vim does the right
+# thing, we need to use 'xterm-256color' instead. (Where "right thing"
+# is assuming the terminal emulator actually supports 256 colors. Try
+# running `256colors.pl` to make sure.) Some common cases are handled
+# below, but we don't address everything.
+
+# TODO: other than Goobuntu/GoogleOSX (and the old JHU machines),
+# does anyone else's screen suck and set TERM='screen*' when it really
+# supports 256-color?
+
+# TODO: have some (host-specific) helper file which stores the true
+# number of colors the given terminal supports, and set a variable by
+# reading from that file. This way we don't have to mess around with
+# TERM quite so much. Of course, we'd need to make sure our ~/.vimrc
+# also reads that file in order to set &t_Co appropriately.
+
+# Google's `screen` is annoying.
+if [ "${_localhost}" = 'google' ]; then
+    # N.B., Goobuntu's `screen` sets TERM='screen-bce' rather than TERM='screen'.
+    if [ "${TERM}" = 'screen-bce' ]; then
+        # TODO: it used to be the version of `screen` on Goobuntu
+        # only supported 8-colors, but that seems to have been
+        # miraculously fixed somehow.
+        export TERM='screen-256color'
+    else
+        # When using the local terminal on Goobuntu, we have
+        # TERM='xterm' by default. (Whereas, when sshing in we
+        # already have TERM='xterm-256color'.)
+        export TERM='xterm-256color'
+    fi
+fi
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ Fancy Prompt
 
 # N.B. some `su`s don't reset $USER properly without `-` or `-l`,
@@ -97,36 +134,18 @@ if [ "X${USER}" = 'X' ]; then
     export USER='UNKNOWN'
 fi
 
-# TODO: set our own _usecolor variable, rather than changing TERM itself.
-
-# N.B., using 'xterm-color' results in vim setting t_Co=8. Thus,
-# to get termcap to say the right thing so that vim does the right
-# thing, we need to use 'xterm-256color' instead. (Where "right thing"
-# is assuming the terminal emulator actually supports 256 colors. Try
-# running `256colors.pl` to make sure.) Some common cases are handled
-# below, but we don't address everything.
-
-# Because JHU's screen is annoying
-[ "${TERM}" = 'screen' ] && export TERM='xterm-256color'
-# TODO: perhaps using 'screen-256color' or 'xterm-256color' would work better?
-
-# Because Goobuntu is also annoying
-[ "${_localhost}" = 'google' ] && export TERM='xterm-256color'
+# TODO: set our own _usecolor variable, rather than relying on TERM itself.
 
 # To compare bold vs highlight, use:
 # printf '\e[0;31mplain\n\e[1;31mbold\n\e[0;91mhighlight\n\e[1;91mbold+highlight\n\e[0m'
 
 if [ ! -z "${PS1}" ]; then
-    # TODO: use [ "`tput colors`" -gt 2 ] instead, to abstract
-    # over the exact value of $TERM and just get the number of
-    # colors for that $TERM. Or if we're being really persnickety,
-    # we should use tput to test for the existence of each
-    # particular color we want to use.
+    # TODO: we should probably use `tput` to get the escape codes for
+    # the desired colors, rather than hard-coding them directly.
     #
-    # TODO: more generally, we should probably use tput to get
-    # the escape codes for the desired colors, rather than
-    # hard-coding them directly.
-    if [ "${TERM}" = 'xterm-color' ] || [ "${TERM}" = 'xterm-256color' ]; then
+    # N.B., `tput` returns answers based on the value of TERM,
+    # not based on what the terminal actually supports!!
+    if [ "`tput colors`" -gt 2 ]; then
         # A better way even is to use [ `id -u` = 0 ]
         # ...though that doesn't find non-root users
         case "${USER}" in

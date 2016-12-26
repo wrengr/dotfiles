@@ -732,6 +732,7 @@ Plug 'airblade/vim-gitgutter', has('signs') ? {} : { 'on' : [] }
 "Plug 'moll/vim-node', { 'for': 'javascript' }
 "Plug 'christoomey/vim-tmux-navigator' " Navitate freely between tmux and vim
 "Plug 'michaeljsmith/vim-indent-object' " ii / ai
+"Plug 'ashisha/image.vim' " View images as ASCII art
 "
 "" For more reliable indenting and performance
 "set foldmethod=indent
