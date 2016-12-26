@@ -71,43 +71,49 @@
 # <http://noamlewis.wordpress.com/2012/05/21/my-git-aliases/>
 # <http://durdn.com/blog/2012/11/22/must-have-git-aliases-advanced-examples/>
 [alias]
+    hw    = help --web
     # For more details on the files affected, try adding --name-status,
     # --stat, or --numstat. To only show N files, pass -N.
-    lol  = log --graph --decorate --pretty=oneline --abbrev-commit
+    lol   = log --graph --decorate --pretty=oneline --abbrev-commit
     # N.B., the %C(auto) color was introduced in git 1.8.3 (24 May 2013)
-    lola = log --color --graph --pretty=format:'%C(yellow)%h%Creset %Cgreen(%cr)%Creset %C(blue)<%an>%Creset%C(auto)%d%Creset %s'
+    lola  = log --color --graph --pretty=format:'%C(yellow)%h%Creset %Cgreen(%cr)%Creset %C(blue)<%an>%Creset%C(auto)%d%Creset %s'
     # This one also shows stashes and abandoned branches/heads
-    rofl = "!git log --graph --decorate --oneline $(git rev-list -g --all)"
+    rofl  = "!git log --graph --decorate --oneline $(git rev-list -g --all)"
     # Show more details of the most recent patch:
-    # (To show the diff, try `git diff --cached HEAD^`)
-    top  = log --stat -1
-    st   = status --branch
-    # TODO: make alias for patch mode, since that's really what we want
-    # most of the time. Prolly should take over the `ci` alias;
-    # with some separate alias (or typing out the full thing) to get
-    # `commit --all`
-    ci   = commit --all
+    # (To show the diff, use `git show` or try `git diff --cached HEAD^`)
+    top   = log --stat -1
+    unpushed = log @{u}..
+    st    = status --branch
+    # What we really want most of the time.
+    ci    = commit --patch
+    # For when we're lazy or singleminded.
+    ca    = commit --all
     # N.B., we do *not* pass the --all flag here! Instead we use --patch
     # to selectively choose changes.
     amend = commit --amend --patch
-    # We use "oo" rather than the standard "co" to avoid typo issues.
-    oo   = checkout
-    pr   = pull --rebase
-    rc   = rebase --continue
-    ra   = rebase --abort
-    hw   = help --web
-    unpushed = log @{u}..
+    # We use "oo" rather than the standard "co" to avoid typo issues vs "ci".
+    oo    = checkout
+    pr    = pull --rebase
+    ra    = rebase --abort
+    rc    = rebase --continue
+    # AKA: commute the diff goddamnit!
+    ro    = rebase --onto
+    # For getting rebases to work when they cherry picked you, or similar.
+    rs    = rebase --skip
     # This will unrecord the most recent commit. N.B., you can also
     # use "~1" instead of "^" at the end; or "~N" to revert the
     # N most-recent commits. <http://stackoverflow.com/q/927358/358069>
     unrecord = reset --soft 'HEAD^'
-    # Undo a 'git reset'. N.B., '{1}' may not always be the one you
-    # want; cf 'git reflog' <http://stackoverflow.com/a/2531803/358069>
+    # Undo a `git reset`. N.B., '{1}' may not always be the one you
+    # want; cf `git reflog` <http://stackoverflow.com/a/2531803/358069>
     unreset = reset 'HEAD@{1}'
-    # Revert all unstaged changes (I.e., discard them entirely).
-    # * To revert staged files, use 'git reset -- .'
-    # * To remove untracked files, use 'git clean -df'
-    # * To revert only some chunks, use 'git checkout -p'
+    # Unstage some files. (Takes one or more files/paths)
+    # * To unstage only some chunks, use `git reset -p --`
+    unadd = reset --
+    unadd-all = reset -- .
+    # Revert (i.e., discard) all *unstaged* changes.
+    # * To remove untracked files, use `git clean -df`
+    # * To revert only some chunks, use `git checkout -p`
     # In all cases, you can give a specific file name instead of '.'
     # <http://stackoverflow.com/q/52704/358069>
     revert-all = checkout -- .
@@ -119,6 +125,8 @@
     # For more info, cf:
     # <https://www.git-tower.com/learn/git/faq/track-remote-upstream-branch>
     # <https://git-scm.com/book/en/v2/Git-Branching-Remote-Branches>
+    # TODO: actually, the brokenness here may have something to do with
+    # Chromium defining their own git_new_branch.py command.
     new-branch = "!f(){ \
         old=\"`git rev-parse --abbrev-ref HEAD)\"; \
         git checkout -b \"$1\" \"$old\" ; \
@@ -128,22 +136,25 @@
     # TODO: a version of del-branch that automatically switches to
     # the upstream branch if we're on the branch to be
     # deleted. (Rather than just erroring out, as `branch -d` does.)
-    # N.B., can use -D as a shorthand for -d and --force
+    # N.B., can use -D as a shorthand for -d --force
     del-branch = branch -d
     push-del-branch = push origin --delete
     # List branches in order last modified:
     # (N.B., for-each-ref doesn't support --color nor %cr)
     # What fields are supported: <http://stackoverflow.com/a/21868228>
     # HT: <https://gist.github.com/mwhite/6887990>
-    # TODO: is there a way to combine this info with the map-branches info?
+    # TODO: is there a way to combine this info with the "mb" and "bv" info?
     lm = "!git for-each-ref \
         --sort='-authordate' \
         --format='%(authordate:short)%09%(objectname:short)%09%(refname)' \
         refs/heads | sed -e 's@refs/heads/@@'"
+    bv = branch -vv
     # HT: <https://gist.github.com/pksunkara/988716>
     whois = "!sh -c 'git log -i -1 --pretty=\"format:%an <%ae>%n\" --author=\"$1\"' -"
     # HT: <https://gist.github.com/mwhite/6887990>
     aliases = "!git config -l | grep alias | cut -c 7-"
+    # Get rid of dangling patches in the repo.
+    gc-for-reals = "!git reflog expire --expire=now --all && git gc --prune=now"
     # Chromium/Google-only things.
     # TODO: how to guard these so they don't break on my other systems?
     # N.B., `git map` comes from the same place as `git map-branches`
