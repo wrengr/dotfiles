@@ -625,6 +625,10 @@ call plug#begin('~/.vim/bundle')
 "     <http://www.vim.org/scripts/script.php?script_id=3645>
 " But is it actually organized correctly for use as a plugin?
 "Plug 'jamessan/vim-gnupg'
+" Default to using ascii-armor. Hopefuly this'll help deal with the
+" bug where saving modified files causes them to be saves as binary
+" in spite of the *.asc suffix.
+let g:GPGPreferArmor=1
 
 
 " ~~~~~ Syntax highlighting
