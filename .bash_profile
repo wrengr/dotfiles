@@ -1,4 +1,4 @@
-# This is wren gayle romano's bash login script     ~ 2016.11.15
+# This is wren gayle romano's bash login script     ~ 2017.03.30
 #
 # It's fairly generic (with weirder things at the bottom),
 # but it's designed to be usable for all my accounts with no(!)
@@ -368,8 +368,50 @@ case "${_localhost}" in
         _push PATH '/Library/anaconda/bin'
     ;;
     google)
-        _push PATH '~/chromium-srcs/depot_tools'
-        _push PATH '~/chromium-srcs/goma'
+        case "${_uname}" in
+            Linux)
+                _push PATH '~/chromium-srcs/depot_tools'
+                # WARNING: this will steal "gcc" and "g++" from /usr/bin
+                # And you need to do special things to get goma started.
+                _push PATH '~/chromium-srcs/goma'
+
+
+                if prodcertstatus --check_remaining_hours=1 >/dev/null 2>&1; then
+                    _have_prodaccess=true
+                else
+                    _have_prodaccess=false
+                    #prodaccess -s --kinit --ssh_on_security_key
+                fi
+
+                # Namely, we actually need `gkerb` (aka `prodaccess -k`).
+                # Otherwise we'll get all sorts of strange errors, like stale
+                # file handles when looking at `/auto`.
+                if $_have_prodaccess; then
+                    # Pre-access the directory in order to mount it.
+                    (cd '/auto/edatools' >/dev/null 2>&1)
+                    if [ -d '/auto/edatools' ]; then
+                        # For synthesizing and other EDA tools.
+                        # TODO: this causes bugs when logging into the wm...
+                        #source /auto/edatools/modules/tcl/init/bash
+                        #source /auto/edatools/lsf/conf/profile.lsf
+                        #_push PATH '/auto/edatools/bin'
+
+                        # Mount /edascratch so we can use it:
+                        # (N.B., this step may take 20--30 min)
+                        #/auto/edatools/bin/edascratch_client.sh
+
+                        # To run VCS, do:
+                        #module load  vcs/2015.09-SP2
+                        #export VCS_HOME=/auto/edatools/synopsys/vcs/2015.09-SP2/linux64
+                        #export PATH=$VCS_HOME/bin:$PATH
+
+                        # HACK: avoid syntax error since everything above is commented out.
+                        :
+                    fi
+                fi
+                unset _have_prodaccess
+            ;;
+        esac
     ;;
 esac
 
@@ -476,9 +518,9 @@ esac
 # N.B., setting these overrides the `git config --global user.*` settings
 case "${_localhost}" in
     google)
-        # TODO: there are a few cases where I have to use the @google
-        # account; so is there any way to automatically detect those?
-        export GIT_AUTHOR_EMAIL='wrengr@chromium.org'
+        export GIT_AUTHOR_EMAIL='wrengr@google.com'
+        # TODO: How to dynamically set the following on a repo-by-repo basis?
+        #export GIT_AUTHOR_EMAIL='wrengr@chromium.org'
     ;;
     *)
         export GIT_AUTHOR_EMAIL='wren@community.haskell.org'
@@ -638,6 +680,14 @@ case "${_localhost}" in
         case "${_uname}" in
             Linux)
                 alias open='xdg-open &>/dev/null'
+
+                # A much better version of `blaze run`
+                alias br='/google/src/head/depot/google3/devtools/blaze/scripts/blaze-run.sh'
+                # Tab completion to do things like `br :hello_world`
+                complete -o nospace -F _blaze::complete_build_target_wrapper br
+                # for `blaze build` and `blaze test` would to similar
+                # if we have aliases. N.B., that explodes if we haven't
+                # run `prodaccess` recently enough.
             ;;
         esac
     ;;
