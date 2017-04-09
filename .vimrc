@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" This is wren gayle romano's vim config            ~ 2016.11.13
+" This is wren gayle romano's vim config            ~ 2017.03.21
 "
 " For guidance, see ~/.vim/README
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -685,6 +685,16 @@ Plug 'airblade/vim-gitgutter', has('signs') ? {} : { 'on' : [] }
 " ~~~~~ Undoing
 "Plug 'sjl/gundo.vim'
 "Plug 'mbbill/undotree'
+
+
+" ~~~~~ HDLs
+Plug 'mtikekar/vim-bsv'            " BlueSpec System Verilog (not *.bs !)
+"Plug 'hanw/vim-bluespec'          " Another BSV plugin
+"Plug 'michaeltanner/vim-bluespec' " Yet another BSV plugin
+Plug 'nachumk/systemverilog.vim'
+Plug 'vhda/verilog_systemverilog.vim'
+" A hack for Classic BlueSpec. Would be nice ot have a real thing here...
+au BufRead,BufNewFile *.bs set filetype=haskell
 
 
 " ~~~~~ Etc.
