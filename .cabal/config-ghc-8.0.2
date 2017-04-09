@@ -1,0 +1,184 @@
+-- This is the configuration file for the 'cabal' command line tool.
+-- Use the flag --config-file to use a file other than the default
+-- (i.e., ~/.cabal/config): <https://github.com/haskell/cabal/issues/1113>
+--
+-- Some available configuration options are listed below. Some of
+-- them have default values listed. The only real documentation is
+-- the source code itself:
+-- <https://github.com/haskell/cabal/blob/master/Cabal/Distribution/Simple/Setup.hs>
+-- See also the default config as of version 1.18:
+-- <https://gist.github.com/23Skidoo/5602724>
+--
+-- Lines (like this one) beginning with '--' are comments.
+-- Be careful with spaces and indentation because they are
+-- used to indicate layout for nested sections.
+
+
+remote-repo: hackage.haskell.org:http://hackage.haskell.org/packages/archive
+-- remote-repo: hdiff.luite.com:http://hdiff.luite.com/packages/archive
+remote-repo-cache: /Users/wren/.cabal/packages
+-- local-repo:
+-- logs-dir:
+-- verbose: 1
+-- compiler: ghc
+with-compiler: /usr/local/stow/ghc-8.0.2_x86_64/bin/ghc
+with-hc-pkg:   /usr/local/stow/ghc-8.0.2_x86_64/bin/ghc-pkg
+-- scratchdir:
+-- program-prefix:
+-- program-suffix:
+-- library-vanilla: True
+library-profiling: True
+-- shared:
+-- executable-dynamic: False
+-- executable-profiling: False
+-- -- Old Bug:  <http://hackage.haskell.org/trac/hackage/ticket/368>
+-- -- See also: <http://www.vex.net/~trebla/haskell/cabal-cabal.xhtml>
+optimization: 2
+-- -- Used to be True by default, now False by default...
+-- library-for-ghci: False
+-- -- Enables automatically striping dead code from linked libraries,
+-- -- speeding up link times (and reducing executable size; which
+-- -- can also be done with the strip utility)
+-- -- BUG: Split objects seems not to work with 7.6.3; what about 7.8.*?
+split-objs: False
+-- executable-stripping: True
+-- user-install: True
+-- package-db:
+-- flags:
+-- extra-include-dirs:
+-- extra-lib-dirs:
+-- tests: False
+-- library-coverage: False
+-- benchmarks: False
+-- constraint:
+-- cabal-lib-version:
+-- -- Use the following to specify things like base >= 4, parsec
+-- -- >= 3 to override kludges
+-- preference:
+-- solver: choose
+documentation: True
+doc-index-file: $datadir/doc/$compiler/index.html
+-- max-backjumps: 200
+-- reorder-goals: False
+-- shadow-installed-packages:
+-- reinstall: False
+-- avoid-reinstalls: False
+-- force-reinstalls: False
+-- upgrade-dependencies: False
+-- -- Use "root-cmd: sudo" if desired; don't do `sudo cabal install foo`
+-- root-cmd:
+-- symlink-bindir:
+build-summary: /Users/wren/.cabal/logs/build.log
+-- build-log:
+remote-build-reporting: anonymous
+-- one-shot: False
+jobs: $ncpus
+-- username:
+-- password:
+
+
+install-dirs user
+  -- prefix: /Users/wren/.cabal
+  -- bindir: $prefix/bin
+  -- libdir: $prefix/lib
+  -- libsubdir: $arch-$os-$compiler/$pkgid
+  -- libexecdir: $prefix/libexec
+  -- datadir: $prefix/share
+  -- datasubdir: $arch-$os-$compiler/$pkgid
+  -- -- This is the new default, but just to be explicit
+  docdir: $datadir/doc/$arch-$os-$compiler/$pkgid
+  -- htmldir: $docdir/html
+  -- haddockdir: $htmldir
+
+install-dirs global
+  -- prefix: /usr/local
+  -- bindir: $prefix/bin
+  -- libdir: $prefix/lib
+  -- libsubdir: $arch-$os-$compiler/$pkgid
+  -- libexecdir: $prefix/libexec
+  -- datadir: $prefix/share
+  -- datasubdir: $arch-$os-$compiler/$pkgid
+  -- -- This is the new default, but just to be explicit
+  docdir: $datadir/doc/$arch-$os-$compiler/$pkgid
+  -- htmldir: $docdir/html
+  -- haddockdir: $htmldir
+
+
+-- Requires cabal-install >= 1.18
+-- <http://coldwa.st/e/blog/2013-08-21-Cabal-1-18.html>
+-- <https://github.com/haskell/cabal/issues/1328>
+program-locations
+  -- alex-location:
+  -- ar-location:
+  -- c2hs-location:
+  -- cpphs-location:
+  -- ffihugs-location:
+  -- gcc-location:
+  ghc-location:     /usr/local/stow/ghc-8.0.2_x86_64/bin/ghc
+  ghc-pkg-location: /usr/local/stow/ghc-8.0.2_x86_64/bin/ghc-pkg
+  -- greencard-location:
+  haddock-location: /usr/local/stow/ghc-8.0.2_x86_64/bin/haddock
+  -- happy-location:
+  -- hmake-location:
+  hpc-location:     /usr/local/stow/ghc-8.0.2_x86_64/bin/hpc
+  hsc2hs-location:  /usr/local/stow/ghc-8.0.2_x86_64/bin/hsc2hs
+  -- hscolour-location:
+  -- hugs-location:
+  -- jhc-location:
+  -- ld-location:
+  -- lhc-location:
+  -- lhc-pkg-location:
+  -- nhc98-location:
+  -- pkg-config-location:
+  -- ranlib-location:
+  -- strip-location:
+  -- tar-location:
+  -- uhc-location:
+
+program-default-options
+  -- alex-options:
+  -- ar-options:
+  -- c2hs-options:
+  -- cpphs-options:
+  -- ffihugs-options:
+  -- gcc-options:
+  -- ghc-options:
+  -- ghc-pkg-options:
+  -- greencard-options:
+  -- haddock-options:
+  -- happy-options:
+  -- hmake-options:
+  -- hpc-options:
+  -- hsc2hs-options:
+  -- hscolour-options:
+  -- hugs-options:
+  -- jhc-options:
+  -- ld-options:
+  -- lhc-options:
+  -- lhc-pkg-options:
+  -- nhc98-options:
+  -- pkg-config-options:
+  -- ranlib-options:
+  -- strip-options:
+  -- tar-options:
+  -- uhc-options:
+
+
+-- Requires cabal-install >= 1.20
+-- <http://blog.johantibell.com/2014/04/announcing-cabal-120.html>
+-- <https://github.com/haskell/cabal/pull/1707>
+haddock
+  -- keep-temp-files:  False
+  hoogle:              True
+  -- html:             False
+  -- html-location:
+  -- executables:      False
+  -- tests:            False
+  -- benchmarks:       False
+  -- all:
+  -- internal:         False
+  -- css:
+  hyperlink-source:    True
+  -- hscolour-css:
+  -- contents-location:
+
