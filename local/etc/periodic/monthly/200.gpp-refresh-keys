@@ -3,5 +3,6 @@ echo ''
 echo 'Updating GnuPG key database:'
 
 rc=0
+chmod 600 ~/.gnupg/gpg.conf
 gpg --refresh-keys || rc=3
 exit $rc
