@@ -618,12 +618,13 @@ endif
 " TODO: how can we get plug.vim to open its status window on the right? I
 " tried setting g:plug_window, but can't get it to work...
 
+
 " We use ~/.vim/bundle since that's what most other plugin managers
 " use. However, all the vim-plug docs prefer ~/.vim/plugged instead.
 " So beware.
 call plug#begin('~/.vim/bundle')
 " TODO: use 'git@github.com:$WHO/$WHAT.git' formatting instead, to avoid https
-" TODO: see which of these plugins I actually want...
+" TODO: go through all these to see which plugins I actually want...
 
 
 " ~~~~~ Automatically use GNU PGP
@@ -639,13 +640,15 @@ call plug#begin('~/.vim/bundle')
 let g:GPGPreferArmor=1
 
 
-" ~~~~~ Syntax highlighting
+" ~~~~~ Color schemes & Syntax highlighting
 " TODO: should we guard this for?: has("syntax") && (&t_Co > 2 || has("gui_running"))
 " TODO: cf., the Cond function <https://github.com/junegunn/vim-plug/wiki/faq>
 " TODO: do we need to do anything special since the vim code isn't top level?
 Plug 'chriskempson/tomorrow-theme'
-" I don't actually like Solarized, but for future reference:
-"Plug 'altercation/vim-colors-solarized'
+"Plug 'altercation/vim-colors-solarized' " I dislike this; so just for reference
+"Plug 'junegunn/seoul256.vim'   " Low-contrast color scheme
+"Plug 'junegunn/limelight.vim'  " Colorize only local chunks/paragraphs
+"Plug 'scrooloose/syntastic'
 
 
 " ~~~~~ Tabline & Statusline (just the basics; see also Buffers & Tabs)
@@ -682,12 +685,27 @@ Plug 'airblade/vim-gitgutter', has('signs') ? {} : { 'on' : [] }
 " ~~~~~ File-tree browsing
 "Plug 'scrooloose/nerdtree', { 'on':  'NERDTreeToggle' }
 "Plug 'Xuyuanp/nerdtree-git-plugin', { 'on': 'NERDTreeToggle' }
+"Plug 'justinmk/vim-dirvish' " an alternative to nerdtree
+"Plug 'wincent/command-t'
+"Plug 'eiginn/netrw'         " Nice file browsing with -
+"let g:netrw_altfile = 1
+"Plug 'tpope/vim-vinegar'
 
 
-" ~~~~~ Fuzzy searching
+" ~~~~~ Searching
 "Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 "Plug 'Shougo/unite.vim'
 "Plug 'ctrlpvim/ctrlp.vim'
+"Plug 'rking/ag.vim'              " Lightning fast :Ag searcher
+"Plug 'vim-scripts/IndexedSearch'
+"Plug 'vim-scripts/SmartCase'
+"Plug 'vim-scripts/gitignore'
+
+
+" ~~~~~ Auto-completion
+"Plug 'rdnetto/YCM-Generator', { 'branch': 'stable' }
+"Plug 'Valloric/YouCompleteMe', { 'do': './install.py' }
+" or maybe: { 'do': './install.sh --gocode-completer  --tern-completer' }
 
 
 " ~~~~~ Undoing
@@ -695,31 +713,44 @@ Plug 'airblade/vim-gitgutter', has('signs') ? {} : { 'on' : [] }
 "Plug 'mbbill/undotree'
 
 
-" ~~~~~ HDLs
+" ~~~~~ Alignment & Indentation
+"Plug 'godlygeek/tabular'
+"Plug 'junegunn/vim-easy-align'
+"Plug 'michaeljsmith/vim-indent-object' " ii / ai
+
+"" For more reliable indenting and performance
+"set foldmethod=indent
+"set fillchars="fold: "
+
+
+" ~~~~~ Language Support: HDLs
 Plug 'mtikekar/vim-bsv'            " BlueSpec System Verilog (not *.bs !)
 "Plug 'hanw/vim-bluespec'          " Another BSV plugin
 "Plug 'michaeltanner/vim-bluespec' " Yet another BSV plugin
 Plug 'nachumk/systemverilog.vim'
 Plug 'vhda/verilog_systemverilog.vim'
-" A hack for Classic BlueSpec. Would be nice ot have a real thing here...
+" A hack for Classic BlueSpec. Would be nice to have a real thing here...
 au BufRead,BufNewFile *.bs set filetype=haskell
+
+
+" ~~~~~ Language Support: Go
+"Plug 'fatih/vim-go', { 'for': 'go' }
+"let g:go_fmt_command = "goimports"
+"Plug 'nsf/gocode', { 'rtp': 'vim', 'do': '~/.vim/plugged/gocode/vim/symlink.sh', 'for': 'go' }
+
+
+" ~~~~~ Language Support: JavaScript
+"Plug 'moll/vim-node', { 'for': 'javascript' }
 
 
 " ~~~~~ Etc.
 "Plug 'godlygeek/tabular' | Plug 'plasticboy/vim-markdown' " Syntax highlighting for Markdown
-"Plug 'junegunn/seoul256.vim'   " Low-contrast color scheme
 "Plug 'junegunn/goyo.vim'       " A vim variant of OmmWriter?
-"Plug 'junegunn/limelight.vim'  " Colorize only local chunks/paragraphs
 " TODO: cf., the Cond function <https://github.com/junegunn/vim-plug/wiki/faq>
 "Plug 'junegunn/vim-xmark', has('mac') ? {} : { 'on' : [] }
-"Plug 'junegunn/vim-easy-align'
 "Plug 'SirVer/ultisnips' | Plug 'honza/vim-snippets'
-"Plug 'rdnetto/YCM-Generator', { 'branch': 'stable' }
-"Plug 'Valloric/YouCompleteMe', { 'do': './install.py' }
-" or maybe: { 'do': './install.sh --gocode-completer  --tern-completer' }
 "Plug 'tpope/vim-sensible' " More-sensible defaults
 "Plug 'tomtom/quickfixsigns_vim'
-"Plug 'scrooloose/syntastic'
 "Plug 'jmcantrell/vim-virtualenv' " for Python virtualenvs
 "Plug 'edkolev/tmuxline.vim'
 "Plug 'gcmt/taboo.vim'
@@ -733,9 +764,7 @@ au BufRead,BufNewFile *.bs set filetype=haskell
 "Plug 'sheerun/vim-polyglot'
 "Plug 'sjl/vitality.vim'  " for Vim + iTerm2 (+ tmux)
 "Plug 'grassdog/tagman.vim'
-"Plug 'justinmk/vim-dirvish' " in lieu of nerdtree
 "Plug 'terryma/vim-expand-region'
-"Plug 'rking/ag.vim' " Lightning fast :Ag searcher
 "Plug 'tomtom/tcomment_vim'
 "Plug 'tpope/vim-rsi'
 "Plug 'tpope/vim-endwise'
@@ -748,27 +777,8 @@ au BufRead,BufNewFile *.bs set filetype=haskell
 "let g:rooter_disable_map = 1
 "let g:rooter_silent_chdir = 1
 "Plug 'AndrewRadev/splitjoin.vim' " Expand / wrap hashes etc.
-"Plug 'fatih/vim-go', { 'for': 'go' }
-"let g:go_fmt_command = "goimports"
-"Plug 'nsf/gocode', { 'rtp': 'vim', 'do': '~/.vim/plugged/gocode/vim/symlink.sh', 'for': 'go' }
-"Plug 'moll/vim-node', { 'for': 'javascript' }
 "Plug 'christoomey/vim-tmux-navigator' " Navitate freely between tmux and vim
-"Plug 'michaeljsmith/vim-indent-object' " ii / ai
 "Plug 'ashisha/image.vim' " View images as ASCII art
-"
-"" For more reliable indenting and performance
-"set foldmethod=indent
-"set fillchars="fold: "
-"
-"" Nice file browsing with -
-"Plug 'eiginn/netrw'
-"let g:netrw_altfile = 1
-"Plug 'tpope/vim-vinegar'
-"
-"" Better search tools
-"Plug 'vim-scripts/IndexedSearch'
-"Plug 'vim-scripts/SmartCase'
-"Plug 'vim-scripts/gitignore'
 call plug#end()
 
 
