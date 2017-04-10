@@ -1,14 +1,14 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" This is wren gayle romano's vim config            ~ 2017.03.21
+" This is wren gayle romano's vim config            ~ 2017.04.09
 "
 " For guidance, see ~/.vim/README
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 " ~~~~~ Basic usability
-set nocompatible         " Avoid compatibility with legacy vi
+set nocompatible               " Avoid compatibility with legacy vi
 set backspace=indent,eol,start " Allow backspacing anything (input mode)
 "set whichwrap=b,s,<,>,~,[,]   " backspace and cursor keys wrap too
-set number               " Show line numbers?
+set number                     " Show line numbers? (cf., :ToggleNumber below)
 set showmatch            " When inserting a bracket, briefly jump to the match
 "set matchtime=5         " how long (N/10 secs) to blink on matching bracket
 "set updatetime=4000     " how long (N/10 secs) to highlight matching & save swp if nothing done
@@ -126,19 +126,19 @@ endif
 
 
 " ~~~~~ History, backups, & stupidity
-set history=100          " size of command and search history
+set history=100                  " size of command and search history
 "set undolevels=1000
-" The following line has some sort of typo about '<' for version 6.2
+" The following line has some sort of typo about '<' for vim-6.2
 set viminfo='20,<100,s100,\"100
 "           |   |    |    |
-"           |   |    |    +-- lines of history (default 50)
-"           |   |    +------- Exclude registers larger than N kb
-"           |   +------------ Maximum of N lines for registers
-"           +---------------- Keep marks for N files
-"set confirm             " ask before doing something stupid
-set autowrite            " Autosave before commands like next and make
-set nobackup             " Make a backup file?
-"set patchmode=.orig     " save original file with suffix the first time
+"           |   |    |    +------- lines of history (default 50)
+"           |   |    +------------ Exclude registers larger than N kb
+"           |   +----------------- Maximum of N lines for registers
+"           +--------------------- Keep marks for N files
+"set confirm                     " ask before doing something stupid
+set autowrite                    " autosave before commands like next and make
+set nobackup                     " make a backup file?
+"set patchmode=.orig             " save original file with suffix the first time
 "set backupdir=$HOME/.vim/backup " where to put backup files
 "set directory=$HOME/.vim/temp   " where to put temp files
 
@@ -246,7 +246,7 @@ set noexpandtab
 
 
 " ~~~~~ Line wrapping (or not, as the case may be)
-set wrap               " Enable &wrap to soft-wrap overly long lines.
+set wrap               " Enable to soft-wrap overly long lines.
 set linebreak          " (lbr) Only break lines at characters in &breakat;
                        " i.e., not in the middle of words.
                        " N.B., the default &breakat contains a space.
@@ -302,14 +302,22 @@ set ignorecase           " Don't care if search for upper or lowercase
 
 
 " ~~~~~ Spelling
-" TODO: make a function/keybinding for toggling &spell
-"if v:version > 700
-"   set spell           " Highlight spelling errors automatically
-"   setlocal spell spelllang=en_us
-"   set spellsuggest=10 " Show top N spell suggestions
-"   " Change to make spellfile.vim ask you again for downloading file
-"   let g:spellfile_URL = 'http://ftp.vim.org/vim/runtime/spell'
-"endif
+if (v:version > 700) && has('spell')
+    setlocal spelllang=en_us " Set a local value of the global &spellang
+    set spellsuggest=10      " Show top N spell suggestions
+    " Change to make spellfile.vim ask you again for downloading file
+    "let g:spellfile_URL = 'http://ftp.vim.org/vim/runtime/spell'
+
+    " TODO: use <leader> instead of <C>?
+    " Toggle highlighting spelling errors (for local buffer only).
+    " (N.B., this is how you spell <ctrl-space>. Also, we can't
+    " use <C-s> because the terminal steals that to mean "stop output")
+    nnoremap <C-@> :setlocal spell!<cr>
+
+    " TODO: try this idea from <http://stackoverflow.com/a/5041384/358069>
+    " autocmd InsertEnter * setlocal nospell
+    " autocmd InsertLeave * setlocal spell
+endif
 
 
 " ~~~~~ Folding (:help usr_28)

@@ -16,6 +16,11 @@
 * What does <silent> etc mean on key mappings?
 	<http://vimdoc.sourceforge.net/htmldoc/map.html#:map-arguments>
 
+* How can I see what key bindings are currently set/active?
+	:redir! > vim_keys.txt
+	:silent verbose map
+	:redir END
+
 * What do those {&,@,g:,w:,...} prefixes on variables mean?
 	<https://codeyarns.com/2010/11/26/how-to-view-variables-in-vim/>
 	<http://learnvimscriptthehardway.stevelosh.com/chapters/19.html>
@@ -28,7 +33,7 @@
 
 This blog post has a nice summary of the directory structure in
 ~/.vim/, including a bunch of directories I don't have (yet)
-    <http://www.panozzaj.com/blog/2011/09/09/vim-directory-structure/>
+	<http://www.panozzaj.com/blog/2011/09/09/vim-directory-structure/>
 
 
 === How do I manage all this stuff? ===
@@ -37,7 +42,7 @@ There are a plethora of different plugin managers for vim, all in
 various states of deprecation and unmaintinence. For my part, I'm
 going to (try to) use vim-plug, which appears to be the latest and
 greatest of the options.
-    <https://github.com/junegunn/vim-plug>
+	<https://github.com/junegunn/vim-plug>
 
 Of course, I also want to have my own homerolled stuff, and don't
 want it to get trounced by plugin managers. So where should I put
