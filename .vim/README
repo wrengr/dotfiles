@@ -17,9 +17,12 @@
 	<http://vimdoc.sourceforge.net/htmldoc/map.html#:map-arguments>
 
 * How can I see what key bindings are currently set/active?
-	:redir! > vim_keys.txt
-	:silent verbose map
-	:redir END
+	To get a short list (i.e., no combos)
+		:redir! > vim_keys.txt
+		:silent verbose map
+		:redir END
+	To get what they're set to In The Beginning
+		:help index
 
 * What do those {&,@,g:,w:,...} prefixes on variables mean?
 	<https://codeyarns.com/2010/11/26/how-to-view-variables-in-vim/>
