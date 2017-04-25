@@ -1,9 +1,250 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" This is wren gayle romano's vim config            ~ 2017.04.09
+" This is wren gayle romano's vim config            ~ 2017.04.24
 "
 " For guidance, see ~/.vim/README
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+" ~~~~~ Minimal preamble before loading plugins.
+" Avoid compatibility with legacy vi
+set nocompatible               
+" One should never parse modelines by default, it's a security
+" vulnerability. <http://usevim.com/2012/03/28/modelines/>
+set nomodeline
+" Is our terminal connection 'fast'? (hint: is it no longer the 1970s?)
+set ttyfast
+
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+" ~~~~~ vim-plug stuff <https://github.com/junegunn/vim-plug>
+
+" Autodownload vim-plug itself, if it's not already installed. That
+" way we don't need to store a copy in our dotfiles git repo. Of
+" course auto-installing opens us up to potential security issues.
+" In lieu of auto-installing, we could just store this single file
+" in the dotfiles repo (after verifying its trustworthiness), and
+" then re-verify it before committing the new version gotten by
+" calling :PlugUpgrade. Then again, auto-updating the other plugins
+" also poses potential security issues; so how paranoid should we be?
+"
+" junegunn himself encourages committing plug.vim to dotfiles repos:
+" <https://github.com/junegunn/vim-plug/issues/69#issuecomment-54735487>
+" <https://github.com/junegunn/vim-plug/pull/240#issuecomment-110538613>
+" To ease that, maybe we should turn this code into a PlugBootstrap function?
+if empty(glob('~/.vim/autoload/plug.vim'))
+    " TODO: detect if we're behind an HTTP proxy and fail with
+    " a message. (Because no way am I going to pass --insecure
+    " to curl, nor set GIT_SSL_NO_VERIFY to true).
+    silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
+        \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+	if has('autocmd')
+		" N.B., $MYVIMRC is magically set to point to this
+		" ~/.vimrc file. Alas, there appears not to be any
+		" equivalent for the ~/.vim directory
+		autocmd VimEnter * PlugInstall | source $MYVIMRC
+	endif
+endif
+
+" TODO: how can we get plug.vim to open its status window on the right? I
+" tried setting g:plug_window, but can't get it to work...
+
+
+" We use ~/.vim/bundle since that's what most other plugin managers
+" use. However, all the vim-plug docs prefer ~/.vim/plugged instead.
+" So beware.
+call plug#begin('~/.vim/bundle')
+" TODO: use 'git@github.com:$WHO/$WHAT.git' formatting instead, to
+" use the git protocol in lieu of https.
+" TODO: actually go through all these to see which plugins I actually want...
+
+
+" ~~~~~ Automatically use GNU PGP
+" TODO: again, security blah blah. Do we want to do this, or just
+" keep a copy in the dotfiles repo?
+" TODO: This looks like the official git repo for:
+"     <http://www.vim.org/scripts/script.php?script_id=3645>
+" But is it actually organized correctly for use as a plugin?
+"Plug 'jamessan/vim-gnupg'
+" Default to using ascii-armor. Hopefuly this'll help deal with the
+" bug where saving modified files causes them to be saves as binary
+" in spite of the *.asc suffix.
+let g:GPGPreferArmor=1
+
+
+" ~~~~~ Color schemes & Syntax highlighting
+" TODO: should we guard this for?: has('syntax') && (&t_Co > 2 || has('gui_running'))
+" TODO: cf., the Cond function <https://github.com/junegunn/vim-plug/wiki/faq>
+" TODO: do we need to do anything special since the vim code isn't top level?
+Plug 'chriskempson/tomorrow-theme'
+"Plug 'junegunn/seoul256.vim'   " Low-contrast color scheme
+"Plug 'junegunn/limelight.vim'  " Colorize only local chunks/paragraphs
+"Plug 'vim-scripts/wombat256.vim'
+"Plug 'scrooloose/syntastic'
+
+
+" ~~~~~ Tabline & Statusline (just the basics; see also Buffers & Tabs)
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
+" This is necessary for the pretty airline wedges; but doesn't seem
+" to work well on OSX/iTerm2 (see notes below). For Monaco, things
+" are tricky; cf.,
+"     <https://github.com/powerline/fonts/pull/16>
+"     <https://gist.github.com/epegzz/1634235>
+"     <https://gist.github.com/rogual/6824790627960fc93077>
+"     <https://gist.github.com/baopham/1838072>
+"     <https://github.com/robbyrussell/oh-my-zsh/issues/2869>
+"     <https://github.com/powerline/fonts/issues/44>
+"     <https://powerline.readthedocs.io/en/latest/installation/osx.html>
+" N.B., 'Lokaltog/powerline-fonts' redirects to 'powerline/fonts'
+"Plug 'Lokaltog/powerline-fonts', { 'do': './install.sh' }
+
+
+" ~~~~~ Buffers & Tabs
+"Plug 'bling/vim-bufferline'
+"Plug 'majutsushi/tagbar'
+"Plug 'weynhamz/vim-plugin-minibufexpl'
+"Plug 'moll/vim-bbye' " Delete buffers & close windows without ruining layout!
+
+
+" ~~~~~ Git & other VCSes
+Plug 'airblade/vim-gitgutter', has('signs') ? {} : { 'on' : [] }
+"Plug 'mhinz/vim-signify' " like gitgutter, but for other VCSes
+" <https://bitbucket.org/ludovicchabant/vim-lawrencium> " for Mercurial
+"Plug 'junegunn/vim-github-dashboard'
+"Plug 'tpope/vim-fugitive'
+"Plug 'int3/vim-extradite'
+"Plug 'vim-scripts/gitignore' " Automatically set &wildignore from ./.gitignore
+
+
+" ~~~~~ File-tree browsing
+"Plug 'scrooloose/nerdtree', { 'on':  'NERDTreeToggle' }
+"Plug 'Xuyuanp/nerdtree-git-plugin', { 'on': 'NERDTreeToggle' }
+"Plug 'justinmk/vim-dirvish' " an alternative to nerdtree
+"Plug 'wincent/command-t'
+"Plug 'eiginn/netrw'         " Nice file browsing with -
+"let g:netrw_altfile = 1
+"Plug 'tpope/vim-vinegar'
+
+
+" ~~~~~ Searching
+"Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+"Plug 'Shougo/unite.vim'
+"Plug 'ctrlpvim/ctrlp.vim'
+"Plug 'rking/ag.vim'              " Lightning fast :Ag searcher
+"Plug 'vim-scripts/IndexedSearch'
+"Plug 'vim-scripts/SmartCase'
+"Plug 'vim-scripts/gitignore'
+
+
+" ~~~~~ Auto-completion
+"Plug 'rdnetto/YCM-Generator', { 'branch': 'stable' }
+"Plug 'Valloric/YouCompleteMe', { 'do': './install.py' }
+" or maybe: { 'do': './install.sh --gocode-completer  --tern-completer' }
+"Plug 'ervandew/supertab'
+"Plug 'Shougo/neocomplete.vim'
+
+
+" ~~~~~ Undoing
+"Plug 'sjl/gundo.vim'
+"Plug 'mbbill/undotree'
+"Plug 'simnalamburt/vim-mundo' " Undo tree visualizer
+
+
+" ~~~~~ Alignment & Indentation
+"Plug 'godlygeek/tabular'
+"Plug 'junegunn/vim-easy-align'
+"Plug 'michaeljsmith/vim-indent-object' " ii / ai
+"Plug 'vim-scripts/Align'
+
+"" For more reliable indenting and performance
+"set foldmethod=indent
+"set fillchars="fold: "
+
+
+" ~~~~~ Language Support: HDLs
+Plug 'mtikekar/vim-bsv'            " BlueSpec System Verilog (not *.bs !)
+"Plug 'hanw/vim-bluespec'          " Another BSV plugin
+"Plug 'michaeltanner/vim-bluespec' " Yet another BSV plugin
+Plug 'nachumk/systemverilog.vim'
+Plug 'vhda/verilog_systemverilog.vim'
+" A hack for Classic BlueSpec. Would be nice to have a real thing here...
+if has('autocmd')
+	autocmd BufRead,BufNewFile *.bs set filetype=haskell
+endif
+
+
+" ~~~~~ Language Support: Go
+"Plug 'fatih/vim-go', { 'for': 'go' }
+"let g:go_fmt_command = "goimports"
+"Plug 'nsf/gocode', { 'rtp': 'vim', 'do': '~/.vim/plugged/gocode/vim/symlink.sh', 'for': 'go' }
+
+
+" ~~~~~ Language Support: JavaScript
+"Plug 'moll/vim-node', { 'for': 'javascript' }
+
+
+" ~~~~~ Language Support: Haskell
+" Cf., <https://www.reddit.com/r/haskell/comments/67384o/how_do_you_haskell_in_vim/>
+" Cf., <http://www.stephendiehl.com/posts/vim_2016.html>
+" Cf., <https://github.com/begriffs/haskell-vim-now>
+"Plug 'eagletmt/ghcmod-vim', { 'for': 'haskell' }
+"Plug 'eagletmt/neco-ghc', { 'for': 'haskell' }
+"Plug 'edkolev/curry.vim', { 'for': 'haskell' }
+"Plug 'enomsg/vim-haskellConcealPlus', { 'for': 'haskell' }
+"Plug 'mpickering/hlint-refactor-vim', { 'for': 'haskell' }
+"Plug 'nbouscal/vim-stylish-haskell', { 'for': 'haskell' }
+"Plug 'neovimhaskell/haskell-vim', { 'for': 'haskell' }
+"Plug 'Twinside/vim-hoogle', { 'for': 'haskell' }
+
+
+" ~~~~~ Etc.
+"Plug 'godlygeek/tabular' | Plug 'plasticboy/vim-markdown' " Syntax highlighting for Markdown
+"Plug 'junegunn/goyo.vim'       " A vim variant of OmmWriter?
+" TODO: cf., the Cond function <https://github.com/junegunn/vim-plug/wiki/faq>
+"Plug 'junegunn/vim-xmark', has('mac') ? {} : { 'on' : [] }
+"Plug 'SirVer/ultisnips' | Plug 'honza/vim-snippets'
+"Plug 'tpope/vim-sensible' " More-sensible defaults
+"Plug 'tomtom/quickfixsigns_vim'
+"Plug 'jmcantrell/vim-virtualenv' " for Python virtualenvs
+"Plug 'edkolev/tmuxline.vim'
+"Plug 'gcmt/taboo.vim'
+"Plug 'vim-ctrlspace/vim-ctrlspace'
+"Plug 'edkolev/promptline.vim'
+"Plug 'bling/minivimrc'
+" ~~~~~ cf., <https://sheerun.net/2014/03/21/how-to-boost-your-vim-productivity/>
+" and <https://github.com/sheerun/dotfiles/blob/master/vimrc>
+" and <https://github.com/sheerun/vimrc>
+" and <https://github.com/vmchale/dotfiles/blob/master/.vimrc>
+"Plug 'wellle/targets.vim'
+"Plug 'sheerun/vim-polyglot'
+"Plug 'sjl/vitality.vim'  " for Vim + iTerm2 (+ tmux)
+"Plug 'grassdog/tagman.vim'
+"Plug 'terryma/vim-expand-region'
+"Plug 'tomtom/tcomment_vim'
+"Plug 'tpope/vim-rsi'
+"Plug 'tpope/vim-endwise'
+"Plug 'tpope/vim-repeat'
+"Plug 'tpope/vim-sleuth'
+"Plug 'tpope/vim-unimpaired'
+"Plug 'tpope/vim-commentary'
+"Plug 'danro/rename.vim' " Allow to :Rename files
+"Plug 'flowtype/vim-flow'
+"Plug 'airblade/vim-rooter' " Automatically find root project directory
+"let g:rooter_disable_map = 1
+"let g:rooter_silent_chdir = 1
+"Plug 'AndrewRadev/splitjoin.vim' " Expand / wrap hashes etc.
+"Plug 'christoomey/vim-tmux-navigator' " Navitate freely between tmux and vim
+"Plug 'ashisha/image.vim' " View images as ASCII art
+"Plug 'majutsushi/tagbar'
+" Some other stuff from <http://www.stephendiehl.com/posts/vim_2016.html>
+"Plug 'tomtom/tlib_vim' " Some kind of utility functions...
+"Plug 'MarcWeber/vim-addon-mw-utils'
+"Plug 'garbas/vim-snipmate' " TextMate-like snippet features
+"Plug 'scrooloose/nerdcommenter'
+"Plug 'Shougo/vimproc.vim', { 'do': 'make' }
+call plug#end()
+
+
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Basic usability
 set nocompatible               " Avoid compatibility with legacy vi
 set backspace=indent,eol,start " Allow backspacing anything (input mode)
@@ -18,7 +259,6 @@ set showmatch            " When inserting a bracket, briefly jump to the match
 " One should never parse modelines by default, it's a security
 " vulnerability. <http://usevim.com/2012/03/28/modelines/>
 set nomodeline
-"set modelines=5         " Search in the first N lines for modes
 " TODO: is there a way to only parse modelines for detecting the
 " filetype whenever our other ways of detecting it fail? Is that
 " still insecure?
@@ -144,11 +384,10 @@ set nobackup                     " make a backup file?
 
 
 " ~~~~~ Syntax highlighting
-if has("syntax") && (&t_Co > 2 || has("gui_running"))
+if has('syntax') && (&t_Co > 2 || has('gui_running'))
     syntax on
     set background=dark  " Optimize the colors to a dark background
-    " N.B., we set the &colorscheme later, after installing plugins.
-    " TODO: should we just move what's left of this section down there?
+    colorscheme Tomorrow-Night-Bright
 endif
 " TODO: &t_Co is often wrong. We need to set up our ~/.bash_profile
 " to try to detect how many colors any given terminal actually
@@ -180,8 +419,11 @@ if exists('+colorcolumn')
     " Or, to shade everything beyond 81 instead of only 81 itself:
     "execute "set colorcolumn=" . join(range(81,335), ',')
 
-    " We set `highlight ColorColumn` later on, to ensure it doesn't
-    " get overridden.
+	" Use a pleasant but high-contrast color.
+	" N.B., must be set after the color scheme; else it will be overridden.
+	highlight ColorColumn
+		\ ctermfg=white ctermbg=173 cterm=bold
+		\ guifg=#ffffff guibg=#e5786d gui=bold
 else
     " This was suggested by my source for this trick, but dunno if
     " I really want it or not...
@@ -493,20 +735,11 @@ noremap <Leader>p :set paste<CR>:put  *<CR>:set nopaste<CR>
 " ~~~~~ FileType stuff
 " TODO: Most of this stuff should go into its own ft files. Not in here!
 "     <http://vim.wikia.com/wiki/Keep_your_vimrc_file_clean>
-if has("autocmd")
-    " Enable file type detection
-    " Use the default filetype settings. If you also want to
-    " load indent files, to automatically do language-dependent
-    " indenting, then add 'indent' as well.
+if has('autocmd')
+    " Enable file type detection, and load filetype-based indentation files.
     filetype plugin on
-
-    " Allow filebased indentation
     filetype indent on
 
-    " Makes vim capable of guessing based on the filetype
-    "filetype on
-
-    " http://www.ph.unimelb.edu.au/~ssk/vim/autocmd.html
     " Yes, all my *.pro files ARE prolog files
     autocmd BufNewFile,BufRead *.pro :set ft=prolog
     autocmd BufNewFile,BufRead *.ecl :set ft=prolog
@@ -519,314 +752,6 @@ if has("autocmd")
     " TODO: actual support for Agda
     " <http://wiki.portal.chalmers.se/agda/agda.php?n=Main.VIMEditing>
     autocmd BufNewFile,BufRead *.agda :set ft=haskell
-endif
-
-
-" ~~~~~ Macros
-" Haskell comment pretty printer (command mode)
-" TODO: make this work for indented comments too
-" N.B. The trailing newline is necessary for vim to work right
-map =hs :.!sed 's/^-- //; s/^/   /' \| fmt \| sed 's/^  /--/'
-
-" JavaDoc comment pretty printer.
-" TODO: make this work for indented comments too
-map =jd :.,+1!~/.vim/macro_jd.pl
-
-" TODO: similar smarts for Bash/Perl/Python-style comments
-" TODO: can I write a single smart macro that does all of them?
-
-
-" ~~~~~ Functions
-"" Removes all trailing spaces
-"" If you want to just do it manually, then type what's between the quotes
-"function! RmTrailingSpace()
-"   silent! execute ":%s/\s\+$//"
-"endfun
-
-" Add type signatures to top-level functions
-" From Sebastiaan Visser
-"function! HaskellType()
-"   w
-"   execute "normal {j^YP"
-"   execute (".!ghc -XNoMonomorphismRestriction -w % -e \":t " . expand("<cword>") . "\"")
-"   redraw!
-"endfunction
-"
-"function Haskell()
-"   map <buffer> <silent> tt :call HaskellType()<Cr>
-"   " more haskell stuff here
-"endfunction
-"
-"autocmd BufRead,BufNewFile *.{ag,hs,lhs,ghs} call Haskell()
-"
-"" Compare vs the following Cabal integration hack
-"
-"function! SetToCabalBuild()
-"   if glob("*.cabal") != ''
-"       let a = system( 'grep "/\* package .* \*/"  dist/build/autogen/cabal_macros.h' )
-"       let b = system( 'sed -e "s/\/\* /-/" -e "s/\*\///"', a )
-"       let pkgs = "-hide-all-packages " .  system( 'xargs echo -n', b )
-"       let hs = "import Distribution.Dev.Interactive\n"
-"       let hs .= "import Data.List\n"
-"       let hs .= 'main = withOpts [""] error return >>= putStr . intercalate " "'
-"       let opts = system( 'runhaskell', hs )
-"       let b:ghc_staticoptions = opts . ' ' . pkgs
-"   else
-"       let b:ghc_staticoptions = '-XNoMonomorphismRestriction -Wall -fno-warn-name-shadowing'
-"   endif
-"   execute 'setlocal makeprg=' . g:ghc . '\ ' . escape(b:ghc_staticoptions,' ') .'\ -e\ :q\ %'
-"   let b:my_changedtick -=1
-"endfunction
-"
-"autocmd BufEnter *.hs,*.lhs :call SetToCabalBuild()
-
-
-" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" ~~~~~ vim-plug stuff <https://github.com/junegunn/vim-plug>
-
-" Autodownload vim-plug itself, if it's not already installed. That
-" way we don't need to store a copy in our dotfiles git repo. Of
-" course auto-installing opens us up to potential security issues.
-" In lieu of auto-installing, we could just store this single file
-" in the dotfiles repo (after verifying its trustworthiness), and
-" then re-verify it before committing the new version gotten by
-" calling :PlugUpgrade. Then again, auto-updating the other plugins
-" also poses potential security issues; so how paranoid should we be?
-"
-" junegunn himself encourages committing plug.vim to dotfiles repos:
-" <https://github.com/junegunn/vim-plug/issues/69#issuecomment-54735487>
-" <https://github.com/junegunn/vim-plug/pull/240#issuecomment-110538613>
-" To ease that, maybe we should turn this code into a PlugBootstrap function?
-if empty(glob('~/.vim/autoload/plug.vim'))
-    " TODO: detect if we're behind an HTTP proxy and fail with
-    " a message. (Because no way am I going to pass --insecure
-    " to curl, nor set GIT_SSL_NO_VERIFY to true).
-    silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
-        \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-    " N.B., $MYVIMRC is magically set to point to this ~/.vimrc
-    " file. Alas, there appears to be no equivalent for the
-    " ~/.vim directory
-    autocmd VimEnter * PlugInstall | source $MYVIMRC
-endif
-
-" TODO: how can we get plug.vim to open its status window on the right? I
-" tried setting g:plug_window, but can't get it to work...
-
-
-" We use ~/.vim/bundle since that's what most other plugin managers
-" use. However, all the vim-plug docs prefer ~/.vim/plugged instead.
-" So beware.
-call plug#begin('~/.vim/bundle')
-" TODO: use 'git@github.com:$WHO/$WHAT.git' formatting instead, to avoid https
-" TODO: go through all these to see which plugins I actually want...
-
-
-" ~~~~~ Automatically use GNU PGP
-" TODO: again, security blah blah. Do we want to do this, or just
-" keep a copy in the dotfiles repo?
-" TODO: This looks like the official git repo for:
-"     <http://www.vim.org/scripts/script.php?script_id=3645>
-" But is it actually organized correctly for use as a plugin?
-"Plug 'jamessan/vim-gnupg'
-" Default to using ascii-armor. Hopefuly this'll help deal with the
-" bug where saving modified files causes them to be saves as binary
-" in spite of the *.asc suffix.
-let g:GPGPreferArmor=1
-
-
-" ~~~~~ Color schemes & Syntax highlighting
-" TODO: should we guard this for?: has("syntax") && (&t_Co > 2 || has("gui_running"))
-" TODO: cf., the Cond function <https://github.com/junegunn/vim-plug/wiki/faq>
-" TODO: do we need to do anything special since the vim code isn't top level?
-Plug 'chriskempson/tomorrow-theme'
-"Plug 'altercation/vim-colors-solarized' " I dislike this; so just for reference
-"Plug 'junegunn/seoul256.vim'   " Low-contrast color scheme
-"Plug 'junegunn/limelight.vim'  " Colorize only local chunks/paragraphs
-"Plug 'vim-scripts/wombat256.vim'
-"Plug 'scrooloose/syntastic'
-
-
-" ~~~~~ Tabline & Statusline (just the basics; see also Buffers & Tabs)
-Plug 'vim-airline/vim-airline'
-Plug 'vim-airline/vim-airline-themes'
-" This is necessary for the pretty airline wedges; but doesn't seem
-" to work well on OSX/iTerm2 (see notes below). For Monaco, things
-" are tricky; cf.,
-"     <https://github.com/powerline/fonts/pull/16>
-"     <https://gist.github.com/epegzz/1634235>
-"     <https://gist.github.com/rogual/6824790627960fc93077>
-"     <https://gist.github.com/baopham/1838072>
-"     <https://github.com/robbyrussell/oh-my-zsh/issues/2869>
-"     <https://github.com/powerline/fonts/issues/44>
-"     <https://powerline.readthedocs.io/en/latest/installation/osx.html>
-" N.B., 'Lokaltog/powerline-fonts' redirects to 'powerline/fonts'
-"Plug 'Lokaltog/powerline-fonts', { 'do': './install.sh' }
-
-
-" ~~~~~ Buffers & Tabs
-"Plug 'bling/vim-bufferline'
-"Plug 'majutsushi/tagbar'
-"Plug 'weynhamz/vim-plugin-minibufexpl'
-"Plug 'moll/vim-bbye' " Delete buffers anc close windows without messing up layout!
-
-
-" ~~~~~ Git & other VCSes
-Plug 'airblade/vim-gitgutter', has('signs') ? {} : { 'on' : [] }
-"Plug 'mhinz/vim-signify' " like gitgutter, but for other VCSes
-" <https://bitbucket.org/ludovicchabant/vim-lawrencium> " for Mercurial
-"Plug 'junegunn/vim-github-dashboard'
-"Plug 'tpope/vim-fugitive'
-"Plug 'int3/vim-extradite'
-"Plug 'vim-scripts/gitignore' " Set &wildignore from ./.gitignore
-
-
-" ~~~~~ File-tree browsing
-"Plug 'scrooloose/nerdtree', { 'on':  'NERDTreeToggle' }
-"Plug 'Xuyuanp/nerdtree-git-plugin', { 'on': 'NERDTreeToggle' }
-"Plug 'justinmk/vim-dirvish' " an alternative to nerdtree
-"Plug 'wincent/command-t'
-"Plug 'eiginn/netrw'         " Nice file browsing with -
-"let g:netrw_altfile = 1
-"Plug 'tpope/vim-vinegar'
-
-
-" ~~~~~ Searching
-"Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
-"Plug 'Shougo/unite.vim'
-"Plug 'ctrlpvim/ctrlp.vim'
-"Plug 'rking/ag.vim'              " Lightning fast :Ag searcher
-"Plug 'vim-scripts/IndexedSearch'
-"Plug 'vim-scripts/SmartCase'
-"Plug 'vim-scripts/gitignore'
-
-
-" ~~~~~ Auto-completion
-"Plug 'rdnetto/YCM-Generator', { 'branch': 'stable' }
-"Plug 'Valloric/YouCompleteMe', { 'do': './install.py' }
-" or maybe: { 'do': './install.sh --gocode-completer  --tern-completer' }
-"Plug 'ervandew/supertab'
-"Plug 'Shougo/neocomplete.vim'
-
-
-" ~~~~~ Undoing
-"Plug 'sjl/gundo.vim'
-"Plug 'mbbill/undotree'
-"Plug 'simnalamburt/vim-mundo' " Undo tree visualizer
-
-
-" ~~~~~ Alignment & Indentation
-"Plug 'godlygeek/tabular'
-"Plug 'junegunn/vim-easy-align'
-"Plug 'michaeljsmith/vim-indent-object' " ii / ai
-"Plug 'vim-scripts/Align'
-
-"" For more reliable indenting and performance
-"set foldmethod=indent
-"set fillchars="fold: "
-
-
-" ~~~~~ Language Support: HDLs
-Plug 'mtikekar/vim-bsv'            " BlueSpec System Verilog (not *.bs !)
-"Plug 'hanw/vim-bluespec'          " Another BSV plugin
-"Plug 'michaeltanner/vim-bluespec' " Yet another BSV plugin
-Plug 'nachumk/systemverilog.vim'
-Plug 'vhda/verilog_systemverilog.vim'
-" A hack for Classic BlueSpec. Would be nice to have a real thing here...
-au BufRead,BufNewFile *.bs set filetype=haskell
-
-
-" ~~~~~ Language Support: Go
-"Plug 'fatih/vim-go', { 'for': 'go' }
-"let g:go_fmt_command = "goimports"
-"Plug 'nsf/gocode', { 'rtp': 'vim', 'do': '~/.vim/plugged/gocode/vim/symlink.sh', 'for': 'go' }
-
-
-" ~~~~~ Language Support: JavaScript
-"Plug 'moll/vim-node', { 'for': 'javascript' }
-
-
-" ~~~~~ Language Support: Haskell
-" Cf., <https://www.reddit.com/r/haskell/comments/67384o/how_do_you_haskell_in_vim/>
-" Cf., <http://www.stephendiehl.com/posts/vim_2016.html>
-" Cf., <https://github.com/begriffs/haskell-vim-now>
-"Plug 'eagletmt/ghcmod-vim', { 'for': 'haskell' }
-"Plug 'eagletmt/neco-ghc', { 'for': 'haskell' }
-"Plug 'edkolev/curry.vim', { 'for': 'haskell' }
-"Plug 'enomsg/vim-haskellConcealPlus', { 'for': 'haskell' }
-"Plug 'mpickering/hlint-refactor-vim', { 'for': 'haskell' }
-"Plug 'nbouscal/vim-stylish-haskell', { 'for': 'haskell' }
-"Plug 'neovimhaskell/haskell-vim', { 'for': 'haskell' }
-"Plug 'Twinside/vim-hoogle', { 'for': 'haskell' }
-
-
-" ~~~~~ Etc.
-"Plug 'godlygeek/tabular' | Plug 'plasticboy/vim-markdown' " Syntax highlighting for Markdown
-"Plug 'junegunn/goyo.vim'       " A vim variant of OmmWriter?
-" TODO: cf., the Cond function <https://github.com/junegunn/vim-plug/wiki/faq>
-"Plug 'junegunn/vim-xmark', has('mac') ? {} : { 'on' : [] }
-"Plug 'SirVer/ultisnips' | Plug 'honza/vim-snippets'
-"Plug 'tpope/vim-sensible' " More-sensible defaults
-"Plug 'tomtom/quickfixsigns_vim'
-"Plug 'jmcantrell/vim-virtualenv' " for Python virtualenvs
-"Plug 'edkolev/tmuxline.vim'
-"Plug 'gcmt/taboo.vim'
-"Plug 'vim-ctrlspace/vim-ctrlspace'
-"Plug 'edkolev/promptline.vim'
-"Plug 'bling/minivimrc'
-" ~~~~~ cf., <https://sheerun.net/2014/03/21/how-to-boost-your-vim-productivity/>
-" and <https://github.com/sheerun/dotfiles/blob/master/vimrc>
-" and <https://github.com/sheerun/vimrc>
-" and <https://github.com/vmchale/dotfiles/blob/master/.vimrc>
-"Plug 'wellle/targets.vim'
-"Plug 'sheerun/vim-polyglot'
-"Plug 'sjl/vitality.vim'  " for Vim + iTerm2 (+ tmux)
-"Plug 'grassdog/tagman.vim'
-"Plug 'terryma/vim-expand-region'
-"Plug 'tomtom/tcomment_vim'
-"Plug 'tpope/vim-rsi'
-"Plug 'tpope/vim-endwise'
-"Plug 'tpope/vim-repeat'
-"Plug 'tpope/vim-sleuth'
-"Plug 'tpope/vim-unimpaired'
-"Plug 'tpope/vim-commentary'
-"Plug 'danro/rename.vim' " Allow to :Rename files
-"Plug 'flowtype/vim-flow'
-"Plug 'airblade/vim-rooter' " Automatically find root project directory
-"let g:rooter_disable_map = 1
-"let g:rooter_silent_chdir = 1
-"Plug 'AndrewRadev/splitjoin.vim' " Expand / wrap hashes etc.
-"Plug 'christoomey/vim-tmux-navigator' " Navitate freely between tmux and vim
-"Plug 'ashisha/image.vim' " View images as ASCII art
-"Plug 'majutsushi/tagbar'
-" Some other stuff from <http://www.stephendiehl.com/posts/vim_2016.html>
-"Plug 'tomtom/tlib_vim' " Some kind of utility functions...
-"Plug 'MarcWeber/vim-addon-mw-utils'
-"Plug 'garbas/vim-snipmate' " TextMate-like snippet features
-"Plug 'scrooloose/nerdcommenter'
-"Plug 'Shougo/vimproc.vim', { 'do': 'make' }
-call plug#end()
-
-
-" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" ~~~~~ Pretty colors
-if has("syntax") && (&t_Co > 2 || has("gui_running"))
-    colorscheme Tomorrow-Night-Bright
-
-    " I don't actually like Solarized, but for tuture reference:
-    "let g:solarized_termtrans=1
-    "let g:solarized_visibility='low' " 'low', 'normal', 'high'
-    "let g:solarized_bold=0
-    "let g:solarized_italic=0
-    "let g:solarized_underline=0
-    "colorscheme solarized
-
-    if exists('+colorcolumn')
-        " Use a pleasant but high-contrast color.
-        " N.B., must be set after the color scheme; else it will be overridden.
-        highlight ColorColumn 
-            \ ctermfg=white ctermbg=173 cterm=bold
-            \ guifg=#ffffff guibg=#e5786d gui=bold
-    endif
 endif
 
 
@@ -918,6 +843,66 @@ endif
 " ~~~~~ syntastic configuration
 "if exists(":SyntasticCheck")
 "endif
+
+
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+" ~~~~~ Macros
+" Haskell comment pretty printer (command mode)
+" TODO: make this work for indented comments too
+" N.B. The trailing newline is necessary for vim to work right
+map =hs :.!sed 's/^-- //; s/^/   /' \| fmt \| sed 's/^  /--/'
+
+" JavaDoc comment pretty printer.
+" TODO: make this work for indented comments too
+map =jd :.,+1!~/.vim/macro_jd.pl
+
+" TODO: similar smarts for Bash/Perl/Python-style comments
+" TODO: can I write a single smart macro that does all of them?
+
+
+" ~~~~~ Functions
+"" Removes all trailing spaces
+"" If you want to just do it manually, then type what's between the quotes
+"function! RmTrailingSpace()
+"   silent! execute ":%s/\s\+$//"
+"endfun
+
+" Add type signatures to top-level functions
+" From Sebastiaan Visser
+"function! HaskellType()
+"   w
+"   execute "normal {j^YP"
+"   execute (".!ghc -XNoMonomorphismRestriction -w % -e \":t " . expand("<cword>") . "\"")
+"   redraw!
+"endfunction
+"
+"function Haskell()
+"   map <buffer> <silent> tt :call HaskellType()<Cr>
+"   " more haskell stuff here
+"endfunction
+"
+"autocmd BufRead,BufNewFile *.{ag,hs,lhs,ghs} call Haskell()
+"
+"" Compare vs the following Cabal integration hack
+"
+"function! SetToCabalBuild()
+"   if glob("*.cabal") != ''
+"       let a = system( 'grep "/\* package .* \*/"  dist/build/autogen/cabal_macros.h' )
+"       let b = system( 'sed -e "s/\/\* /-/" -e "s/\*\///"', a )
+"       let pkgs = "-hide-all-packages " .  system( 'xargs echo -n', b )
+"       let hs = "import Distribution.Dev.Interactive\n"
+"       let hs .= "import Data.List\n"
+"       let hs .= 'main = withOpts [""] error return >>= putStr . intercalate " "'
+"       let opts = system( 'runhaskell', hs )
+"       let b:ghc_staticoptions = opts . ' ' . pkgs
+"   else
+"       let b:ghc_staticoptions = '-XNoMonomorphismRestriction -Wall -fno-warn-name-shadowing'
+"   endif
+"   execute 'setlocal makeprg=' . g:ghc . '\ ' . escape(b:ghc_staticoptions,' ') .'\ -e\ :q\ %'
+"   let b:my_changedtick -=1
+"endfunction
+"
+"autocmd BufEnter *.hs,*.lhs :call SetToCabalBuild()
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ fin.
