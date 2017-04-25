@@ -467,6 +467,7 @@ nnoremap Y y$
 " Preserve indentation while pasting text from the OS X clipboard
 " TODO: this doesn't help for my Goobuntu workstation. Need to make smarter
 " BUG: this seems to have broken on newer OSX.
+" TODO: see 'ConradIrwin/vim-bracketed-paste'
 noremap <Leader>p :set paste<CR>:put  *<CR>:set nopaste<CR>
 
 
@@ -648,6 +649,7 @@ Plug 'chriskempson/tomorrow-theme'
 "Plug 'altercation/vim-colors-solarized' " I dislike this; so just for reference
 "Plug 'junegunn/seoul256.vim'   " Low-contrast color scheme
 "Plug 'junegunn/limelight.vim'  " Colorize only local chunks/paragraphs
+"Plug 'vim-scripts/wombat256.vim'
 "Plug 'scrooloose/syntastic'
 
 
@@ -672,6 +674,7 @@ Plug 'vim-airline/vim-airline-themes'
 "Plug 'bling/vim-bufferline'
 "Plug 'majutsushi/tagbar'
 "Plug 'weynhamz/vim-plugin-minibufexpl'
+"Plug 'moll/vim-bbye' " Delete buffers anc close windows without messing up layout!
 
 
 " ~~~~~ Git & other VCSes
@@ -680,6 +683,8 @@ Plug 'airblade/vim-gitgutter', has('signs') ? {} : { 'on' : [] }
 " <https://bitbucket.org/ludovicchabant/vim-lawrencium> " for Mercurial
 "Plug 'junegunn/vim-github-dashboard'
 "Plug 'tpope/vim-fugitive'
+"Plug 'int3/vim-extradite'
+"Plug 'vim-scripts/gitignore' " Set &wildignore from ./.gitignore
 
 
 " ~~~~~ File-tree browsing
@@ -706,17 +711,21 @@ Plug 'airblade/vim-gitgutter', has('signs') ? {} : { 'on' : [] }
 "Plug 'rdnetto/YCM-Generator', { 'branch': 'stable' }
 "Plug 'Valloric/YouCompleteMe', { 'do': './install.py' }
 " or maybe: { 'do': './install.sh --gocode-completer  --tern-completer' }
+"Plug 'ervandew/supertab'
+"Plug 'Shougo/neocomplete.vim'
 
 
 " ~~~~~ Undoing
 "Plug 'sjl/gundo.vim'
 "Plug 'mbbill/undotree'
+"Plug 'simnalamburt/vim-mundo' " Undo tree visualizer
 
 
 " ~~~~~ Alignment & Indentation
 "Plug 'godlygeek/tabular'
 "Plug 'junegunn/vim-easy-align'
 "Plug 'michaeljsmith/vim-indent-object' " ii / ai
+"Plug 'vim-scripts/Align'
 
 "" For more reliable indenting and performance
 "set foldmethod=indent
@@ -743,6 +752,20 @@ au BufRead,BufNewFile *.bs set filetype=haskell
 "Plug 'moll/vim-node', { 'for': 'javascript' }
 
 
+" ~~~~~ Language Support: Haskell
+" Cf., <https://www.reddit.com/r/haskell/comments/67384o/how_do_you_haskell_in_vim/>
+" Cf., <http://www.stephendiehl.com/posts/vim_2016.html>
+" Cf., <https://github.com/begriffs/haskell-vim-now>
+"Plug 'eagletmt/ghcmod-vim', { 'for': 'haskell' }
+"Plug 'eagletmt/neco-ghc', { 'for': 'haskell' }
+"Plug 'edkolev/curry.vim', { 'for': 'haskell' }
+"Plug 'enomsg/vim-haskellConcealPlus', { 'for': 'haskell' }
+"Plug 'mpickering/hlint-refactor-vim', { 'for': 'haskell' }
+"Plug 'nbouscal/vim-stylish-haskell', { 'for': 'haskell' }
+"Plug 'neovimhaskell/haskell-vim', { 'for': 'haskell' }
+"Plug 'Twinside/vim-hoogle', { 'for': 'haskell' }
+
+
 " ~~~~~ Etc.
 "Plug 'godlygeek/tabular' | Plug 'plasticboy/vim-markdown' " Syntax highlighting for Markdown
 "Plug 'junegunn/goyo.vim'       " A vim variant of OmmWriter?
@@ -760,6 +783,7 @@ au BufRead,BufNewFile *.bs set filetype=haskell
 " ~~~~~ cf., <https://sheerun.net/2014/03/21/how-to-boost-your-vim-productivity/>
 " and <https://github.com/sheerun/dotfiles/blob/master/vimrc>
 " and <https://github.com/sheerun/vimrc>
+" and <https://github.com/vmchale/dotfiles/blob/master/.vimrc>
 "Plug 'wellle/targets.vim'
 "Plug 'sheerun/vim-polyglot'
 "Plug 'sjl/vitality.vim'  " for Vim + iTerm2 (+ tmux)
@@ -771,6 +795,7 @@ au BufRead,BufNewFile *.bs set filetype=haskell
 "Plug 'tpope/vim-repeat'
 "Plug 'tpope/vim-sleuth'
 "Plug 'tpope/vim-unimpaired'
+"Plug 'tpope/vim-commentary'
 "Plug 'danro/rename.vim' " Allow to :Rename files
 "Plug 'flowtype/vim-flow'
 "Plug 'airblade/vim-rooter' " Automatically find root project directory
@@ -779,6 +804,13 @@ au BufRead,BufNewFile *.bs set filetype=haskell
 "Plug 'AndrewRadev/splitjoin.vim' " Expand / wrap hashes etc.
 "Plug 'christoomey/vim-tmux-navigator' " Navitate freely between tmux and vim
 "Plug 'ashisha/image.vim' " View images as ASCII art
+"Plug 'majutsushi/tagbar'
+" Some other stuff from <http://www.stephendiehl.com/posts/vim_2016.html>
+"Plug 'tomtom/tlib_vim' " Some kind of utility functions...
+"Plug 'MarcWeber/vim-addon-mw-utils'
+"Plug 'garbas/vim-snipmate' " TextMate-like snippet features
+"Plug 'scrooloose/nerdcommenter'
+"Plug 'Shougo/vimproc.vim', { 'do': 'make' }
 call plug#end()
 
 
