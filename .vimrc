@@ -180,15 +180,8 @@ if exists('+colorcolumn')
     " Or, to shade everything beyond 81 instead of only 81 itself:
     "execute "set colorcolumn=" . join(range(81,335), ',')
 
-    " BUG: the DarkGrey color constantly shows up differently
-    " between Goobuntu and OSX/iTerm2. Sometimes it's an awesome
-    " bluish grey thing, sometimes it's the same grey as comment
-    " text, sometimes it's bright red. We need to figure out
-    " what's causing all the issues and fix it. Probably something
-    " about &t_Co being wrong, would be my guess. In any case,
-    " if we can't fix &t_Co or whatever, then we should try
-    " using a hexcode color instead.
-    highlight ColorColumn guibg=#262626 ctermbg=234 guifg=white ctermfg=white
+    " We set `highlight ColorColumn` later on, to ensure it doesn't
+    " get overridden.
 else
     " This was suggested by my source for this trick, but dunno if
     " I really want it or not...
@@ -826,6 +819,14 @@ if has("syntax") && (&t_Co > 2 || has("gui_running"))
     "let g:solarized_italic=0
     "let g:solarized_underline=0
     "colorscheme solarized
+
+    if exists('+colorcolumn')
+        " Use a pleasant but high-contrast color.
+        " N.B., must be set after the color scheme; else it will be overridden.
+        highlight ColorColumn 
+            \ ctermfg=white ctermbg=173 cterm=bold
+            \ guifg=#ffffff guibg=#e5786d gui=bold
+    endif
 endif
 
 
