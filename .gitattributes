@@ -1,1 +1,3 @@
-*.el diff=lisp
+# cf., <https://github.com/github/linguist>
+# Ignore ProofGeneral stuff when computing language stats on GitHub.
+.emacs.d/ProofGeneral-4.2/* linguist-vendored=true
