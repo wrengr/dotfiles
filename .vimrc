@@ -1,17 +1,19 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" This is wren gayle romano's vim config            ~ 2017.04.24
+" This is wren gayle romano's vim config            ~ 2017.06.14
 "
 " For guidance, see ~/.vim/README
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 " ~~~~~ Minimal preamble before loading plugins.
-" Avoid compatibility with legacy vi
-set nocompatible               
+" Avoid compatibility with legacy vi.
+set nocompatible
 " One should never parse modelines by default, it's a security
 " vulnerability. <http://usevim.com/2012/03/28/modelines/>
 set nomodeline
 " Is our terminal connection 'fast'? (hint: is it no longer the 1970s?)
 set ttyfast
+" Don't start in insert mode. That's some emacs kinda silliness.
+set noinsertmode
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ vim-plug stuff <https://github.com/junegunn/vim-plug>
@@ -35,12 +37,12 @@ if empty(glob('~/.vim/autoload/plug.vim'))
     " to curl, nor set GIT_SSL_NO_VERIFY to true).
     silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
         \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-	if has('autocmd')
-		" N.B., $MYVIMRC is magically set to point to this
-		" ~/.vimrc file. Alas, there appears not to be any
-		" equivalent for the ~/.vim directory
-		autocmd VimEnter * PlugInstall | source $MYVIMRC
-	endif
+    if has('autocmd')
+        " N.B., $MYVIMRC is magically set to point to this
+        " ~/.vimrc file. Alas, there appears not to be any
+        " equivalent for the ~/.vim directory
+        autocmd VimEnter * PlugInstall | source $MYVIMRC
+    endif
 endif
 
 " TODO: how can we get plug.vim to open its status window on the right? I
@@ -74,9 +76,16 @@ let g:GPGPreferArmor=1
 " TODO: cf., the Cond function <https://github.com/junegunn/vim-plug/wiki/faq>
 " TODO: do we need to do anything special since the vim code isn't top level?
 Plug 'chriskempson/tomorrow-theme'
-"Plug 'junegunn/seoul256.vim'   " Low-contrast color scheme
-"Plug 'junegunn/limelight.vim'  " Colorize only local chunks/paragraphs
+"Plug 'junegunn/seoul256.vim' " Low-contrast color scheme
 "Plug 'vim-scripts/wombat256.vim'
+
+" Limit colorization to local paragraphs/hunks.
+" This is really slick, and combines nicely with Goyo. However, it
+" seems to slow scrolling down (i.e., when crossing paragraph
+" boundaries), even when not enabled. Thus, we add the flag to only
+" load it when we want it.
+Plug 'junegunn/limelight.vim', { 'on':  'Limelight' }
+
 "Plug 'scrooloose/syntastic'
 
 
@@ -87,14 +96,15 @@ Plug 'vim-airline/vim-airline-themes'
 " to work well on OSX/iTerm2 (see notes below). For Monaco, things
 " are tricky; cf.,
 "     <https://github.com/powerline/fonts/pull/16>
-"     <https://gist.github.com/epegzz/1634235>
-"     <https://gist.github.com/rogual/6824790627960fc93077>
-"     <https://gist.github.com/baopham/1838072>
-"     <https://github.com/robbyrussell/oh-my-zsh/issues/2869>
-"     <https://github.com/powerline/fonts/issues/44>
 "     <https://powerline.readthedocs.io/en/latest/installation/osx.html>
-" N.B., 'Lokaltog/powerline-fonts' redirects to 'powerline/fonts'
-"Plug 'Lokaltog/powerline-fonts', { 'do': './install.sh' }
+"     <https://gist.github.com/epegzz/1634235>                " 2012
+"     <https://gist.github.com/baopham/1838072>               " 2014
+"     <https://gist.github.com/rogual/6824790627960fc93077>   " 2014
+"     <https://gist.github.com/kevinis/c788f85a654b2d7581d8>  " 2015
+"     <https://github.com/robbyrussell/oh-my-zsh/issues/2869> " 2014
+"     <https://github.com/powerline/fonts/issues/44> " The core ticket.
+" N.B., be sure to set both the ASCII and non-ASCII fonts in iTerm2.
+"Plug 'powerline/fonts', { 'do': './install.sh' }
 
 
 " ~~~~~ Buffers & Tabs
@@ -115,7 +125,7 @@ Plug 'airblade/vim-gitgutter', has('signs') ? {} : { 'on' : [] }
 
 
 " ~~~~~ File-tree browsing
-"Plug 'scrooloose/nerdtree', { 'on':  'NERDTreeToggle' }
+"Plug 'scrooloose/nerdtree',         { 'on': 'NERDTreeToggle' }
 "Plug 'Xuyuanp/nerdtree-git-plugin', { 'on': 'NERDTreeToggle' }
 "Plug 'justinmk/vim-dirvish' " an alternative to nerdtree
 "Plug 'wincent/command-t'
@@ -159,51 +169,52 @@ Plug 'airblade/vim-gitgutter', has('signs') ? {} : { 'on' : [] }
 "set fillchars="fold: "
 
 
+" ~~~~~ Language Support: Haskell
+" Cf., <https://www.reddit.com/r/haskell/comments/67384o/how_do_you_haskell_in_vim/>
+" Cf., <http://www.stephendiehl.com/posts/vim_2016.html>
+" Cf., <https://github.com/begriffs/haskell-vim-now>
+"Plug 'eagletmt/ghcmod-vim',           { 'for': 'haskell' }
+"Plug 'eagletmt/neco-ghc',             { 'for': 'haskell' }
+"Plug 'edkolev/curry.vim',             { 'for': 'haskell' }
+"Plug 'enomsg/vim-haskellConcealPlus', { 'for': 'haskell' }
+"Plug 'mpickering/hlint-refactor-vim', { 'for': 'haskell' }
+"Plug 'nbouscal/vim-stylish-haskell',  { 'for': 'haskell' }
+"Plug 'neovimhaskell/haskell-vim',     { 'for': 'haskell' }
+"Plug 'Twinside/vim-hoogle',           { 'for': 'haskell' }
+
 " ~~~~~ Language Support: HDLs
-Plug 'mtikekar/vim-bsv'            " BlueSpec System Verilog (not *.bs !)
-"Plug 'hanw/vim-bluespec'          " Another BSV plugin
-"Plug 'michaeltanner/vim-bluespec' " Yet another BSV plugin
-Plug 'nachumk/systemverilog.vim'
-Plug 'vhda/verilog_systemverilog.vim'
+Plug 'mtikekar/vim-bsv',               { 'for': 'bsv' } " For BSV, not for BS!!
+"Plug 'hanw/vim-bluespec',             { 'for': 'bsv' } " Another BSV plugin
+"Plug 'michaeltanner/vim-bluespec',    { 'for': 'bsv' } " Yet another BSV
+Plug 'nachumk/systemverilog.vim',      { 'for': 'systemverilog' }
+Plug 'vhda/verilog_systemverilog.vim', { 'for': 'verilog_systemverilog' }
 " A hack for Classic BlueSpec. Would be nice to have a real thing here...
 if has('autocmd')
-	autocmd BufRead,BufNewFile *.bs set filetype=haskell
+    autocmd BufRead,BufNewFile *.bs set filetype=haskell
 endif
 
+" ~~~~~ Language Support: Markdown / Pandoc
+"Plug 'vim-pandoc/vim-pandoc', { 'for': 'markdown.pandoc' }
+"Plug 'vim-pandoc/vim-pandoc-syntax', { 'for': 'markdown.pandoc' }
+"Plug 'godlygeek/tabular' | Plug 'plasticboy/vim-markdown', { 'for': 'markdown' }
+" <https://stackoverflow.com/questions/10964681/enabling-markdown-highlighting-in-vim>
+"Plug 'tpope/vim-markdown', { 'for': 'markdown' }
 
-" ~~~~~ Language Support: Go
+" ~~~~~ Language Support: misc others.
+"Plug 'moll/vim-node', { 'for': 'javascript' }
+"Plug 'jmcantrell/vim-virtualenv' " for Python virtualenvs
 "Plug 'fatih/vim-go', { 'for': 'go' }
 "let g:go_fmt_command = "goimports"
 "Plug 'nsf/gocode', { 'rtp': 'vim', 'do': '~/.vim/plugged/gocode/vim/symlink.sh', 'for': 'go' }
 
 
-" ~~~~~ Language Support: JavaScript
-"Plug 'moll/vim-node', { 'for': 'javascript' }
-
-
-" ~~~~~ Language Support: Haskell
-" Cf., <https://www.reddit.com/r/haskell/comments/67384o/how_do_you_haskell_in_vim/>
-" Cf., <http://www.stephendiehl.com/posts/vim_2016.html>
-" Cf., <https://github.com/begriffs/haskell-vim-now>
-"Plug 'eagletmt/ghcmod-vim', { 'for': 'haskell' }
-"Plug 'eagletmt/neco-ghc', { 'for': 'haskell' }
-"Plug 'edkolev/curry.vim', { 'for': 'haskell' }
-"Plug 'enomsg/vim-haskellConcealPlus', { 'for': 'haskell' }
-"Plug 'mpickering/hlint-refactor-vim', { 'for': 'haskell' }
-"Plug 'nbouscal/vim-stylish-haskell', { 'for': 'haskell' }
-"Plug 'neovimhaskell/haskell-vim', { 'for': 'haskell' }
-"Plug 'Twinside/vim-hoogle', { 'for': 'haskell' }
-
-
 " ~~~~~ Etc.
-"Plug 'godlygeek/tabular' | Plug 'plasticboy/vim-markdown' " Syntax highlighting for Markdown
-"Plug 'junegunn/goyo.vim'       " A vim variant of OmmWriter?
+"Plug 'junegunn/goyo.vim'  " A vim variant of OmmWriter; good with limelight.
 " TODO: cf., the Cond function <https://github.com/junegunn/vim-plug/wiki/faq>
 "Plug 'junegunn/vim-xmark', has('mac') ? {} : { 'on' : [] }
 "Plug 'SirVer/ultisnips' | Plug 'honza/vim-snippets'
 "Plug 'tpope/vim-sensible' " More-sensible defaults
 "Plug 'tomtom/quickfixsigns_vim'
-"Plug 'jmcantrell/vim-virtualenv' " for Python virtualenvs
 "Plug 'edkolev/tmuxline.vim'
 "Plug 'gcmt/taboo.vim'
 "Plug 'vim-ctrlspace/vim-ctrlspace'
@@ -213,6 +224,7 @@ endif
 " and <https://github.com/sheerun/dotfiles/blob/master/vimrc>
 " and <https://github.com/sheerun/vimrc>
 " and <https://github.com/vmchale/dotfiles/blob/master/.vimrc>
+" and <https://github.com/Xe/dotfiles/blob/master/.vimrc>
 "Plug 'wellle/targets.vim'
 "Plug 'sheerun/vim-polyglot'
 "Plug 'sjl/vitality.vim'  " for Vim + iTerm2 (+ tmux)
@@ -246,9 +258,9 @@ call plug#end()
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Basic usability
-set nocompatible               " Avoid compatibility with legacy vi
-set backspace=indent,eol,start " Allow backspacing anything (input mode)
-"set whichwrap=b,s,<,>,~,[,]   " backspace and cursor keys wrap too
+set nocompatible               " Avoid compatibility with legacy vi.
+set backspace=indent,eol,start " Allow backspacing anything (input mode).
+"set whichwrap=b,s,<,>,~,[,]   " backspace and cursor keys wrap too.
 set number                     " Show line numbers? (cf., :ToggleNumber below)
 set showmatch            " When inserting a bracket, briefly jump to the match
 "set matchtime=5         " how long (N/10 secs) to blink on matching bracket
@@ -256,12 +268,12 @@ set showmatch            " When inserting a bracket, briefly jump to the match
 
 
 " ~~~~~ Modelines
+" TODO: do we really need to reset this for paranoia's sake? Or is
+" it guaranteed that loading plugins can't change it?
+"
 " One should never parse modelines by default, it's a security
 " vulnerability. <http://usevim.com/2012/03/28/modelines/>
 set nomodeline
-" TODO: is there a way to only parse modelines for detecting the
-" filetype whenever our other ways of detecting it fail? Is that
-" still insecure?
 
 
 " ~~~~~ Commandline, Statusline, & Tabline
@@ -345,7 +357,7 @@ endif
 " <http://vim.wikia.com/wiki/Using_the_mouse_for_Vim_in_an_xterm>
 " BUG: alas, it seems to break something about using the OSX clipboard...
 " <http://unix.stackexchange.com/q/139578>
-"set mouse=a             " Copy/paste in "* register, normal behaviour with shift key pressed
+"set mouse=a " Copy/paste in "* register, normal behaviour with shift key pressed
 
 " TODO: If we really want to go the mouse route, see also:
 "if has('mouse')
@@ -362,7 +374,7 @@ endif
 " (3) <https://github.com/nvie/vim-togglemouse>
 " (4) <http://unix.stackexchange.com/q/44513> re Gnome terminal bugginess
 
-"set mousehide           " Hide mouse while typing
+"set mousehide " Hide mouse while typing
 
 
 " ~~~~~ History, backups, & stupidity
@@ -386,7 +398,7 @@ set nobackup                     " make a backup file?
 " ~~~~~ Syntax highlighting
 if has('syntax') && (&t_Co > 2 || has('gui_running'))
     syntax on
-    set background=dark  " Optimize the colors to a dark background
+    set background=dark " Optimize the colors to a dark background
     colorscheme Tomorrow-Night-Bright
 endif
 " TODO: &t_Co is often wrong. We need to set up our ~/.bash_profile
@@ -419,11 +431,11 @@ if exists('+colorcolumn')
     " Or, to shade everything beyond 81 instead of only 81 itself:
     "execute "set colorcolumn=" . join(range(81,335), ',')
 
-	" Use a pleasant but high-contrast color.
-	" N.B., must be set after the color scheme; else it will be overridden.
-	highlight ColorColumn
-		\ ctermfg=white ctermbg=173 cterm=bold
-		\ guifg=#ffffff guibg=#e5786d gui=bold
+    " Use a pleasant but high-contrast color.
+    " N.B., must be set after the color scheme; else it will be overridden.
+    highlight ColorColumn
+        \ ctermfg=white ctermbg=173 cterm=bold
+        \ guifg=#ffffff guibg=#e5786d gui=bold
 else
     " This was suggested by my source for this trick, but dunno if
     " I really want it or not...
@@ -465,6 +477,7 @@ set smarttab
 " filetype stuff), so we don't muck up Makefiles and other things
 " that actually do need the literal <Tab> character.
 set noexpandtab
+" TODO: change this default, and only make exceptions for Makefiles etc.
 
 " Supposedly we can use this to make it so that (shift-)tab in
 " visual mode will un/indent the selection. However,
@@ -526,7 +539,7 @@ set ignorecase           " Don't care if search for upper or lowercase
 "set wildcharm=<C-Z>     " cf., <http://vim.wikia.com/wiki/Easier_buffer_switching>
 "set wildignore+=.o      " Ignore some files in completion
 "set wildignore+=*.o,*.out,*.obj,.git,*.rbc,*.rbo,*.class,.svn,*.gem
-"set wildignore+=*.zip,*.tar.gz,*.tar.bz2,*.rar,*.tar.xz
+"set wildignore+=*.zip,*.tar.gz,*.tgz,*.tar.bz2,*.rar,*.tar.xz
 "set wildignore+=*/vendor/gems/*,*/vendor/cache/*,*/.bundle/*,*/.sass-cache/*
 "set wildignore+=*.swp,*~,._*
 "
@@ -547,7 +560,7 @@ if (v:version > 700) && has('spell')
     " Toggle highlighting spelling errors (for local buffer only).
     " (N.B., this is how you spell <ctrl-space>. Also, we can't
     " use <C-s> because the terminal steals that to mean "stop output")
-    nnoremap <C-@> :setlocal spell!<cr>
+    nnoremap <C-@> :setlocal spell!<CR>
 
     " TODO: try this idea from <http://stackoverflow.com/a/5041384/358069>
     " autocmd InsertEnter * setlocal nospell
@@ -608,13 +621,13 @@ function! ToggleNumber()
     endif
 endfunc
 " TODO: use <leader> instead of <C>?
-nnoremap <C-n> :call ToggleNumber()<cr>
+nnoremap <C-n> :call ToggleNumber()<CR>
 
 " This should be set by default, but just to make sure. This is
 " particularly helpful when dealing with ssh+screen, since that seems to
 " cause issues with redrawing.
-" TODO: might consider adding :nohlsearch<cr> before the redraw.
-nnoremap <C-l> :redraw!<cr>
+" TODO: might consider adding :nohlsearch<CR> before the redraw.
+nnoremap <C-l> :redraw!<CR>
 
 
 " ~~~~~ Toggle highlighting certain whitespace as errors
@@ -648,7 +661,6 @@ endfunc
 
 "set lazyredraw          " Don't redraw while running macros, for speed
 "set hidden              " Hide buffers when they are abandoned
-set ttyfast              " Is our terminal connection 'fast'? (hint: yes)
 "set autochdir           " Change directory to the file in the current window
 "set nojoinspaces        " No additional spaces when joining lines with <J>
 "set esckeys             " Allow cursor keys within insert mode
@@ -657,7 +669,6 @@ set ttyfast              " Is our terminal connection 'fast'? (hint: yes)
 "set display=lastline    " Show as much of the last line as possible
 "set nofsync             " Less power consumption *DANGEROUS* doesnt sync IO
 "set swapsync=           "     this could result in data loss, so beware!
-set noinsertmode         " Don't start in insert mode. That's some emacs kinda silliness.
 
 "set fileformat=unix
 "set ttimeout            " Let vim wait for timeouts
@@ -676,7 +687,7 @@ set scrolloff=5          " Show N lines in advance when scrolling
 set splitbelow           " When splitting horizontally, split below
 "set browsedir=buffer    " :browse e starts in %:h, not in $PWD
 "set grepprg=grep\ -nH\ $*
-"set cursorline          " highlight the whole line the cursor is on
+set cursorline           " highlight the whole line the cursor is on
 
 " Vim Grep
 let Grep_Skip_Dirs = 'RCS CVS SCCS .svn .hg _darcs .git'
@@ -798,9 +809,9 @@ if has('multi_byte')
     "let g:airline_symbols.whitespace = 'Ξ'
 endif
 
+" Other themes to bear in mind: tomorrow, wombat, luna, jellybeans, zenburn.
+let g:airline_theme='tomorrow'
 " From <https://sheerun.net/2014/03/21/how-to-boost-your-vim-productivity/>
-" TODO: For consideration...
-let g:airline_theme='powerlineish'
 let g:airline_left_sep=''
 let g:airline_right_sep=''
 let g:airline_section_z=''
@@ -845,6 +856,25 @@ endif
 "endif
 
 
+" ~~~~~ Goyo configuration
+"function! s:goyo_enter()
+"    set noshowcmd
+"    set scrolloff=999
+"    Limelight
+"endfunction
+"
+" TODO: how to ensure we keep this up to date with the values we
+" set above for our defaults?
+"function! s:goyo_leave()
+"    set showcmd
+"    set scrolloff=5
+"    Limelight!
+"endfunction
+"
+"autocmd! User GoyoEnter nested call <SID>goyo_enter()
+"autocmd! User GoyoLeave nested call <SID>goyo_leave()
+
+
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Macros
 " Haskell comment pretty printer (command mode)
@@ -862,7 +892,6 @@ map =jd :.,+1!~/.vim/macro_jd.pl
 
 " ~~~~~ Functions
 "" Removes all trailing spaces
-"" If you want to just do it manually, then type what's between the quotes
 "function! RmTrailingSpace()
 "   silent! execute ":%s/\s\+$//"
 "endfun
@@ -877,7 +906,7 @@ map =jd :.,+1!~/.vim/macro_jd.pl
 "endfunction
 "
 "function Haskell()
-"   map <buffer> <silent> tt :call HaskellType()<Cr>
+"   map <buffer> <silent> tt :call HaskellType()<CR>
 "   " more haskell stuff here
 "endfunction
 "
