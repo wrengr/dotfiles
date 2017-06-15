@@ -1,4 +1,6 @@
+# Stuff to ignore when computing language stats on GitHub.
 # cf., <https://github.com/github/linguist>
-# Ignore ProofGeneral stuff when computing language stats on GitHub.
-.emacs.d/ProofGeneral/*     linguist-vendored=true
-.emacs.d/ProofGeneral-4.2/* linguist-vendored=true
+.emacs.d/ProofGeneral/*                                linguist-vendored=true
+.emacs.d/ProofGeneral-4.2/*                            linguist-vendored=true
+local/texmf/tex/latex/glossaries/*.html                linguist-vendored=true
+local/texmf/tex/latex/cristal-inria-fr~remy/exercise.* linguist-vendored=true
