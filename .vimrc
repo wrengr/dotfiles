@@ -228,6 +228,7 @@ endif
 " and <https://github.com/sheerun/vimrc>
 " and <https://github.com/vmchale/dotfiles/blob/master/.vimrc>
 " and <https://github.com/Xe/dotfiles/blob/master/.vimrc>
+" and <https://github.com/wklken/k-vim/blob/master/vimrc>
 "Plug 'wellle/targets.vim'
 "Plug 'sheerun/vim-polyglot'
 "Plug 'sjl/vitality.vim'  " for Vim + iTerm2 (+ tmux)
@@ -294,9 +295,16 @@ set laststatus=2         " Always show statusline, even if there're no splits
 "set novisualbell t_vb=  " Don't use the visual bell.
 "set noerrorbells        " Error bells are annoying.
 
+
 " ~~~~~ Screen integration
 " <http://vim.wikia.com/wiki/GNU_Screen_integration>
 " <https://github.com/mileszs/dotfiles/blob/master/screenrc>
+
+" disable Background Color Erase (BCE) so that color schemes
+" render properly when inside 256-color tmux and GNU screen.
+" see also <http://snk.tuxfamily.org/log/vim-256color-bce.html>
+"set t_ut=
+
 
 " ~~~~~ Unicode support
 " N.B., if the occurence of the utf8 characters below glitches out
@@ -543,16 +551,30 @@ set ignorecase           " Don't care if search for upper or lowercase
 "set wildchar=<Tab>      " Expand the command line using tab
 "set wildmenu            " Nice tab-completion on the command line
 "set wildcharm=<C-Z>     " cf., <http://vim.wikia.com/wiki/Easier_buffer_switching>
-"set wildignore+=.o      " Ignore some files in completion
-"set wildignore+=*.o,*.out,*.obj,.git,*.rbc,*.rbo,*.class,.svn,*.gem
-"set wildignore+=*.zip,*.tar.gz,*.tgz,*.tar.bz2,*.rar,*.tar.xz
-"set wildignore+=*/vendor/gems/*,*/vendor/cache/*,*/.bundle/*,*/.sass-cache/*
-"set wildignore+=*.swp,*~,._*
-"
+" Ignore editor cruft
+set wildignore+=*.swp,*.swo,*~,._*
+" Ignore Haskell build stuff
+set wildignore+=*.o,*.hi,*.p_hi,*.prof,*.tix,
+set wildignore+=dist/*,.hpc/*,.hsenv/*,.cabal-sandbox/*
+" Ignore other languages' build stuff
+set wildignore+=*.pyc,*.rbc,*.rbo,*.class,*.gem,*.obj
+" Ignore common binaries
+set wildignore+=*.zip,*.tar.gz,*.tgz,*.tar.bz2,*.rar,*.tar.xz,*.pdf,*.ps
+" Ignore LaTeX build stuff
+set wildignore+=*.aux,*.toc,*.lof,*.lot,*.bbl,*.blg,*.btp,*.xyc,*.cb
+set wildignore+=*.idx,*.ilg,*.glo,*.glg,*.gls,*.nlo,*.nls,*.nav,*.snm
+" Ignore emacs-mode stuff
+set wildignore+=*.elc,*.cp,*.fn,*.fns,*.info,*.ky,*.pg,*.tp,*.vr,*.vrs,.depend
+" etc
+set wildignore+=.DS_Store,.git/*
+
 "set wildmode=longest:full,list:full
 "             |            |
 "             |            +-- List matches, complete first match, use wildmenu
 "             +--------------- Complete longest prefix, use wildmenu
+
+" For Vim Grep
+let Grep_Skip_Dirs = 'RCS CVS SCCS .svn .hg _darcs .git'
 
 
 " ~~~~~ Spelling
@@ -685,7 +707,7 @@ endfunc
 " these so-called 'tags' are all about.
 "set tags=tags,$HOME/.vim/ctagsproject
 "set shell=/bin/bash     " A shell
-set scrolloff=5          " Show N lines in advance when scrolling
+set scrolloff=7          " Show N lines in advance when scrolling
 "set sidescrolloff=10    " Columns visible to the left/right of cursor when scrolling
 "set winminheight=0      " Let splitted windows get as small as only the titlebar
 " BUG: setting splitright moves the focus to the right window, against our wishes
@@ -694,9 +716,8 @@ set splitbelow           " When splitting horizontally, split below
 "set browsedir=buffer    " :browse e starts in %:h, not in $PWD
 "set grepprg=grep\ -nH\ $*
 set cursorline           " highlight the whole line the cursor is on
+"set cursorcolumn        " highlight the whole column the cursor is on
 
-" Vim Grep
-let Grep_Skip_Dirs = 'RCS CVS SCCS .svn .hg _darcs .git'
 
 
 " ~~~~~ Copying & Pasting
