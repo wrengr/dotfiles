@@ -44,6 +44,13 @@
     default = simple
 [merge]
     ff = only
+# I don't actually like this exact setup, but the fact that we can
+# do things like this is good to bear in mind, in case I come up with a
+# particular command/flow that does capture my workflow.
+#[merge]
+#    tool = vimdiffnice
+#[mergetool "vimdiffnice"]
+#    cmd = vimdiff -c \"wincmd J\" -c \"0\" -c \"/<<<<<<< \" $MERGED $LOCAL $BASE $REMOTE
 [branch]
     # Have newly-created branches starting from a branch, set their
     # start point as upstream (as oppose to the default 'true' setting
@@ -188,5 +195,5 @@
 
 # For git-on-borg at google. The way the config looks is confusing; what
 # this means is whenever we type "gob:" that'll get rewritten to the url.
-[url "sso://user/wrengr/"]
-    insteadOf = gob:
+#[url "sso://user/wrengr/"]
+#    insteadOf = gob:

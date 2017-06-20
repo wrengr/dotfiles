@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" This is wren gayle romano's vim config            ~ 2017.06.14
+" This is wren gayle romano's vim config            ~ 2017.06.19
 "
 " For guidance, see ~/.vim/README
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -117,6 +117,9 @@ Plug 'vim-airline/vim-airline-themes'
 " ~~~~~ Git & other VCSes
 Plug 'airblade/vim-gitgutter', has('signs') ? {} : { 'on' : [] }
 "Plug 'mhinz/vim-signify' " like gitgutter, but for other VCSes
+" If you use Signify, then you should g:signify_disable_by_default=1
+" (or use EDITOR='vim --cmd let\ g:signify_disable_by_default=1') to
+" circumvent bugs at Google (b/26261118 #comment32 #comment41)
 " <https://bitbucket.org/ludovicchabant/vim-lawrencium> " for Mercurial
 "Plug 'junegunn/vim-github-dashboard'
 "Plug 'tpope/vim-fugitive'
@@ -291,6 +294,9 @@ set laststatus=2         " Always show statusline, even if there're no splits
 "set novisualbell t_vb=  " Don't use the visual bell.
 "set noerrorbells        " Error bells are annoying.
 
+" ~~~~~ Screen integration
+" <http://vim.wikia.com/wiki/GNU_Screen_integration>
+" <https://github.com/mileszs/dotfiles/blob/master/screenrc>
 
 " ~~~~~ Unicode support
 " N.B., if the occurence of the utf8 characters below glitches out

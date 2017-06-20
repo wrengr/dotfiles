@@ -1,4 +1,4 @@
-# This is wren gayle romano's bash login script     ~ 2017.03.30
+# This is wren gayle romano's bash login script     ~ 2017.05.28
 #
 # It's fairly generic (with weirder things at the bottom),
 # but it's designed to be usable for all my accounts with no(!)
@@ -680,6 +680,8 @@ case "${_localhost}" in
         case "${_uname}" in
             Linux)
                 alias open='xdg-open &>/dev/null'
+                alias pbcopy='xsel --clipboard --input'
+                alias pbpaste='xsel --clipboard --output'
 
                 # A much better version of `blaze run`
                 alias br='/google/src/head/depot/google3/devtools/blaze/scripts/blaze-run.sh'
