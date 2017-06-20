@@ -229,6 +229,7 @@ endif
 " and <https://github.com/vmchale/dotfiles/blob/master/.vimrc>
 " and <https://github.com/Xe/dotfiles/blob/master/.vimrc>
 " and <https://github.com/wklken/k-vim/blob/master/vimrc>
+" and <https://github.com/amix/vimrc/blob/master/vimrcs/basic.vim>
 "Plug 'wellle/targets.vim'
 "Plug 'sheerun/vim-polyglot'
 "Plug 'sjl/vitality.vim'  " for Vim + iTerm2 (+ tmux)
@@ -271,6 +272,7 @@ set showmatch            " When inserting a bracket, briefly jump to the match
 "set updatetime=4000     " how long (N/10 secs) to highlight matching & save swp if nothing done
 
 
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Modelines
 " TODO: do we really need to reset this for paranoia's sake? Or is
 " it guaranteed that loading plugins can't change it?
@@ -280,6 +282,7 @@ set showmatch            " When inserting a bracket, briefly jump to the match
 set nomodeline
 
 
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Commandline, Statusline, & Tabline
 set showcmd              " Show the commandline
 set cmdheight=1          " The commandline is N rows high
@@ -291,11 +294,13 @@ set laststatus=2         " Always show statusline, even if there're no splits
 "set statusline=%F%m%r%h%w\ [%{&ff}\|%Y\|%03.3b\|%04l,%04v\|%p%%\|LEN=%L] "\ %{Tlist_Get_Tag_Prototype_By_Line()}
 
 
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Bells
 "set novisualbell t_vb=  " Don't use the visual bell.
 "set noerrorbells        " Error bells are annoying.
 
 
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Screen integration
 " <http://vim.wikia.com/wiki/GNU_Screen_integration>
 " <https://github.com/mileszs/dotfiles/blob/master/screenrc>
@@ -306,6 +311,7 @@ set laststatus=2         " Always show statusline, even if there're no splits
 "set t_ut=
 
 
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Unicode support
 " N.B., if the occurence of the utf8 characters below glitches out
 " the cursor, then you probably need to adjust your terminal; since
@@ -340,6 +346,7 @@ endif
 "set list
 
 
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Terminal title
 " <http://vim.wikia.com/wiki/Automatically_set_screen_title>
 " <http://usevim.com/2012/06/13/set-title/>
@@ -365,6 +372,7 @@ if has('title')
 endif
 
 
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Mouse support
 " Setting this will make it so that selecting things with the mouse
 " doesn't grab the numbers (etc) in the gutter!
@@ -391,6 +399,7 @@ endif
 "set mousehide " Hide mouse while typing
 
 
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ History, backups, & stupidity
 set history=100                  " size of command and search history
 "set undolevels=1000
@@ -409,6 +418,7 @@ set nobackup                     " make a backup file?
 "set directory=$HOME/.vim/temp   " where to put temp files
 
 
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Syntax highlighting
 if has('syntax') && (&t_Co > 2 || has('gui_running'))
     syntax on
@@ -429,6 +439,7 @@ endif
 " colors get swapped.
 
 
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Highlight the final column
 " TODO: make a function that toggles this, rather than assuming
 " always on.
@@ -463,6 +474,7 @@ endif
 " <http://stackoverflow.com/a/21406581>
 
 
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Indentation & tabs
 set autoindent           " Keep indent levels line-to-line
 set nosmartindent        " Don't be stupid about hash. Instead use ft stuff.
@@ -507,6 +519,7 @@ set noexpandtab
 "vmap <S-Tab> <C-D>
 
 
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Line wrapping (or not, as the case may be)
 set wrap               " Enable to soft-wrap overly long lines.
 set linebreak          " (lbr) Only break lines at characters in &breakat;
@@ -539,6 +552,7 @@ endfunc
 call DisableHardWrapping()
 
 
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Searching
 set nohlsearch           " Should we highlight searches?
 set incsearch            " While typing search command, show matches so far
@@ -547,6 +561,7 @@ set ignorecase           " Don't care if search for upper or lowercase
 "set smartcase           " Only look for case when uppercases are used
 
 
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Wild
 "set wildchar=<Tab>      " Expand the command line using tab
 "set wildmenu            " Nice tab-completion on the command line
@@ -577,6 +592,7 @@ set wildignore+=.DS_Store,.git/*
 let Grep_Skip_Dirs = 'RCS CVS SCCS .svn .hg _darcs .git'
 
 
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Spelling
 if (v:version > 700) && has('spell')
     setlocal spelllang=en_us " Set a local value of the global &spellang
@@ -596,6 +612,7 @@ if (v:version > 700) && has('spell')
 endif
 
 
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Folding (:help usr_28)
 " By default <z><a> is used for un/folding. but that can be annoying
 " if you accidentally mistype the <z> and so enter append mode. Should
@@ -631,6 +648,7 @@ if has('folding')
 endif
 
 
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Toggle between normal and relative line numbers
 " HT: <https://github.com/alialliallie/vimfiles/blob/master/vimrc>
 " TODO: I like starting the name with "Toggle" for better tab-completion,
@@ -658,12 +676,11 @@ nnoremap <C-n> :call ToggleNumber()<CR>
 nnoremap <C-l> :redraw!<CR>
 
 
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Toggle highlighting certain whitespace as errors
 " TODO: actually make this toggle!
 " BUG: this doesn't seem to work everywhere (e.g., inside `function!`
 " itself; though it works just fine inside `if`)
-" TODO: I like starting the name with "Toggle" for better tab-completion,
-" but everyone else puts the "Toggle" at the end of the function name...
 function! ToggleHighlightSpaces()
     " TODO: should prolly guard this one based on how &expandtab is set.
     syntax match tab display "\t"
@@ -677,7 +694,16 @@ function! ToggleHighlightSpaces()
     highlight link spaceBeforeTab Error
 endfunc
 
+"function! RmTrailingSpace()
+"    let save_cursor = getpos(".")
+"    let old_query = getreg('/')
+"    silent! %s/[[:space:]]\+$//e
+"    call setpos('.', save_cursor)
+ "   call setreg('/', old_query)
+"endfun
 
+
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Etc.
 "     http://www.tjansson.dk/filer/vimrc.html
 "     http://saulusdotdyndnsdotorg/~david/config/vimrc
@@ -720,6 +746,7 @@ set cursorline           " highlight the whole line the cursor is on
 
 
 
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Copying & Pasting
 "set pastetoggle=<F9>
 
@@ -770,6 +797,7 @@ noremap <Leader>p :set paste<CR>:put  *<CR>:set nopaste<CR>
 "inoremap <C-s> <ESC>:w<CR>
 
 
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ FileType stuff
 " TODO: Most of this stuff should go into its own ft files. Not in here!
 "     <http://vim.wikia.com/wiki/Keep_your_vimrc_file_clean>
@@ -793,6 +821,7 @@ if has('autocmd')
 endif
 
 
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ airline configuration
 " TODO: guard this section with something like:
@@ -903,6 +932,7 @@ endif
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Macros
 " Haskell comment pretty printer (command mode)
 " TODO: make this work for indented comments too
@@ -917,12 +947,7 @@ map =jd :.,+1!~/.vim/macro_jd.pl
 " TODO: can I write a single smart macro that does all of them?
 
 
-" ~~~~~ Functions
-"" Removes all trailing spaces
-"function! RmTrailingSpace()
-"   silent! execute ":%s/\s\+$//"
-"endfun
-
+" ~~~~~ Misc Haskell Functions
 " Add type signatures to top-level functions
 " From Sebastiaan Visser
 "function! HaskellType()
