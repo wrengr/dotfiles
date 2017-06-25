@@ -11,12 +11,6 @@
     #signingkey = 00000000
 [github]
     user = wrengr
-[color]
-    branch = auto
-    diff = auto
-    interactive = auto
-    status = auto
-    ui = true
 [core]
     # Just to be sure.
     editor = vim
@@ -33,13 +27,13 @@
     # like ~/.gitconfig.ignore to the dotfiles repo, and then use that
     # one here:
     #excludesfile = '~/.gitignore'
+
+
 [advice]
     # Disable `git status`'s "how to stage/unstage/add" hints
     statusHints = false
     # Disable `git push`'s hints about non-fastforward-able patches
     #pushNonFastForward = false
-
-
 [push]
     default = simple
 [merge]
@@ -64,6 +58,29 @@
     # where this only happens when the start point is a remote-tracking
     # branch). <http://grimoire.ca/git/config>
     autoSetupMerge = always
+
+
+[color]
+    branch = auto
+    diff = auto
+    interactive = auto
+    status = auto
+    ui = true
+[color "diff"]
+    meta = yellow bold
+    commit = green bold
+    frag = magenta bold
+    old = red
+    new = green
+    whitespace = red reverse
+[color "branch"]
+    current = magenta bold
+    local = yellow
+    remote = green
+[color "status"]
+    added = yellow
+    changed = green
+    untracked = cyan
 
 
 # There are ways of making 'pull --rebase' the default, but it seems
