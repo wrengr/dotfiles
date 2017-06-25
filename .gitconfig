@@ -131,6 +131,7 @@
     ro    = rebase --onto
     # For getting rebases to work when they cherry picked you, or similar.
     rs    = rebase --skip
+    wdiff = diff --color-words
     # This will unrecord the most recent commit. N.B., you can also
     # use "~1" instead of "^" at the end; or "~N" to revert the
     # N most-recent commits. <http://stackoverflow.com/q/927358/358069>
