@@ -51,6 +51,13 @@
 #    tool = vimdiffnice
 #[mergetool "vimdiffnice"]
 #    cmd = vimdiff -c \"wincmd J\" -c \"0\" -c \"/<<<<<<< \" $MERGED $LOCAL $BASE $REMOTE
+[diff]
+    # TODO: consider installing and using JaneStreet's implementation
+    # instead: <https://github.com/janestreet/patdiff>. It's a lot
+    # nicer about how it colorizes things:
+    # <http://neocontra.blogspot.com/2013/02/public-service-announcement-patdiff-is.html>
+    # Or, consider using <https://github.com/so-fancy/diff-so-fancy>
+    algorithm = patience
 [branch]
     # Have newly-created branches starting from a branch, set their
     # start point as upstream (as oppose to the default 'true' setting
