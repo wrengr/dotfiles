@@ -2,8 +2,14 @@
 # Perform some regular maintinence of Fink
 
 rc=0
+# TODO: maybe also consider running cleanup with the --deb flag
 /sw/bin/fink cleanup || rc=3
 [ $rc -ne 0 ] && exit $rc
 
 /sw/bin/fink selfupdate || rc=3
 exit $rc
+
+# TODO: consider also: `fink index -f` and `fink scanpackages`.
+# Though they shouldn't need to be run regularly, and are more for
+# debugging purposes or for when changing the package tree we're
+# using (e.g., unstable).
