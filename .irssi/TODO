@@ -4,3 +4,12 @@
     * one command to do the ghost/nick/identify song and dance at startup
     * one command to do /nick on all servers at once
     * automatically grab the desired nick from settings.core for the ghost/nick/identify song and dance at startup.
+
+
+Random other advice:
+* <https://quadpoint.org/articles/irssi/>
+* <https://irssi.org/documentation/tips/>
+* <https://irssi.org/documentation/settings/>
+    * aka <https://github.com/irssi/irssi/blob/master/docs/special_vars.txt>
+* <http://linuxreviews.org/software/irc/irssi/#toc4>
+* <https://pthree.org/2007/07/11/irssi-chanserv-and-nickserv-helper-aliases/>
