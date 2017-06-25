@@ -117,8 +117,10 @@ putStrLn ""
 
 -- * Colorful prompt
 -- <http://blog.havenisms.com/colorizing-the-ghci-prompt>
--- BUG: this messes up GHCi's readline/editline stuff though...
--- :set prompt "\O33[32;1m%s\O33[34;1m>\O33[0m "
+-- BUG: this messes up GHCi's readline/editline stuff though... (2017.06.25: is that still true? Which version of GHCi was that note for?)
+:set prompt "\O33[32;1m%s\O33[34;1m>\O33[0m "
+-- Or, if you want the Haskell logo: set your terminal to use one of the <https://github.com/ryanoasis/nerd-fonts> and use e61f (larger) or e777 (smaller).
+-- :set prompt "\ESC[94m\STX  \ESC[m\STX"
 
 
 -- * At the end to reduce startup verbiage
