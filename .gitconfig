@@ -60,27 +60,60 @@
     autoSetupMerge = always
 
 
+# TODO: consider also: <http://www.caliban.org/ruby/acoc.shtml>
+# The documentation on what things have color names is hidden away
+# in: <https://git-scm.com/docs/git-config>
+# Also, cf: <https://stackoverflow.com/a/28256977/358069>
+# Alas, `git config --get-regexp --name-only color.*` only shows the non-default ones!
 [color]
+    ui = true
     branch = auto
     diff = auto
     interactive = auto
     status = auto
-    ui = true
+    #grep, pager, decorate, showbranch
+[color "branch"]
+    # TODO: is there any way to colorize the hash?
+    current = magenta bold
+    upstream = blue
+    local = yellow
+    remote = green
+# i.e., `git log --decorate`
+#[color "decorate"]
+#    branch = # defualt: green bold
+#    remoteBranch = # default: red bold
+#    tag = # default: bold yellow (I think?)
+#    stash =
+#    head = # detault: cyan bold
 [color "diff"]
     meta = yellow bold
     commit = green bold
     frag = magenta bold
+    # Seems like "func" is everything else on the same line as "frag"...
+    func = magenta
     old = red
     new = green
     whitespace = red reverse
-[color "branch"]
-    current = magenta bold
-    local = yellow
-    remote = green
+#[color "grep"]
+#    context =
+#    filename =
+#    function =
+#    linenumber =
+#    matchContext =
+#    matchSelected =
+#    selected =
+#    separator =
+#[color "interactive"]
+#    prompt =
+#    header =
+#    help =
+#    error =
 [color "status"]
+    branch = magenta bold
     added = yellow
     changed = green
     untracked = cyan
+    #unmerged =
 
 
 # There are ways of making 'pull --rebase' the default, but it seems
@@ -105,6 +138,7 @@
     hw    = help --web
     # For more details on the files affected, try adding --name-status,
     # --stat, or --numstat. To only show N files, pass -N.
+    # TODO: I'd like to change the colors of --pretty=oneline (it's using bold green for the hashes, which I hate; but I'm not sure how to reconfigure that); but alas, using --pretty=format:blah screws up newline formatting stuff when you use it in conjunction with --numstat
     lol   = log --graph --decorate --pretty=oneline --abbrev-commit
     # N.B., the %C(auto) color was introduced in git 1.8.3 (24 May 2013)
     lola  = log --color --graph --pretty=format:'%C(yellow)%h%Creset %Cgreen(%cr)%Creset %C(blue)<%an>%Creset%C(auto)%d%Creset %s'
@@ -180,6 +214,9 @@
         --sort='-authordate' \
         --format='%(authordate:short)%09%(objectname:short)%09%(refname)' \
         refs/heads | sed -e 's@refs/heads/@@'"
+    # List the modification date of files in the current directory (in order of file name).
+    # BUG: there's some kind of typo here re the quoting. What's wrong?
+    #lslm = "!git ls-tree -z --name-only HEAD | xargs -0 -n1 -I{} -- git log -1 --format='%aI {}' {} | sed -re 's/^([^T]+)T\S+(.*)/\1\2/'"
     bv = branch -vv
     # HT: <https://gist.github.com/pksunkara/988716>
     whois = "!sh -c 'git log -i -1 --pretty=\"format:%an <%ae>%n\" --author=\"$1\"' -"
