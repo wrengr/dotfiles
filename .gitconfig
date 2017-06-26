@@ -4,6 +4,9 @@
 [user]
     name = wren romano
     email = wren@community.haskell.org
+    # Instruct Git to not try guessing name and email, but yource
+    # you to specify them when you set up a new repo:
+    #useConfigOnly = true
     # TODO: set up GPG stuff. Not that any project I work on uses
     # it... Once this is enabled here, always pass -S or -s to
     # commit and -s to tag.
@@ -34,8 +37,11 @@
     statusHints = false
     # Disable `git push`'s hints about non-fastforward-able patches
     #pushNonFastForward = false
+    # Others: pushUpdateRejected, pushNonFFCurrent, pushNonFFMatching, pushAlreadyExists, pushFetchFirst, pushNeedsForce, statusHints, statusUoption, commitBeforeMerge, resolveConflict, implicitIdentity, detachedHead, amWorkDir, rmHints, addEmbeddedRepo
 [push]
     default = simple
+#[pull]
+#    ff = only
 [merge]
     ff = only
 # I don't actually like this exact setup, but the fact that we can
@@ -52,12 +58,22 @@
     # <http://neocontra.blogspot.com/2013/02/public-service-announcement-patdiff-is.html>
     # Or, consider using <https://github.com/so-fancy/diff-so-fancy>
     algorithm = patience
+    # Use prefixes (i)ndex, (w)ork tree, (c)ommit, (o)bject. Rather
+    # than the standard generic (a) (b). For example:
+    # git diff                  # i vs w
+    # git diff HEAD             # c vs w
+    # git diff --cached         # c vs i
+    # git diff HEAD:file1 file2 # o vs w
+    mnemonicPrefix = true
 [branch]
     # Have newly-created branches starting from a branch, set their
     # start point as upstream (as oppose to the default 'true' setting
     # where this only happens when the start point is a remote-tracking
     # branch). <http://grimoire.ca/git/config>
     autoSetupMerge = always
+[log]
+    # abbrevCommit = true
+    mailmap = true
 
 
 # TODO: consider also: <http://www.caliban.org/ruby/acoc.shtml>
@@ -73,21 +89,26 @@
     status = auto
     #grep, pager, decorate, showbranch
 [color "branch"]
-    # TODO: is there any way to colorize the hash?
+    # TODO: is there any way to colorize the hash (a la color.diff.commit)?
     current = magenta bold
-    upstream = blue
-    local = yellow
-    remote = green
-# i.e., `git log --decorate`
-#[color "decorate"]
-#    branch = # defualt: green bold
-#    remoteBranch = # default: red bold
-#    tag = # default: bold yellow (I think?)
-#    stash =
-#    head = # detault: cyan bold
+    upstream = red bold
+    local = green bold
+    remote = blue bold
+[color "decorate"]
+    head = magenta bold
+    branch = green bold
+    remoteBranch = blue bold
+    tag = yellow bold
+    stash = red bold
+    # <log-tree.c> also has a "grafted" color (default: bold blue),
+    # but there's no way we can change that color from here.
 [color "diff"]
     meta = yellow bold
-    commit = green bold
+    # N.B., color.diff.commit is used both for diff itself **but
+    # also for git log**! In particular, it's the color that --oneline
+    # will use! This seems to only be discoverable by looking at the
+    # source code for <pretty.c>
+    commit = yellow
     frag = magenta bold
     # Seems like "func" is everything else on the same line as "frag"...
     func = magenta
@@ -136,14 +157,37 @@
 # <http://durdn.com/blog/2012/11/22/must-have-git-aliases-advanced-examples/>
 [alias]
     hw    = help --web
-    # For more details on the files affected, try adding --name-status,
-    # --stat, or --numstat. To only show N files, pass -N.
-    # TODO: I'd like to change the colors of --pretty=oneline (it's using bold green for the hashes, which I hate; but I'm not sure how to reconfigure that); but alas, using --pretty=format:blah screws up newline formatting stuff when you use it in conjunction with --numstat
-    lol   = log --graph --decorate --pretty=oneline --abbrev-commit
+    # For more details on the files affected, try adding: --stat,
+    # --numstat, --name-status, --name-only, --dirstat.
+    # To only show N files, pass -N. Or consider: --since=2.weeks
+    # Supposedly --graph defaults to --topo-order; but then why
+    # does it not always look that way at work?
+    # N.B., git-log picks up colors from color.diff. In particular,
+    # the builtin --oneline will use color.diff.commit for the hash!
+    lol   = log --graph --pretty=oneline --abbrev-commit --decorate
     # N.B., the %C(auto) color was introduced in git 1.8.3 (24 May 2013)
-    lola  = log --color --graph --pretty=format:'%C(yellow)%h%Creset %Cgreen(%cr)%Creset %C(blue)<%an>%Creset%C(auto)%d%Creset %s'
+    # N.B., the meaning of %C(auto) for %h and %H is color.diff.commit
+    # (whereas %t, %T, %p, and %P are all colorless). Whereas for
+    # %d and %D is uses color.decorate
+    #
+    # TODO: maybe consider turning this format string into an alias
+    # by setting pretty.<name> ?
+    #
+    # TODO: consider moving the %d to the end of the line? T'would
+    # differ from lol, but would help keep the branch/tag info from
+    # interfering with reading the commit subjects...
+    #
+    # BUG: unlike the lol alias (i.e., using --oneline) this doesn't
+    # mix well with --stat etc. The docs say that --pretty=tformat:blah
+    # (or --format=blah) is what --oneline uses to get "terminator
+    # semantics" rather than the "separator semantics" of
+    # --pretty=format:blah. But for some reason, using lola with
+    # --stat etc introduces an additional blank line (with the
+    # vertical bar from the --graph) before it prints the stats;
+    # unline --oneline and hence lol.
+    lola  = log --color --graph --pretty=tformat:'%C(auto)%h%Creset %Cgreen(%cr)%Creset %C(blue)<%aN>%Creset%C(auto)%d%Creset %s'
     # This one also shows stashes and abandoned branches/heads
-    rofl  = "!git log --graph --decorate --oneline $(git rev-list -g --all)"
+    rofl  = "!git lol $(git rev-list -g --all)"
     # Show more details of the most recent patch:
     # (To show the diff, use `git show` or try `git diff --cached HEAD^`)
     top   = log --stat -1
@@ -193,11 +237,11 @@
     # <https://git-scm.com/book/en/v2/Git-Branching-Remote-Branches>
     # TODO: actually, the brokenness here may have something to do with
     # Chromium defining their own git_new_branch.py command.
-    new-branch = "!f(){ \
-        old=\"`git rev-parse --abbrev-ref HEAD)\"; \
-        git checkout -b \"$1\" \"$old\" ; \
-        git branch --set-upstream-to=\"$old\"; \
-        }; f"
+    #new-branch = "!f(){ \
+    #    old=\"`git rev-parse --abbrev-ref HEAD)\"; \
+    #    git checkout -b \"$1\" \"$old\" ; \
+    #    git branch --set-upstream-to=\"$old\"; \
+    #    }; f"
     push-new-branch = push --set-upstream origin
     # TODO: a version of del-branch that automatically switches to
     # the upstream branch if we're on the branch to be
@@ -210,10 +254,13 @@
     # What fields are supported: <http://stackoverflow.com/a/21868228>
     # HT: <https://gist.github.com/mwhite/6887990>
     # TODO: is there a way to combine this info with the "mb" and "bv" info?
+    # TODO: is there any way to color this like we do for the others?
     lm = "!git for-each-ref \
         --sort='-authordate' \
         --format='%(authordate:short)%09%(objectname:short)%09%(refname)' \
         refs/heads | sed -e 's@refs/heads/@@'"
+    # Show the most recent tag
+    lt = describe --tags --abbrev=0
     # List the modification date of files in the current directory (in order of file name).
     # BUG: there's some kind of typo here re the quoting. What's wrong?
     #lslm = "!git ls-tree -z --name-only HEAD | xargs -0 -n1 -I{} -- git log -1 --format='%aI {}' {} | sed -re 's/^([^T]+)T\S+(.*)/\1\2/'"
@@ -224,6 +271,12 @@
     aliases = "!git config -l | grep alias | cut -c 7-"
     # Get rid of dangling patches in the repo.
     gc-for-reals = "!git reflog expire --expire=now --all && git gc --prune=now"
+    # HT: <http://durdn.com/blog/2012/11/22/must-have-git-aliases-advanced-examples/>
+    assume = update-index --assume-unchanged
+    unassume = update-index --no-assume-unchanged
+    assumed = "!git ls-files -v | grep ^h | cut -c 3-"
+    unassume-all = "!git assumed | xargs git update-index --no-assume-unchanged"
+    assume-all = "!git st -s | awk {'print $2'} | xargs git assume"
     # Chromium/Google-only things.
     # TODO: how to guard these so they don't break on my other systems?
     # N.B., `git map` comes from the same place as `git map-branches`
