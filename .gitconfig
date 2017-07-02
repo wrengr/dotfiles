@@ -227,6 +227,17 @@
     # In all cases, you can give a specific file name instead of '.'
     # <http://stackoverflow.com/q/52704/358069>
     revert-all = checkout -- .
+    # HT <https://stackoverflow.com/a/5719854>
+    # TODO: have a flag or something to desice whether to push the tags
+    # or not (since all my Google stuff where I use them is entirely
+    # local; also since the git ideology is to never delete remote
+    # stuffs...) See also: <https://stackoverflow.com/a/24245862>
+    rename-tag = "!f(){ \
+        old=\"refs/tags/$1\" ; \
+        new=\"$2\" ; \
+        git tag \"$new\" \"$old\" && \
+        git tag -d \"$old\" ; \
+        }; f"
     # BUG: the second argument to `checkout -b` should be the
     # *remote* branch it tracks... I think. In any case, just passing
     # the second argument isn't enough to cause the new local-branch
@@ -253,18 +264,16 @@
     # (N.B., for-each-ref doesn't support --color nor %cr)
     # What fields are supported: <http://stackoverflow.com/a/21868228>
     # HT: <https://gist.github.com/mwhite/6887990>
-    # TODO: is there a way to combine this info with the "mb" and "bv" info?
-    # TODO: is there any way to color this like we do for the others?
-    lm = "!git for-each-ref \
+    # TODO: finish combining this into my git-bv script.
+    lm = "for-each-ref \
         --sort='-authordate' \
-        --format='%(authordate:short)%09%(objectname:short)%09%(refname)' \
-        refs/heads | sed -e 's@refs/heads/@@'"
+        --format='%(authordate:short)%09%(objectname:short)%09%(refname:short)' \
+        refs/heads"
     # Show the most recent tag
     lt = describe --tags --abbrev=0
     # List the modification date of files in the current directory (in order of file name).
     # BUG: there's some kind of typo here re the quoting. What's wrong?
     #lslm = "!git ls-tree -z --name-only HEAD | xargs -0 -n1 -I{} -- git log -1 --format='%aI {}' {} | sed -re 's/^([^T]+)T\S+(.*)/\1\2/'"
-    bv = branch -vv
     # HT: <https://gist.github.com/pksunkara/988716>
     whois = "!sh -c 'git log -i -1 --pretty=\"format:%an <%ae>%n\" --author=\"$1\"' -"
     # HT: <https://gist.github.com/mwhite/6887990>
@@ -281,6 +290,7 @@
     # TODO: how to guard these so they don't break on my other systems?
     # N.B., `git map` comes from the same place as `git map-branches`
     # (I think), so it's also Chromium-specific.
+    # TODO: finish combining "mb" into my git-bv script.
     mb = map-branches
     ru = rebase-update
 

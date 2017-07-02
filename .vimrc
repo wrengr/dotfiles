@@ -483,21 +483,23 @@ set nosmartindent        " Don't be stupid about hash. Instead use ft stuff.
 " cf., <http://stackoverflow.com/a/2360284/358069> or :help smartindent
 "inoremap # X#
 
-set tabstop=4            " Display a <Tab> as N characters
-set softtabstop=0        " Don't pretend N positions are a <Tab>
-set shiftwidth=4         " Indent N positions by shifting text with < and >
+set tabstop=4            " Display a <Tab> character as if N characters wide.
+set softtabstop=0        " Pretend N positions are a <Tab> character (0: don't pretend; -1: use &ts)
+set shiftwidth=4         " Indent by N positions for shift commands (i.e., < >) (0: use &ts)
 
-" Enabling smarttab means we will use &shiftwidth for how many
-" positions to insert for <Tab> at the beginning of a line (instead
-" of only using &shiftwith for the shift commands; i.e., < and >).
-" N.B., <Tab> will still use &tabstop when *not* at the beginning
-" of the line. Disabling smarttab means we will use &tabstop everywhere.
-set smarttab
-" Enabling expandtab means we will *always* convert <Tab> to positions
-" (either &shiftwidth or &tabstop, depending on &smarttab). Disabling
-" it means we will *never* convert <Tab> to positions. N.B., if you
-" want to convert <Tab> manually, you should reset the &expandtab
-" value and then use the :retab command.
+" Enabling smarttab means we will interpret <Tab> keypress at beginning
+" of line as indenting by &sw positions (instead of only using &sw for
+" the shift commands). N.B., will still use &ts/&sts everywhere else on
+" the line, as usual. Alas, enabling smarttab *also* means that a <BS>
+" keypress at beginning of line will delete &sw worth of spaces (instead
+" of just one). Thus, we disable this since we hate that <BS> behavior.
+set nosmarttab
+
+" Enabling expandtab means we will *always* convert <Tab> character to
+" positions (either &shiftwidth or &tabstop, depending on &smarttab).
+" Disabling it means we will *never* convert <Tab> to positions.
+" N.B., if you want to convert <Tab> manually, you should reset the
+" &expandtab value and then use the :retab command.
 "
 " We're disabling expandtab by default (will be overridden by
 " filetype stuff), so we don't muck up Makefiles and other things
@@ -743,6 +745,12 @@ set splitbelow           " When splitting horizontally, split below
 "set grepprg=grep\ -nH\ $*
 set cursorline           " highlight the whole line the cursor is on
 "set cursorcolumn        " highlight the whole column the cursor is on
+"
+" As desired, we can also change these colors...
+"highlight CursorLine ...
+"highlight CursorColumn ctermbg=5 " a nice purple
+"highlight CursorLineNr ...
+"highlight Cursor ...
 
 
 

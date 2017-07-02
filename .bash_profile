@@ -308,6 +308,8 @@ fi
 
 # Debugging, should usually be turned off
 #echo "Beginning path: $PATH"
+#echo "Beginning manpath: $MANPATH"
+
 
 case "${_localhost}" in
     ereshkigal)
@@ -370,46 +372,16 @@ case "${_localhost}" in
     google)
         case "${_uname}" in
             Linux)
+                # BUG: for some reason my Goobuntu station starts off
+                # with MANPATH='~/local/man', causing it to fail to load
+                # the default manpath.
+                unset  MANPATH
+                export MANPATH=`manpath`
+
                 _push PATH '~/chromium-srcs/depot_tools'
                 # WARNING: this will steal "gcc" and "g++" from /usr/bin
                 # And you need to do special things to get goma started.
                 _push PATH '~/chromium-srcs/goma'
-
-
-                if prodcertstatus --check_remaining_hours=1 >/dev/null 2>&1; then
-                    _have_prodaccess=true
-                else
-                    _have_prodaccess=false
-                    #prodaccess -s --kinit --ssh_on_security_key
-                fi
-
-                # Namely, we actually need `gkerb` (aka `prodaccess -k`).
-                # Otherwise we'll get all sorts of strange errors, like stale
-                # file handles when looking at `/auto`.
-                if $_have_prodaccess; then
-                    # Pre-access the directory in order to mount it.
-                    (cd '/auto/edatools' >/dev/null 2>&1)
-                    if [ -d '/auto/edatools' ]; then
-                        # For synthesizing and other EDA tools.
-                        # TODO: this causes bugs when logging into the wm...
-                        #source /auto/edatools/modules/tcl/init/bash
-                        #source /auto/edatools/lsf/conf/profile.lsf
-                        #_push PATH '/auto/edatools/bin'
-
-                        # Mount /edascratch so we can use it:
-                        # (N.B., this step may take 20--30 min)
-                        #/auto/edatools/bin/edascratch_client.sh
-
-                        # To run VCS, do:
-                        #module load  vcs/2015.09-SP2
-                        #export VCS_HOME=/auto/edatools/synopsys/vcs/2015.09-SP2/linux64
-                        #export PATH=$VCS_HOME/bin:$PATH
-
-                        # HACK: avoid syntax error since everything above is commented out.
-                        :
-                    fi
-                fi
-                unset _have_prodaccess
             ;;
         esac
     ;;
@@ -723,8 +695,11 @@ alias view='vim -R'   # --"--
 alias ex='vim -e'     # --"--
 alias nano='nano -iw' # keep indentation on \n, no-wrap lines
 
+# BUG: the -l flag seems to be an OSXism, and isn't supported on
+# Goobuntu. Actually, *all* the args are different between Ubuntu-likes
+# and OSX! Looks like we really must write our own version afterall.
 alias fmt='fmt -l 0 -t 4' # Turn off space2tab conversion and set tabstop=4
-                      # 8-char tabs be damned! N.B. vim won't respect this
+                      # 8-char tabs be damned! N.B. vim won't respect this because it's just a shell alias.
 
 # This is buggy when doing GALE/Joshua stuff
 # I think it was only needed because of some broken Solaris machines
