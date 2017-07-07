@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 # An enhanced version of `git branch -vv`
-# wren gayle romano <wrengr@x.com>                  ~ 2017.07.01
+# wren gayle romano <wrengr@x.com>                  ~ 2017.07.03
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # N.B., by naming this as we have and having it on our path, this
 # script will be automagically run if someone says `git bv`;
@@ -119,6 +119,7 @@ foreach my $branch (sort keys %branches) {
     if ($tracking eq 'gone') {
         # TODO: want a color here! but which one? Would 'color.diff.whitespace' be appropriate, or 'color.status.untracked' or... what?
     } else {
+        # TODO: handle when $tracking eq ''
         my $orig = $tracking;
         $tracking = '';
         if ($orig =~ m/ahead\s+(\d+)/) {
@@ -150,7 +151,7 @@ foreach my $branch (sort keys %branches) {
         $color{'color.branch.upstream'}, # or color.branch.{local,remote} ?
         $branches{$branch}[2], # upstream
         $reset,
-        ': ',
+        ': ', # TODO: drop if $tracking eq ''? (to match git-branch -vv)
         $tracking,
         "]\n";
 }

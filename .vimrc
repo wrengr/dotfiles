@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" This is wren gayle romano's vim config            ~ 2017.06.19
+" This is wren gayle romano's vim config            ~ 2017.07.04
 "
 " For guidance, see ~/.vim/README
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -78,6 +78,7 @@ let g:GPGPreferArmor=1
 Plug 'chriskempson/tomorrow-theme'
 "Plug 'junegunn/seoul256.vim' " Low-contrast color scheme
 "Plug 'vim-scripts/wombat256.vim'
+"Plug 'dtinth/vim-colors-dtinth256'
 
 " Limit colorization to local paragraphs/hunks.
 " This is really slick, and combines nicely with Goyo. However, it
@@ -422,7 +423,13 @@ set nobackup                     " make a backup file?
 " ~~~~~ Syntax highlighting
 if has('syntax') && (&t_Co > 2 || has('gui_running'))
     syntax on
-    set background=dark " Optimize the colors to a dark background
+    " N.B., even though we want to set this to dark, TomorrowNightBright
+    " is going to reset it to light again. Moreover, if we set
+    " it to dark afterwards, the colors are all terribly messed
+    " up. So, that's prolly why some colors from TNB aren't quite
+    " right (either painfully light and hard to read, or are too dark
+    " against the background)...
+    set background=dark
     colorscheme Tomorrow-Night-Bright
 endif
 " TODO: &t_Co is often wrong. We need to set up our ~/.bash_profile
@@ -611,6 +618,23 @@ if (v:version > 700) && has('spell')
     " TODO: try this idea from <http://stackoverflow.com/a/5041384/358069>
     " autocmd InsertEnter * setlocal nospell
     " autocmd InsertLeave * setlocal spell
+
+    " TODO: The current colors look tolerable enough on Ereshkigal, but on my work machines they look terrible
+    " N.B., make sure this is done after loading the color scheme. Else it'll be overwritten. Or possibly consider <http://www.vim.org/scripts/script.php?script_id=1641>
+    " N.B., May want to `hi clear SpellFoo` first...
+    "highlight SpellBad ...
+    "highlight SpellCap ...
+    "highlight SpellLocal ... gui=undercurl
+    "highlight SpellRare ...
+    "
+    " Some other things to colorize (not sure if they belong here or no)
+    " cf., `:help hl-Pmenu`
+    "highlight Pmenu ...
+    "highlight PmenuSel ...
+    "highlight PmenuSbar ...
+    "highlight PmenuThumb ...
+    "
+    " Maybe also try running `:runtime syntax/colortest.vim`
 endif
 
 
@@ -751,6 +775,9 @@ set cursorline           " highlight the whole line the cursor is on
 "highlight CursorColumn ctermbg=5 " a nice purple
 "highlight CursorLineNr ...
 "highlight Cursor ...
+"
+" Use `:highlight` to see all the current settings/names...
+"highlight LineNr ... # the current ctermfg=237 setting is too dark on Ereshkigal
 
 
 
