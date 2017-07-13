@@ -799,6 +799,14 @@ vnoremap p <Esc>:let current_reg = @"<CR>gvdi<C-R>=current_reg<CR><Esc>
 " something like
 " <https://vim.sourceforge.io/scripts/script.php?script_id=2098>.
 
+" yank to clipboard
+if has('clipboard')
+    set clipboard=unnamed " copy to the system clipboard
+    if has('unnamedplus') " X11 support
+        set clipboard+=unnamedplus
+    endif
+endif
+
 " Preserve indentation while pasting text from the OS X clipboard
 " BUG: this is broken on newer OSX. Also broken on Goobuntu.
 " TODO: see 'ConradIrwin/vim-bracketed-paste'
