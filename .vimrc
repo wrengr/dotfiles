@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" This is wren gayle romano's vim config            ~ 2017.07.04
+" This is wren gayle romano's vim config            ~ 2017.07.12
 "
 " For guidance, see ~/.vim/README
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -785,26 +785,28 @@ set cursorline           " highlight the whole line the cursor is on
 " ~~~~~ Copying & Pasting
 "set pastetoggle=<F9>
 
-" Make p in Visual mode replace the selected text with the "" register.
-vnoremap p <Esc>:let current_reg = @"<CR>gvdi<C-R>=current_reg<CR><Esc>
-
-" TODO: guard this stuff to be OSX-only?
-" <http://www.drbunsen.org/text-triumvirate.html>
-" Yank text to the OS X clipboard
-noremap <Leader>y "*y
-noremap <Leader>yy "*Y
-
 " Make <S-y> yank from cursor to end of line (a la <S-d>, and akin
 " to <S-a>), rather than yanking the whole line (a la <y><y>, as
 " is done in traditional vi).
 nnoremap Y y$
 
+" Make p in Visual mode replace the selected text with the "" register.
+vnoremap p <Esc>:let current_reg = @"<CR>gvdi<C-R>=current_reg<CR><Esc>
+
+" BUG: the "* register doesn't behave apropriately on the version
+" of vim that ships with newer OSX. Instead must use MacVim
+" <http://www.drbunsen.org/text-triumvirate.html>, or perhaps try
+" something like
+" <https://vim.sourceforge.io/scripts/script.php?script_id=2098>.
+
 " Preserve indentation while pasting text from the OS X clipboard
-" TODO: this doesn't help for my Goobuntu workstation. Need to make smarter
-" BUG: this seems to have broken on newer OSX.
+" BUG: this is broken on newer OSX. Also broken on Goobuntu.
 " TODO: see 'ConradIrwin/vim-bracketed-paste'
 noremap <Leader>p :set paste<CR>:put  *<CR>:set nopaste<CR>
 
+
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+" ~~~~~ OSX nonsense
 
 " Switch between buffers ala tabs in Safari (and other OSX)
 " This is based off <http://vim.wikia.com/wiki/Easier_buffer_switching>, but
@@ -824,7 +826,6 @@ noremap <Leader>p :set paste<CR>:put  *<CR>:set nopaste<CR>
 " keys seems to work on my personal laptop (at least since upgrading
 " to Sierra, though I think they didn't work before). The commands
 " to do things directly are ':wincmd h/j/k/l'
-
 
 " Enable OSX-like command for saving
 " BUG: this doesn't seem to be working either :(
