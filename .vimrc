@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" This is wren gayle romano's vim config            ~ 2017.07.12
+" This is wren gayle romano's vim config            ~ 2017.07.19
 "
 " For guidance, see ~/.vim/README
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -14,6 +14,7 @@ set nomodeline
 set ttyfast
 " Don't start in insert mode. That's some emacs kinda silliness.
 set noinsertmode
+
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ vim-plug stuff <https://github.com/junegunn/vim-plug>
@@ -194,7 +195,7 @@ Plug 'nachumk/systemverilog.vim',      { 'for': 'systemverilog' }
 Plug 'vhda/verilog_systemverilog.vim', { 'for': 'verilog_systemverilog' }
 " A hack for Classic BlueSpec. Would be nice to have a real thing here...
 if has('autocmd')
-    autocmd BufRead,BufNewFile *.bs set filetype=haskell
+    autocmd BufRead,BufNewFile *.bs set ft=haskell
 endif
 
 " ~~~~~ Language Support: Markdown / Pandoc
@@ -207,6 +208,7 @@ endif
 " ~~~~~ Language Support: misc others.
 "Plug 'moll/vim-node', { 'for': 'javascript' }
 "Plug 'jmcantrell/vim-virtualenv' " for Python virtualenvs
+"Plug 'tmhedberg/SimpylFold', { 'for': 'python' } " Fancy folding so you can still see docstrings
 "Plug 'fatih/vim-go', { 'for': 'go' }
 "let g:go_fmt_command = "goimports"
 "Plug 'nsf/gocode', { 'rtp': 'vim', 'do': '~/.vim/plugged/gocode/vim/symlink.sh', 'for': 'go' }
@@ -263,53 +265,14 @@ call plug#end()
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" ~~~~~ Basic usability
-set nocompatible               " Avoid compatibility with legacy vi.
-set backspace=indent,eol,start " Allow backspacing anything (input mode).
-"set whichwrap=b,s,<,>,~,[,]   " backspace and cursor keys wrap too.
-set number                     " Show line numbers? (cf., :ToggleNumber below)
-set showmatch            " When inserting a bracket, briefly jump to the match
-"set matchtime=5         " how long (N/10 secs) to blink on matching bracket
-"set updatetime=4000     " how long (N/10 secs) to highlight matching & save swp if nothing done
-
-
-" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" ~~~~~ Modelines
-" TODO: do we really need to reset this for paranoia's sake? Or is
-" it guaranteed that loading plugins can't change it?
-"
-" One should never parse modelines by default, it's a security
-" vulnerability. <http://usevim.com/2012/03/28/modelines/>
+" ~~~~~ Re-preamble, for paranoia's sake
+" TODO: is this actually necessary? Can we instead write a check
+" that guards to warn us if any of the plugins above have changed
+" these?
+set nocompatible
 set nomodeline
-
-
-" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" ~~~~~ Commandline, Statusline, & Tabline
-set showcmd              " Show the commandline
-set cmdheight=1          " The commandline is N rows high
-set noshowmode           " Don't show the mode in the commandline
-set ruler                " Show line and column position of the cursor
-                         " (N.B., is in commandline iff laststatus=1.
-                         " Otherwise is in the statusline?)
-set laststatus=2         " Always show statusline, even if there're no splits
-"set statusline=%F%m%r%h%w\ [%{&ff}\|%Y\|%03.3b\|%04l,%04v\|%p%%\|LEN=%L] "\ %{Tlist_Get_Tag_Prototype_By_Line()}
-
-
-" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" ~~~~~ Bells
-"set novisualbell t_vb=  " Don't use the visual bell.
-"set noerrorbells        " Error bells are annoying.
-
-
-" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" ~~~~~ Screen integration
-" <http://vim.wikia.com/wiki/GNU_Screen_integration>
-" <https://github.com/mileszs/dotfiles/blob/master/screenrc>
-
-" disable Background Color Erase (BCE) so that color schemes
-" render properly when inside 256-color tmux and GNU screen.
-" see also <http://snk.tuxfamily.org/log/vim-256color-bce.html>
-"set t_ut=
+set ttyfast
+set noinsertmode
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -348,6 +311,23 @@ endif
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+" ~~~~~ Screen integration
+" <http://vim.wikia.com/wiki/GNU_Screen_integration>
+" <https://github.com/mileszs/dotfiles/blob/master/screenrc>
+
+" disable Background Color Erase (BCE) so that color schemes
+" render properly when inside 256-color tmux and GNU screen.
+" see also <http://snk.tuxfamily.org/log/vim-256color-bce.html>
+"set t_ut=
+
+" This should be set by default, but just to make sure. This is
+" particularly helpful when dealing with ssh+screen, since that
+" seems to cause issues with redrawing.
+" TODO: might consider adding :nohlsearch<CR> before the redraw?
+nnoremap <C-l> :redraw!<CR>
+
+
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Terminal title
 " <http://vim.wikia.com/wiki/Automatically_set_screen_title>
 " <http://usevim.com/2012/06/13/set-title/>
@@ -381,6 +361,7 @@ endif
 " BUG: alas, it seems to break something about using the OSX clipboard...
 " <http://unix.stackexchange.com/q/139578>
 "set mouse=a " Copy/paste in "* register, normal behaviour with shift key pressed
+"set mousehide " Hide mouse while typing
 
 " TODO: If we really want to go the mouse route, see also:
 "if has('mouse')
@@ -397,30 +378,9 @@ endif
 " (3) <https://github.com/nvie/vim-togglemouse>
 " (4) <http://unix.stackexchange.com/q/44513> re Gnome terminal bugginess
 
-"set mousehide " Hide mouse while typing
-
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" ~~~~~ History, backups, & stupidity
-set history=100                  " size of command and search history
-"set undolevels=1000
-" The following line has some sort of typo about '<' for vim-6.2
-set viminfo='20,<100,s100,\"100
-"           |   |    |    |
-"           |   |    |    +------- lines of history (default 50)
-"           |   |    +------------ Exclude registers larger than N kb
-"           |   +----------------- Maximum of N lines for registers
-"           +--------------------- Keep marks for N files
-"set confirm                     " ask before doing something stupid
-set autowrite                    " autosave before commands like next and make
-set nobackup                     " make a backup file?
-"set patchmode=.orig             " save original file with suffix the first time
-"set backupdir=$HOME/.vim/backup " where to put backup files
-"set directory=$HOME/.vim/temp   " where to put temp files
-
-
-" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" ~~~~~ Syntax highlighting
+" ~~~~~ Color-Scheme
 if has('syntax') && (&t_Co > 2 || has('gui_running'))
     syntax on
     " N.B., even though we want to set this to dark, TomorrowNightBright
@@ -445,16 +405,65 @@ endif
 " bold); and there's some bug with 32--128 where the yellow and teal
 " colors get swapped.
 
+" TODO: possibly consider using
+" <http://www.vim.org/scripts/script.php?script_id=1641> in order
+" to avoid needing to push setting colorscheme all the way to the
+" top like this.
+
+" Use `:verbose highlight` to see all the current settings/names
+" and who's to blame for them. Also, we may want to `hi clear Foo`
+" before setting it.
+
+" Also maybe try running `:runtime syntax/colortest.vim`
+
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" ~~~~~ Highlight the final column
-" TODO: make a function that toggles this, rather than assuming
-" always on.
+" ~~~~~ Cursor
+set cursorline           " highlight the whole line the cursor is on
+"set cursorcolumn        " highlight the whole column the cursor is on
+
+" TODO: change these from TomorrowNightBright?
+" (e.g., ctermbg=5 gives a nice purple for CursorColumn usage)
+"highlight CursorLine   term=underline ctermbg=234 guibg=#2a2a2a
+"highlight CursorColumn term=reverse   ctermbg=234 guibg=#2a2a2a
+"highlight Cursor ...
+
+
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+" ~~~~~ Line numbers
+set norelativenumber
+set number
+
+" TODO: change these from TomorrowNightBright?
+" (e.g., ctermfg=237 is a bit too dark on Ereshkigal)
+"highlight CursorLineNr term=bold      ctermfg=11 gui=bold guifg=Yellow
+"highlight LineNr       term=underline ctermfg=237         guifg=#424242
+
+" TODO: use <SID> nonsense? <http://vimdoc.sourceforge.net/htmldoc/map.html#<SID>>
+" HT: <https://github.com/alialliallie/vimfiles/blob/master/vimrc>
+function! ToggleNumber()
+    if &relativenumber == 1
+        set norelativenumber
+        set number
+    else
+        set relativenumber
+        " Use the new hybrid-mode, if available
+        " <http://jeffkreeftmeijer.com/2013/vims-new-hybrid-line-number-mode/>
+        if v:version >= 704
+            set number
+        endif
+    endif
+endfunc
+" TODO: use <leader> instead of <C>?
+nnoremap <C-n> :call ToggleNumber()<CR>
+
+
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+" ~~~~~ Final column
 " N.B., if this glitches out when using non-ASCII characters that
 " aren't actually wide (typographically speaking), then you probably
 " need to adjust your terminal; since the terminal and vim are
 " disagreeing about where the cursor actually is.
-" N.B., has(...) checks for compiled "features"; exists(...) checks options.
 if exists('+colorcolumn')
     " N.B., this is the column we highlight, hence should be one
     " more than where we want to wrap. You can also use "+n" to set
@@ -463,22 +472,72 @@ if exists('+colorcolumn')
     " Or, to shade everything beyond 81 instead of only 81 itself:
     "execute "set colorcolumn=" . join(range(81,335), ',')
 
-    " Use a pleasant but high-contrast color.
-    " N.B., must be set after the color scheme; else it will be overridden.
+    " Override TomorrowNightBright to use a pleasant but high-contrast color.
     highlight ColorColumn
         \ ctermfg=white ctermbg=173 cterm=bold
         \ guifg=#ffffff guibg=#e5786d gui=bold
 else
     " This was suggested by my source for this trick, but dunno if
-    " I really want it or not...
-    "autocmd! BufEnter <buffer> match ColorColumn /\%81v./
+    " I really want it or not... (the bang clears all the previous autocmd's (in the same augroup))
+    "if has('autocmd')
+    "    autocmd! BufEnter <buffer> match ColorColumn /\%81v./
+    "endif
 
-    " Another source <http://stackoverflow.com/a/235970> suggest:
-    "highlight OverLength ctermbg=red ctermfg=white guibg=#592929
-    "match OverLength /\%81v.\+/
+    " Another source <http://stackoverflow.com/a/235970> suggested:
+    "match ColorColumn /\%81v.\+/
 endif
 " TODO: even better than any of the above, see
 " <http://stackoverflow.com/a/21406581>
+
+
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+" ~~~~~ Basic usability
+" TODO: combine this section with the "etc" one.
+set backspace=indent,eol,start " Allow backspacing anything (input mode).
+"set whichwrap=b,s,<,>,~,[,]   " backspace and cursor keys wrap too.
+
+set showmatch            " When inserting a bracket, briefly jump to the match
+"set matchtime=5         " how long (N/10 secs) to blink on matching bracket
+"set updatetime=4000     " how long (N/10 secs) to highlight matching & save swp if nothing done
+
+"set novisualbell t_vb=  " Don't use the visual bell.
+"set noerrorbells        " Error bells are annoying.
+
+
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+" ~~~~~ Commandline, Statusline, & Tabline
+set showcmd              " Show the commandline
+set cmdheight=1          " The commandline is N rows high
+"set cmdwinheight=7
+set noshowmode           " Don't show the mode in the commandline
+set ruler                " Show line and column position of the cursor
+                         " (N.B., is in commandline iff laststatus=1.
+                         " Otherwise is in the statusline?)
+set laststatus=2         " Always show statusline, even if there're no splits
+"set statusline=%F%m%r%h%w\ [%{&ff}\|%Y\|%03.3b\|%04l,%04v\|%p%%\|LEN=%L] "\ %{Tlist_Get_Tag_Prototype_By_Line()}
+
+" TODO: change these from TomorrowNightBright?
+"highlight StatusLine term=bold,reverse cterm=reverse ctermfg=59 ctermbg=184 gui=reverse guifg=#4d5057 guibg=#e7c547
+"highlight StatusLineNC term=reverse cterm=reverse ctermfg=59 ctermbg=254 gui=reverse guifg=#4d5057 guibg=#eaeaea
+
+
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+" ~~~~~ History, backups, & stupidity
+set history=100                  " size of command and search history
+"set undolevels=1000
+" The following line has some sort of typo about '<' for vim-6.2
+set viminfo='20,<100,s100,\"100
+"           |   |    |    |
+"           |   |    |    +------- lines of history (default 50)
+"           |   |    +------------ Exclude registers larger than N kb
+"           |   +----------------- Maximum of N lines for registers
+"           +--------------------- Keep marks for N files
+"set confirm                     " ask before doing something stupid
+set autowrite                    " autosave before commands like next and make
+set nobackup                     " make a backup file?
+"set patchmode=.orig             " save original file with suffix the first time
+"set backupdir=$HOME/.vim/backup " where to put backup files
+"set directory=$HOME/.vim/temp   " where to put temp files
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -507,12 +566,13 @@ set nosmarttab
 " Disabling it means we will *never* convert <Tab> to positions.
 " N.B., if you want to convert <Tab> manually, you should reset the
 " &expandtab value and then use the :retab command.
-"
-" We're disabling expandtab by default (will be overridden by
-" filetype stuff), so we don't muck up Makefiles and other things
-" that actually do need the literal <Tab> character.
-set noexpandtab
-" TODO: change this default, and only make exceptions for Makefiles etc.
+set expandtab
+if has('autocmd')
+    " TODO: verify that this works as expected (N.B., only works
+    " because we turn ft on below)
+    " TODO: also, move this to ~/.vim/ftplugin/make.vim so we needn't rely on autocmd for this.
+    autocmd FileType make setlocal noexpandtab shiftwidth=8 softtabstop=0
+endif
 
 " Supposedly we can use this to make it so that (shift-)tab in
 " visual mode will un/indent the selection. However,
@@ -616,26 +676,55 @@ if (v:version > 700) && has('spell')
     nnoremap <C-@> :setlocal spell!<CR>
 
     " TODO: try this idea from <http://stackoverflow.com/a/5041384/358069>
-    " autocmd InsertEnter * setlocal nospell
-    " autocmd InsertLeave * setlocal spell
+    "if has('autocmd')
+    "    autocmd InsertEnter * setlocal nospell
+    "    autocmd InsertLeave * setlocal spell
+    "endif
 
-    " TODO: The current colors look tolerable enough on Ereshkigal, but on my work machines they look terrible
-    " N.B., make sure this is done after loading the color scheme. Else it'll be overwritten. Or possibly consider <http://www.vim.org/scripts/script.php?script_id=1641>
-    " N.B., May want to `hi clear SpellFoo` first...
+    " TODO: change these from TomorrowNightBright? They look
+    " tolerable enough on Ereshkigal, but look terrible on both
+    " work machines.
     "highlight SpellBad ...
     "highlight SpellCap ...
     "highlight SpellLocal ... gui=undercurl
     "highlight SpellRare ...
     "
-    " Some other things to colorize (not sure if they belong here or no)
+    " Some other things to colorize (not sure if they belong here or elsewhere)
     " cf., `:help hl-Pmenu`
     "highlight Pmenu ...
     "highlight PmenuSel ...
     "highlight PmenuSbar ...
     "highlight PmenuThumb ...
-    "
-    " Maybe also try running `:runtime syntax/colortest.vim`
 endif
+
+
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+" ~~~~~ Highlight whitespace errors
+" TODO: actually make this toggle!
+" BUG: these patterns don't seem to work everywhere (e.g., inside
+" `function!` itself; though it works just fine inside `if`)
+function! ToggleHighlightSpaces()
+    " TODO: should prolly guard this one based on how &expandtab is set.
+    syntax match hardTab display "\t"
+    highlight link hardTab Error
+
+    syntax match trailingWhite display "[[:space:]]\+$"
+    highlight link trailingWhite Error
+
+    " The \ze ends the match, so that only the spaces are highlighted.
+    syntax match spaceBeforeTab display " \+\ze\t"
+    highlight link spaceBeforeTab Error
+endfunc
+
+" I forget where I got this cursor resetting stuff from, but a
+" different variant is at <https://dougblack.io/words/a-good-vimrc.html>
+"function! RmTrailingSpace()
+"    let save_cursor = getpos(".")
+"    let old_query = getreg('/')
+"    silent! %s/[[:space:]]\+$//e
+"    call setpos('.', save_cursor)
+"    call setreg('/', old_query)
+"endfun
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -643,10 +732,6 @@ endif
 " By default <z><a> is used for un/folding. but that can be annoying
 " if you accidentally mistype the <z> and so enter append mode. Should
 " use nnoremap to choose some other key combo for un/folding.
-"
-" For Python, you can get fancy with something like
-" <https://github.com/tmhedberg/SimpylFold>, so you can still see docstrings
-" when folded, etc.
 if has('folding')
     "set foldenable          " Turn on folding
     " This shows the first line of the fold, with "/*", "*/" and "{{{" removed.
@@ -669,64 +754,11 @@ if has('folding')
 
     " To automatically save manual folds and reload them:
     " (I'm not sure if I actually want this, but it's good to remember)
-    "autocmd BufWinLeave * mkview
-    "autocmd BufWinEnder * loadview
+    "if has('autocmd')
+    "    autocmd BufWinLeave * mkview
+    "    autocmd BufWinEnder * loadview
+    "endif
 endif
-
-
-" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" ~~~~~ Toggle between normal and relative line numbers
-" HT: <https://github.com/alialliallie/vimfiles/blob/master/vimrc>
-" TODO: I like starting the name with "Toggle" for better tab-completion,
-" but everyone else puts the "Toggle" at the end of the function name...
-function! ToggleNumber()
-    if(&relativenumber == 1)
-        set norelativenumber
-        set number
-    else
-        set relativenumber
-        " Use the new hybrid-mode, if available
-        " <http://jeffkreeftmeijer.com/2013/vims-new-hybrid-line-number-mode/>
-        if v:version >= 704
-            set number
-        endif
-    endif
-endfunc
-" TODO: use <leader> instead of <C>?
-nnoremap <C-n> :call ToggleNumber()<CR>
-
-" This should be set by default, but just to make sure. This is
-" particularly helpful when dealing with ssh+screen, since that seems to
-" cause issues with redrawing.
-" TODO: might consider adding :nohlsearch<CR> before the redraw.
-nnoremap <C-l> :redraw!<CR>
-
-
-" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" ~~~~~ Toggle highlighting certain whitespace as errors
-" TODO: actually make this toggle!
-" BUG: this doesn't seem to work everywhere (e.g., inside `function!`
-" itself; though it works just fine inside `if`)
-function! ToggleHighlightSpaces()
-    " TODO: should prolly guard this one based on how &expandtab is set.
-    syntax match tab display "\t"
-    highlight link tab Error
-
-    syntax match trailingWhite display "[[:space:]]\+$"
-    highlight link trailingWhite Error
-
-    " The \ze ends the match, so that only the spaces are highlighted.
-    syntax match spaceBeforeTab display " \+\ze\t"
-    highlight link spaceBeforeTab Error
-endfunc
-
-"function! RmTrailingSpace()
-"    let save_cursor = getpos(".")
-"    let old_query = getreg('/')
-"    silent! %s/[[:space:]]\+$//e
-"    call setpos('.', save_cursor)
- "   call setreg('/', old_query)
-"endfun
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -740,7 +772,7 @@ endfunc
 "     https://github.com/thoughtbot/dotfiles/blob/master/vimrc
 
 "set lazyredraw          " Don't redraw while running macros, for speed
-"set hidden              " Hide buffers when they are abandoned
+"set hidden              " Hide buffers when they are abandoned (see also &bufhidden)
 "set autochdir           " Change directory to the file in the current window
 "set nojoinspaces        " No additional spaces when joining lines with <J>
 "set esckeys             " Allow cursor keys within insert mode
@@ -755,10 +787,9 @@ endfunc
 "set timeoutlen=3000     " How long does vim wait for mapping sequences
 "set ttimeoutlen=100     " How long does vim wait for the end of escape sequence
 "set path=$HOME/,.       " Set the basic path (see below)
-" TODO: see <http://www.oualline.com/vim/10/top_10.html> for what
-" these so-called 'tags' are all about.
+" TODO: see `:help usr_29` and <http://www.oualline.com/vim/10/top_10.html>
+" for what these so-called 'tags' are all about.
 "set tags=tags,$HOME/.vim/ctagsproject
-"set shell=/bin/bash     " A shell
 set scrolloff=7          " Show N lines in advance when scrolling
 "set sidescrolloff=10    " Columns visible to the left/right of cursor when scrolling
 "set winminheight=0      " Let splitted windows get as small as only the titlebar
@@ -766,19 +797,35 @@ set scrolloff=7          " Show N lines in advance when scrolling
 "set splitright          " When splitting vertically, split to the right
 set splitbelow           " When splitting horizontally, split below
 "set browsedir=buffer    " :browse e starts in %:h, not in $PWD
-"set grepprg=grep\ -nH\ $*
-set cursorline           " highlight the whole line the cursor is on
-"set cursorcolumn        " highlight the whole column the cursor is on
-"
-" As desired, we can also change these colors...
-"highlight CursorLine ...
-"highlight CursorColumn ctermbg=5 " a nice purple
-"highlight CursorLineNr ...
-"highlight Cursor ...
-"
-" Use `:highlight` to see all the current settings/names...
-"highlight LineNr ... # the current ctermfg=237 setting is too dark on Ereshkigal
 
+
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+" ~~~~~ Helper/external programs (beware portability)
+
+" The shell used for `!` and `:!` commands.
+"set shell=/bin/bash
+
+" Force the <~> key command to behave like an operator (thus, like `g~`).
+"set tildeop
+
+" The thing the <=> key command uses.
+"set equalprg=
+" TODO: cf., <http://vim.wikia.com/wiki/Par_text_reformatter>
+
+" The thing `gq` uses.
+"set formatexpr=
+"set formatprg=
+
+" The thing the <S-k> key command uses.
+"set keywordprg=man\ -s
+
+" The thing `:grep` uses.
+"set grepprg=grep\ -nHr\ $*
+" TODO: cf., <https://robots.thoughtbot.com/faster-grepping-in-vim>,
+" the comment to <https://stackoverflow.com/a/4889864/358069>
+
+" The thing `:make` uses.
+"set makeprg=make
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -811,6 +858,12 @@ endif
 " BUG: this is broken on newer OSX. Also broken on Goobuntu.
 " TODO: see 'ConradIrwin/vim-bracketed-paste'
 noremap <Leader>p :set paste<CR>:put  *<CR>:set nopaste<CR>
+
+" Select the most-recently INSERTed text. (N.B., that'll be the
+" whole file if you've just loaded it up and have never entered
+" INSERT mode yet.)
+" HT: <https://dougblack.io/words/a-good-vimrc.html>
+"nnoremap gV `[v`]
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -847,21 +900,25 @@ noremap <Leader>p :set paste<CR>:put  *<CR>:set nopaste<CR>
 "     <http://vim.wikia.com/wiki/Keep_your_vimrc_file_clean>
 if has('autocmd')
     " Enable file type detection, and load filetype-based indentation files.
+    filetype on
     filetype plugin on
     filetype indent on
 
-    " Yes, all my *.pro files ARE prolog files
-    autocmd BufNewFile,BufRead *.pro :set ft=prolog
-    autocmd BufNewFile,BufRead *.ecl :set ft=prolog
+    " Group these so they only ever fire once.
+    augroup configgroup
+        " Yes, all my *.pro files ARE prolog files
+        autocmd BufNewFile,BufRead *.pro :set ft=prolog
+        autocmd BufNewFile,BufRead *.ecl :set ft=prolog
 
-    " This causes GHC to type check every time you save the file
-    "autocmd BufWritePost *.hs !ghc -c %
-    " TODO: similar things for *.hsc, *.lhs,... you can use {,} alternation a-la Bash
-    " N.B., Haskell-specific things are defined in ~/.vim/ftplugin/haskell.vim
+        " This causes GHC to type check every time you save the file
+        "autocmd BufWritePost *.hs !ghc -c %
+        " TODO: similar things for *.hsc, *.lhs,... you can use {,} alternation a-la Bash
+        " N.B., Haskell-specific things are defined in ~/.vim/ftplugin/haskell.vim
 
-    " TODO: actual support for Agda
-    " <http://wiki.portal.chalmers.se/agda/agda.php?n=Main.VIMEditing>
-    autocmd BufNewFile,BufRead *.agda :set ft=haskell
+        " TODO: actual support for Agda
+        " <http://wiki.portal.chalmers.se/agda/agda.php?n=Main.VIMEditing>
+        autocmd BufNewFile,BufRead *.agda :set ft=haskell
+    augroup END
 endif
 
 

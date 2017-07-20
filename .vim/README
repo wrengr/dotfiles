@@ -31,6 +31,10 @@
 * What is good style for your ~/.vimrc file?
 	<http://vim.wikia.com/wiki/Keep_your_vimrc_file_clean>
 
+* What's the difference between has() vs exists()?
+	has(...) checks for compiled-in "features"
+	exists(...) checks "options"
+
 
 === What the heck goes where in the ~/.vim directory? ===
 
