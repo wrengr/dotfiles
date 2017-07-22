@@ -1,9 +1,7 @@
 #!/usr/bin/env perl
-# This script takes long paths and `ls`es each dir along the way
-# wren gayle romano <wren@cpan.org>                 ~ 2008.01.06
+# This script takes long paths and `ls -d`es each dir along the way
+# wren gayle romano <wren@cpan.org>                 ~ 2017.07.21
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#
-# Most helpful with the -l and -d flags
 
 use warnings;
 use strict;
@@ -13,7 +11,7 @@ push @Flags, shift @ARGV
 	while @ARGV and $ARGV[0] =~ m/^-(?!-$)/;
 
 exec join ' ', # Doesn't seem to work without the join
-	'ls', @Flags, '',
+	'ls', '-d', @Flags, '',
 	map {
 		my @pieces = split '/', $_;
 		map { join '/', @pieces[0..$_] } 0..$#pieces;

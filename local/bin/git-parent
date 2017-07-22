@@ -8,6 +8,7 @@
 
 # TODO: Add a flag to toggle color for the error message...
 # TODO: add a flag/mode for printing out all the ancestors in order; so that clients needn't worry about running this script recursively (also so we can improve performance over the naive recursive approach)
+# Cf the symbolic-demo alias at <https://github.com/ddopson/dotfiles/blob/master/.gitconfig>
 if [[ $# -eq 0 ]]; then
     CHILD=$(git rev-parse --abbrev-ref HEAD)
 elif [[ $# -eq 1 ]]; then

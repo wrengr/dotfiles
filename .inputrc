@@ -7,5 +7,8 @@ set input-meta on
 set output-meta on
 set convert-meta off
 
+# Complete symlinked dirs as 'dir/' rather than just 'dir'
+set mark-symlinked-directories on
+
 # TODO: play around with this to see if we want it
 # <http://vim.wikia.com/wiki/Use_vi_shortcuts_in_terminal>

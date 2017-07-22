@@ -7,4 +7,4 @@ setlocal comments=:--
 " line from within a comment. This function will ``set formatoptions-=c``,
 " which disables that terrible "feature", in addition to disabling
 " various other things I don't like.
-call DisableHardWrapping()
+DisableHardWrapping

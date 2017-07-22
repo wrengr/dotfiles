@@ -1,4 +1,6 @@
-#!/bin/sh
+#!/bin/bash
+# Must use Bash in order to safely source our ~/.bash_profile !!
+
 # The built-in periodic whatis script seems to be somewhat buggy,
 # so we do it ourselves. N.B., this doesn't entirely replace the
 # old script, since we don't bother doing anything with locales.

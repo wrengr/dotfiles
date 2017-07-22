@@ -226,27 +226,40 @@ export PROMPT_COMMAND='declare -F _pwd_shorten >/dev/null && _PWD="`_pwd_shorten
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# ~~~~~ Load the ssh-agent, if present
-#       (To set the .ssh/agent cache, use the `agent` alias)
+# ~~~~~ Smarter ssh-agent
 # TODO: update this stuff to work with `gcert` on google machines
+# TODO: make the alias smarter (e.g., check for a previous agent)
+# TODO: break this whole thing out into a script that can live in ~/local/bin
 
-if [ -r '.ssh/agent' ]; then
-    # We don't need the -e if we're passing the PID directly.
-    # N.B., passing -e or -U (or -u?) overrides the -p flag.
-    if ps -co pid,user,command -p `
-            cat .ssh/agent |
-            perl -nle '
-                BEGIN {$pid = 0;}
-                $pid = $1 if m/^SSH_AGENT_PID=(\d+)/;
-                END {print $pid;}'` |
-        grep "${USER}" |
-        grep 'ssh-agent' >/dev/null 2>&1
-        # N.B., don't use -s or -q, for portability
-    then
-        source '.ssh/agent'
-    else
-        rm '.ssh/agent'
+if [ "${_localhost}" = 'ereshkigal' ]; then
+    # N.B., must use $HOME because "~" isn't expanded for the `[ -r`.
+    # However, beware that if you do `type agent` it will still use
+    # "~" to abbreviate things!
+    _agent_file="$HOME/.ssh/agent"
+
+    alias agent="ssh-agent > $_agent_file ; source $_agent_file ; ssh-add ~/.ssh/{id_dsa,id_rsa}"
+
+    # Load the agent, if one is already running.
+    if [ -r $_agent_file ]; then
+        # We don't need the -e if we're passing the PID directly.
+        # N.B., passing -e or -U (or -u?) overrides the -p flag.
+        if ps -co pid,user,command -p `
+                cat .ssh/agent |
+                perl -nle '
+                    BEGIN {$pid = 0;}
+                    $pid = $1 if m/^SSH_AGENT_PID=(\d+)/;
+                    END {print $pid;}'` |
+            grep "${USER}" |
+            grep 'ssh-agent' >/dev/null 2>&1
+            # N.B., don't use -s or -q, for portability
+        then
+            source $_agent_file
+        else
+            rm $_agent_file
+        fi
     fi
+
+    unset _agent_file
 fi
 
 
@@ -317,15 +330,23 @@ case "${_localhost}" in
         # Java5. But we don't actually alter OSX's default Java
         # (i.e., '/Library/Java/Home') since doing that can cause
         # problems with built-in OS stuff.
-        JAVA_HOME='/System/Library/Frameworks/JavaVM.framework/Versions/1.6/Home'
-        _push PATH    "$JAVA_HOME/bin"
-        _push MANPATH "$JAVA_HOME/man"
+        _JAVA_HOME='/System/Library/Frameworks/JavaVM.framework/Versions/1.6/Home'
+        # HACK: at some point we got rid of this? We guard things
+        # just so the periodic whatis script stops complaining (since
+        # man and path don't actually care)
+        if [ -x "$_JAVA_HOME" ]; then
+            export JAVA_HOME="$_JAVA_HOME"
+            _push PATH    "$JAVA_HOME/bin"
+            _push MANPATH "$JAVA_HOME/man"
+        fi
 
         MAPLE_HOME='/Library/Frameworks/Maple.framework/Versions/2015'
-        _push PATH    "$MAPLE_HOME/bin"
-        _push MANPATH "$MAPLE_HOME/man"
-        # LOCAL_MAPLE is for Hakaru. Dunno what the usual env-variables for Maple are
-        export LOCAL_MAPLE="$MAPLE_HOME/bin/maple"
+        if [ -x "$MAPLE_HOME" ]; then
+            _push PATH    "$MAPLE_HOME/bin"
+            _push MANPATH "$MAPLE_HOME/man"
+            # LOCAL_MAPLE is for Hakaru. Dunno what the usual env-variables for Maple are
+            export LOCAL_MAPLE="$MAPLE_HOME/bin/maple"
+        fi
         unset MAPLE_HOME
 
         # Various things we've installed (and stowed) without Fink.
@@ -423,6 +444,9 @@ if [ ! -z "`which sed`" -a -x "`which sed`" ]; then
         echo "${PATH}" | sed "s/~\//${_home}\//g; s/~:/${_home}:/g"
     )
 
+    # TODO: maybe also add a filter to remove (and warn about)
+    # directories that don't exist.
+
     # Debugging, should usually be turned off
     #echo "Final path: $PATH"
 fi
@@ -470,21 +494,6 @@ export BIBINPUTS=".:${HOME}/local/texmf/bibtex/bib:"
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# ~~~~~ Set up CVS
-# TODO: does anyone still use this?
-
-export CVS_RSH='ssh'
-export CVSIGNORE='.DS_Store'
-
-case "${_localhost}" in
-    ereshkigal )
-        # TODO: is this even still valid?
-        export CVSROOT='wren@cvs.freegeek.org:/var/lib/cvs/'
-    ;;
-esac
-
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ Set up Git
 
 # N.B., setting these overrides the `git config --global user.*` settings
@@ -509,6 +518,7 @@ export GIT_COMMITTER_EMAIL="$GIT_AUTHOR_EMAIL"
 # Like `grep -R $1 .`; cf.,
 # <http://darcs.net/HintsAndTips#excluding-the-_darcs-directory-when-searching>
 # TODO: We may want to switch to using a real script, like xwrn's version there.
+# TODO: just start using <http://blog.burntsushi.net/ripgrep/>
 #
 # In general, beware of `find` corrupting your repos
 # BUG: doesn't color like the grep alias
@@ -525,7 +535,7 @@ export DARCS_EMAIL="$GIT_AUTHOR_NAME <$GIT_AUTHOR_EMAIL>"
 # $> echo 'username bla@example.com' >> /etc/postfix/canonical
 # $> postmap /etc/postfix/canonical
 
-# TODO: Set up Mercurial
+# TODO: Set up Mercurial (if anyone still uses it)
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -538,7 +548,7 @@ if [ -r '/etc/bash_completion' ]; then
     # Import bash completions for darcs
     # Seems to have a few issues though re normal tab file-completion...
     ### bash-completion is severely broken!!
-    #[ -r '.darcs_completion' ] && source '.darcs_completion'
+    #[ -r '.darcs_completion' ] && source '.completion/darcs'
 fi
 
 
@@ -593,26 +603,21 @@ case "${_uname}" in
 esac
 
 alias l='ls -CF'          # no `ls-F` in bash
-alias ll='ls -l'
-alias lh='ls -lh'         # human-readable file sizes
+alias ll='ls -lh'         # default to human-readable file sizes
 alias la='ls -A'
-alias lla='ls -Al'
-alias lha='ls -Alh'
+alias lla='ls -Alh'
 
 # List *only* the dot files
 #     excluding . and .. like -A
 #     and dropping the directory name from the listing like usual `ls`.
 # BUG: can't pass extra flags like you can for the aliases
 # BUG: if the directory doesn't exist then `cd` complains instead of `ls`
+# N.B., proper `sh` doesn't like these function names. Only Bash allows them.
 function l.() {
     if [ "$1" == '' ] ; then d='.' ; else d="$1" ; fi
     ( cd $d && ls -d .[^.]* )
 }
 function ll.() {
-    if [ "$1" == '' ] ; then d='.' ; else d="$1" ; fi
-    ( cd $d && ls -dl .[^.]* )
-}
-function lh.() {
     if [ "$1" == '' ] ; then d='.' ; else d="$1" ; fi
     ( cd $d && ls -dlh .[^.]* )
 }
@@ -775,12 +780,6 @@ if [ "${_localhost}" = 'ereshkigal' ]; then
     alias motoko='su motoko'
     alias root="su motoko -c 'sudo su'"
 
-    # This is fairly dumb (e.g., doesn't check for previous agent),
-    # but it's smart enough to get by for now
-    # TODO: make it smarter
-    # TODO: update this stuff to work with `gcert` on google machines
-    alias agent="ssh-agent > ~/.ssh/agent ; source ~/.ssh/agent ; ssh-add ~/.ssh/{id_dsa,id_rsa}"
-
     # Move something to the trash (rather than unlinking)
     function del() { mv "$@" ~/.Trash ; }
 
@@ -798,9 +797,7 @@ fi
 # TODO: should we use the -delete flag insted of -exec?
 alias rm-ds-store='find . -name .DS_Store -exec rm {} \;'
 
-# Get seconds since epoch (:= sse)
-alias perltime='perl -e'\''print time, "\n"'\'
-
+# TODO: just learn to use dc & bc already
 # A simple but powerful commandline calculator (the POSIX is for floor, ceil, log10)
 alias pcalc='perl -W -Mstrict -MPOSIX -e'\''use vars qw($val);
 sub log2 { my($x)=@_; return (log $x)/(log 2) };
@@ -824,7 +821,7 @@ shopt -s checkwinsize
 export HISTCONTROL=ignoredups
 
 # Colon-seperated patterns to not store in histfile
-export HISTIGNORE='ls:ll:lh:la:lla:lha:l.:ll.:lh.:l:cl:cll:q:x:cd:ghci'
+export HISTIGNORE='ls:l:ll:la:lla:l.:ll.:cl:cll:q:x:cd:ghci'
 
 # Colon-seperated dirs where `cd` manoeuvres from
 #export CDPATH='.:~'
@@ -857,7 +854,7 @@ case "${TERM}" in
         ;;
 esac
 
-# from Marc Liyanage, http://www.entropy.ch:16080/software/macosx/docs/customization/
+# from Marc Liyanage <http://www.entropy.ch:16080/software/macosx/docs/customization/>
 # tcsh method for the curious
 #setenv SHORTHOST `echo -n $HOST | sed -e 's%\..*%%'`
 #alias precmd 'printf "\033]0;%s @ $SHORTHOST\007" "${cwd}" | sed -e "s%$HOME%~%"'

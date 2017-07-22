@@ -44,6 +44,8 @@
 #    ff = only
 [merge]
     ff = only
+    # Print conflicts with the original as well as "ours" and "theirs"
+    #conflictstyle = diff3
 # I don't actually like this exact setup, but the fact that we can
 # do things like this is good to bear in mind, in case I come up with a
 # particular command/flow that does capture my workflow.
@@ -136,6 +138,7 @@
     untracked = cyan
     #unmerged =
 
+# TODO: add a [pretty] stanza? <https://github.com/ddopson/dotfiles/blob/master/.gitconfig>
 
 # There are ways of making 'pull --rebase' the default, but it seems
 # to take a non-trivial amount of work; so I'm just using an alias
@@ -155,6 +158,8 @@
 # For more alias ideas, see:
 # <http://noamlewis.wordpress.com/2012/05/21/my-git-aliases/>
 # <http://durdn.com/blog/2012/11/22/must-have-git-aliases-advanced-examples/>
+# And try the versus & frb aliases from:
+# <https://github.com/ddopson/dotfiles/blob/master/.gitconfig>
 [alias]
     hw    = help --web
     # For more details on the files affected, try adding: --stat,
@@ -185,7 +190,7 @@
     # --stat etc introduces an additional blank line (with the
     # vertical bar from the --graph) before it prints the stats;
     # unline --oneline and hence lol.
-    lola  = log --color --graph --pretty=tformat:'%C(auto)%h%Creset %Cgreen(%cr)%Creset %C(blue)<%aN>%Creset%C(auto)%d%Creset %s'
+    lola  = log --color --graph --pretty=tformat:'%C(auto)%h%Creset %Cgreen(%cr)%Creset %Cblue<%aN>%Creset%C(auto)%d%Creset %s'
     # This one also shows stashes and abandoned branches/heads
     rofl  = "!git lol $(git rev-list -g --all)"
     # Show more details of the most recent patch:
@@ -199,6 +204,7 @@
     ca    = commit --all
     # N.B., we do *not* pass the --all flag here! Instead we use --patch
     # to selectively choose changes.
+    # TODO: do we want to add the --no-edit flag?
     amend = commit --amend --patch
     # We use "oo" rather than the standard "co" to avoid typo issues vs "ci".
     oo    = checkout
@@ -227,17 +233,6 @@
     # In all cases, you can give a specific file name instead of '.'
     # <http://stackoverflow.com/q/52704/358069>
     revert-all = checkout -- .
-    # HT <https://stackoverflow.com/a/5719854>
-    # TODO: have a flag or something to desice whether to push the tags
-    # or not (since all my Google stuff where I use them is entirely
-    # local; also since the git ideology is to never delete remote
-    # stuffs...) See also: <https://stackoverflow.com/a/24245862>
-    rename-tag = "!f(){ \
-        old=\"refs/tags/$1\" ; \
-        new=\"$2\" ; \
-        git tag \"$new\" \"$old\" && \
-        git tag -d \"$old\" ; \
-        }; f"
     # BUG: the second argument to `checkout -b` should be the
     # *remote* branch it tracks... I think. In any case, just passing
     # the second argument isn't enough to cause the new local-branch
@@ -264,16 +259,18 @@
     # (N.B., for-each-ref doesn't support --color nor %cr)
     # What fields are supported: <http://stackoverflow.com/a/21868228>
     # HT: <https://gist.github.com/mwhite/6887990>
-    # TODO: finish combining this into my git-bv script.
-    lm = "for-each-ref \
+    # TODO: is there a way to combine this info with the "mb" and "bv" info?
+    # TODO: is there any way to color this like we do for the others?
+    lm = "!git for-each-ref \
         --sort='-authordate' \
-        --format='%(authordate:short)%09%(objectname:short)%09%(refname:short)' \
-        refs/heads"
+        --format='%(authordate:short)%09%(objectname:short)%09%(refname)' \
+        refs/heads | sed -e 's@refs/heads/@@'"
     # Show the most recent tag
     lt = describe --tags --abbrev=0
     # List the modification date of files in the current directory (in order of file name).
     # BUG: there's some kind of typo here re the quoting. What's wrong?
     #lslm = "!git ls-tree -z --name-only HEAD | xargs -0 -n1 -I{} -- git log -1 --format='%aI {}' {} | sed -re 's/^([^T]+)T\S+(.*)/\1\2/'"
+    bv = branch -vv
     # HT: <https://gist.github.com/pksunkara/988716>
     whois = "!sh -c 'git log -i -1 --pretty=\"format:%an <%ae>%n\" --author=\"$1\"' -"
     # HT: <https://gist.github.com/mwhite/6887990>
@@ -290,7 +287,6 @@
     # TODO: how to guard these so they don't break on my other systems?
     # N.B., `git map` comes from the same place as `git map-branches`
     # (I think), so it's also Chromium-specific.
-    # TODO: finish combining "mb" into my git-bv script.
     mb = map-branches
     ru = rebase-update
 

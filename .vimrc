@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" wren gayle romano's vim config                    ~ 2017.07.20
+" wren gayle romano's vim config                    ~ 2017.07.21
 "
 " For guidance, see ~/.vim/README
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -444,13 +444,13 @@ set norelativenumber
 set number
 
 " TODO: change these from TomorrowNightBright?
-" (e.g., ctermfg=237 is a bit too dark on Ereshkigal)
+" (e.g., LineNr's ctermfg=237 is a bit too dark on Ereshkigal)
 "highlight CursorLineNr term=bold      ctermfg=11 gui=bold guifg=Yellow
-"highlight LineNr       term=underline ctermfg=237         guifg=#424242
+highlight LineNr        ctermfg=240 guifg=#424242
 
-" TODO: use <SID> nonsense? <http://vimdoc.sourceforge.net/htmldoc/map.html#<SID>>
 " HT: <https://github.com/alialliallie/vimfiles/blob/master/vimrc>
-function! ToggleNumber()
+nnoremap <silent> <C-n> :call <SID>ToggleNumber()<CR>
+function! <SID>ToggleNumber()
     if &relativenumber == 1
         set norelativenumber
         set number
@@ -463,8 +463,6 @@ function! ToggleNumber()
         endif
     endif
 endfun
-" TODO: use <leader> instead of <C>?
-nnoremap <C-n> :call ToggleNumber()<CR>
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -487,7 +485,8 @@ if exists('+colorcolumn')
         \ guifg=#ffffff guibg=#e5786d gui=bold
 else
     " This was suggested by my source for this trick, but dunno if
-    " I really want it or not... (the bang clears all the previous autocmd's (in the same augroup))
+    " I really want it or not... (the bang clears all the previous
+    " autocmd's (in the same augroup))
     "if has('autocmd')
     "    autocmd! BufEnter <buffer> match ColorColumn /\%81v./
     "endif
@@ -536,6 +535,7 @@ set history=100                  " size of command and search history
 "set undolevels=1000             " depth of undo tree
 
 " HT: <https://superuser.com/a/433998>, <https://superuser.com/a/264067>
+command -nargs=0 ClearUndoHistory call <SID>ClearUndoHistory()
 function! <SID>ClearUndoHistory()
     let my_ul = &ul
     set ul=-1
@@ -549,7 +549,6 @@ function! <SID>ClearUndoHistory()
     let &ul=my_ul
     unlet my_ul
 endfun
-command -nargs=0 ClearUndoHistory call <SID>ClearUndoHistory()
 
 " The following line has some sort of typo about '<' for vim-6.2
 set viminfo='20,<100,s100,\"100
@@ -635,7 +634,8 @@ set nolist             " Disable &list because it invalidates &linebreak
 "     <http://vi.stackexchange.com/a/1985>
 "     <http://stackoverflow.com/a/2312888/358069>
 "     <http://stackoverflow.com/a/23326474/358069>
-function! DisableHardWrapping()
+command -nargs=0 DisableHardWrapping call <SID>DisableHardWrapping()
+function! <SID>DisableHardWrapping()
     set textwidth=0 wrapmargin=0 " can't hard-wrap at column zero, ha!
     " Must remove each one individually, because -= is string-based.
     set formatoptions-=t
@@ -644,7 +644,7 @@ function! DisableHardWrapping()
     set formatoptions+=l
     set formatoptions+=1
 endfun
-call DisableHardWrapping()
+DisableHardWrapping
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -699,7 +699,7 @@ if (v:version > 700) && has('spell')
     " Toggle highlighting spelling errors (for local buffer only).
     " (N.B., this is how you spell <ctrl-space>. Also, we can't
     " use <C-s> because the terminal steals that to mean "stop output")
-    nnoremap <C-@> :setlocal spell!<CR>
+    nnoremap <silent> <C-@> :setlocal spell!<CR>
     " BUG: we need to have spell enabled in order to use `[s`, `]s`,
     " etc. Is there a way to enable it and instead just toggle whether
     " they're highlighted or not? Also, should have highlighting the
@@ -734,7 +734,8 @@ endif
 " TODO: actually make this toggle!
 " BUG: these patterns don't seem to work everywhere (e.g., inside
 " `function!` itself; though it works just fine inside `if`)
-function! ToggleHighlightSpaces()
+command -nargs=0 ToggleHighlightSpaces call <SID>ToggleHighlightSpaces()
+function! <SID>ToggleHighlightSpaces()
     " TODO: should prolly guard this one based on how &expandtab is set.
     syntax match hardTab display "\t"
     highlight link hardTab Error
@@ -850,7 +851,7 @@ set splitbelow           " When splitting horizontally, split below
 " The thing `g@` uses.
 "set operatorfunc=
 
-" The thing the <S-k> key command uses.
+" The thing the <S-k> key command uses. (If  blank/empty, then uses `:help`)
 "set keywordprg=man\ -s
 
 " The thing `:grep` uses.
@@ -905,8 +906,7 @@ noremap <Leader>p :set paste<CR>:put  *<CR>:set nopaste<CR>
 " ~~~~~ OSX nonsense
 
 " Switch between buffers ala tabs in Safari (and other OSX)
-" This is based off <http://vim.wikia.com/wiki/Easier_buffer_switching>, but
-" I'm not entirely sure what the <silent> stuff does...
+" This is based off <http://vim.wikia.com/wiki/Easier_buffer_switching>
 " BUG: alas this won't work because apparently terminals can't
 " distinguish <Tab> and <C-Tab> since terminals think <Tab> is
 " identical to <C-i> for legacy reasons. It can only work in gVim...
@@ -957,6 +957,18 @@ if has('autocmd')
         autocmd BufNewFile,BufRead *.agda :set ft=haskell
     augroup END
 endif
+
+
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+" ~~~~~ Movement
+
+" More gental scrolling with Shift-up/down
+map  <S-Up>   10k10<C-Y>zz
+imap <S-Up>   <ESC>10k10<C-Y>zzi
+map  <S-Down> 10j10<C-E>zz
+imap <S-Down> <ESC>10j10<C-E>zzi
+map  <C-Up>   <C-u>M
+map  <C-Down> <C-d>M
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
