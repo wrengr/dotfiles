@@ -1,28 +1,46 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# This is wren gayle romano's GNU Screen config     ~ 2016.11.15
+# wren gayle romano's GNU Screen config             ~ 2017.07.21
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# <https://www.gnu.org/software/screen/manual/html_node/String-Escapes.html>
+# <http://aperiodic.net/screen/truncation_padding_escapes>
+# N.B., Despite what documentation says, %S does *not* give the session name!
+# cf., <https://stackoverflow.com/q/2479683>, <https://superuser.com/a/212520>
 
 # ~~~~~ Basic Config
-defmonitor on            # monitor activity on all windows
-autodetach on            # autodetach screen on hangup (saves running programs)
-shell $SHELL             # use my default shell (-$SHELL is a login shell)
-defscrollback 1500
+defutf8 on             # Enable UTF-8 *windows* (Use `-U` to enable for *displays* too)
+defmonitor on          # Monitor activity on all windows (toggle with `<C-a>M`)
+autodetach on          # Detach screen on hangup (saves running programs)
+startup_message off    # Disable copyright & silly warning splash screen
+shell $SHELL           # The shell to use (prepend `-` to make it a login-shell)
+#shelltitle $SHELL     # The default %t when creating new shell windows.
+#term "screen"         # What to initialize TERM to (`-T vt100`)
 
-# ~~~~~ Display Config
-activity "Activity on %" # show "Activity on <windownumber>"
-nethack on               # show "nethack-style" screen messages
-defutf8 on               # Enable UTF-8
+# ~~~~~ History &c.
+defscrollback 1500     # (`-h 1500`)
+#deflog on             # Enable logging for all new windows by default
+#logfile $HOME/.screen-logs/%Y%m%d-%n.log
+#logfile flush 10      # How many seconds to wait before flushing to filesystem
+#logtstamp [on|off]    # Enable writing timestamps every N seconds
+#logtstamp after 120   # How often to timestamp
+#logtstamp string "-- %n:%t -- time-stamp -- %M/%d/%y %c:%s --\n"
 
-# Always show this caption string as footer.
-# 1) show window number, 2) title if it exists
-# show 3) system load 4) 'hardstatus of window' if available
-# show 5) HH:MM 6) DAY date MONTH
-#               (1) (2)   (3)       (4)     (5)  (6)
-caption always "%3n %t%? %H: %l  %h%?     %0c  %D %d %M"
+# ~~~~~ Caption, Messages, &c.
+# The %t defaults to whatever program you started initially. To
+# change it, either: `-t whatever` or `<C-a>:title "whatever"`
+caption always "  %H:%3n %t%? [%h]%?%=<%l>    %M %d (%D) %0c  "
+#activity "Activity on %n"
+#bell_msg "Bell in window %n"
+#vbell_msg "Wuff, Wuff!!
+nethack on
 
-# Enable 256-colors (HT: <http://robotsrule.us/vim/>)
-attrcolor b ".I"
+# ~~~~~ Enable 256-colors (HT: <http://robotsrule.us/vim/>)
+# TODO: see also <http://taint.org/wk/RemoteLoginAutoScreen>
+#       and <http://www4.informatik.uni-erlangen.de/~jnweiger/screen-faq.html>
+attrcolor b ".I"       # Remap 'bold' to use "high-intensity background color"
 termcapinfo xterm 'Co#256:AB=\E[48;5;%dm:AF=\E38;5;%dm'
-defbce "on"
+defbce "on"            # Turn BCE (background color erase) on by default
 
 # ~~~~~ Keybindings
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ fin.
