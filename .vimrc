@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" wren gayle romano's vim config                    ~ 2017.07.21
+" wren gayle romano's vim config                    ~ 2017.07.22
 "
 " For guidance, see ~/.vim/README
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -440,20 +440,25 @@ set cursorline           " highlight the whole line the cursor is on
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Line numbers
-set norelativenumber
-set number
 
-" TODO: change these from TomorrowNightBright?
-" (e.g., LineNr's ctermfg=237 is a bit too dark on Ereshkigal)
-"highlight CursorLineNr term=bold      ctermfg=11 gui=bold guifg=Yellow
-highlight LineNr        ctermfg=240 guifg=#424242
+" Factored out so we can toggle highlight colors easily.
+function! <SID>LineNrStandard()
+    set norelativenumber
+    set number
+    " CursorLineNr is same as TomorrowNightBright
+    highlight CursorLineNr term=bold ctermfg=11 gui=bold guifg=Yellow
+    " LineNr is different, because TomorrowNightBright's ctermfg=237
+    " is a bit too dark on Ereshkigal
+    highlight LineNr ctermfg=240 guifg=#424242
+endfun
+call <SID>LineNrStandard()
+
 
 " HT: <https://github.com/alialliallie/vimfiles/blob/master/vimrc>
-nnoremap <silent> <C-n> :call <SID>ToggleNumber()<CR>
-function! <SID>ToggleNumber()
+nnoremap <silent> <C-n> :call <SID>LineNrToggle()<CR>
+function! <SID>LineNrToggle()
     if &relativenumber == 1
-        set norelativenumber
-        set number
+        call <SID>LineNrStandard()
     else
         set relativenumber
         " Use the new hybrid-mode, if available
@@ -461,6 +466,9 @@ function! <SID>ToggleNumber()
         if v:version >= 704
             set number
         endif
+        " TODO: what's the analogous guifg to go with ctermfg? cf.,
+        " <http://vim.wikia.com/wiki/Xterm256_color_names_for_console_Vim>
+        highlight LineNr ctermfg=5 guifg=#870087
     endif
 endfun
 
@@ -734,8 +742,8 @@ endif
 " TODO: actually make this toggle!
 " BUG: these patterns don't seem to work everywhere (e.g., inside
 " `function!` itself; though it works just fine inside `if`)
-command -nargs=0 ToggleHighlightSpaces call <SID>ToggleHighlightSpaces()
-function! <SID>ToggleHighlightSpaces()
+command -nargs=0 HighlightSpaces call <SID>HighlightSpaces()
+function! <SID>HighlightSpaces()
     " TODO: should prolly guard this one based on how &expandtab is set.
     syntax match hardTab display "\t"
     highlight link hardTab Error
