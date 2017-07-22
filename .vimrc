@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" This is wren gayle romano's vim config            ~ 2017.07.19
+" wren gayle romano's vim config                    ~ 2017.07.20
 "
 " For guidance, see ~/.vim/README
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -233,6 +233,7 @@ endif
 " and <https://github.com/Xe/dotfiles/blob/master/.vimrc>
 " and <https://github.com/wklken/k-vim/blob/master/vimrc>
 " and <https://github.com/amix/vimrc/blob/master/vimrcs/basic.vim>
+" and <https://github.com/nicdumz/dotfiles/blob/master/.vimrc>
 "Plug 'wellle/targets.vim'
 "Plug 'sheerun/vim-polyglot'
 "Plug 'sjl/vitality.vim'  " for Vim + iTerm2 (+ tmux)
@@ -300,11 +301,13 @@ if has('multi_byte')
     " TODO: It'd be better if we could put this in the gutter, rather
     " than in the first column.
     "let &showbreak = nr2char(8618).' '
+
+    " TODO: what highlight do the &listchars use? How can we change it?
 endif
 
 " Enable &list to visualize invisible characters (<Tab>, nbsp, EOL, etc)
 " The vizualisations are defined in &listchars. N.B., &list is incompatible
-" with &linewrap, and enabling &list will override &linewrap's setting.
+" with &linebreak, and enabling &list will override &linebreak's setting.
 " This highly unexpected behavior has been deemed 'a feature':
 "     <https://groups.google.com/forum/#!topic/comp.editors/blelxLchTPg>
 "set list
@@ -419,6 +422,8 @@ endif
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Cursor
+" N.B., apparently &cursorline causes slowness over ssh. So maybe
+" consider disabling it when working remotely.
 set cursorline           " highlight the whole line the cursor is on
 "set cursorcolumn        " highlight the whole column the cursor is on
 
@@ -427,6 +432,10 @@ set cursorline           " highlight the whole line the cursor is on
 "highlight CursorLine   term=underline ctermbg=234 guibg=#2a2a2a
 "highlight CursorColumn term=reverse   ctermbg=234 guibg=#2a2a2a
 "highlight Cursor ...
+
+" TODO: something fancy like <http://vim.wikia.com/wiki/Configuring_the_cursor>.
+" N.B., setting &t_SI and &t_EI tends to cause the cursor to glitch out
+" (using <C-l> fixes it). And it's highly terminal-dependent, so...
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -453,7 +462,7 @@ function! ToggleNumber()
             set number
         endif
     endif
-endfunc
+endfun
 " TODO: use <leader> instead of <C>?
 nnoremap <C-n> :call ToggleNumber()<CR>
 
@@ -524,7 +533,24 @@ set laststatus=2         " Always show statusline, even if there're no splits
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ History, backups, & stupidity
 set history=100                  " size of command and search history
-"set undolevels=1000
+"set undolevels=1000             " depth of undo tree
+
+" HT: <https://superuser.com/a/433998>, <https://superuser.com/a/264067>
+function! <SID>ClearUndoHistory()
+    let my_ul = &ul
+    set ul=-1
+    " Dunno how this exe line is supposed to work, but it ends up marking
+    " the buffer as dirty...
+    "exe "normal a \<BS>\<Esc>"
+    " So for now we prefer `:edit!`, though that has the effect of doing <z><z>
+    edit!
+    " Must use `let` here so the change is global/exported; whereas
+    " `set` would only change it locally to this script/function.
+    let &ul=my_ul
+    unlet my_ul
+endfun
+command -nargs=0 ClearUndoHistory call <SID>ClearUndoHistory()
+
 " The following line has some sort of typo about '<' for vim-6.2
 set viminfo='20,<100,s100,\"100
 "           |   |    |    |
@@ -577,11 +603,10 @@ endif
 " Supposedly we can use this to make it so that (shift-)tab in
 " visual mode will un/indent the selection. However,
 " (1) it doesn't seem to work; besides,
-" (2) we never use visual mode, and
-" (3) we can already use > and < like we do all the time in normal mode,
+" (2) we can already use > and < like we do all the time in normal mode,
 "     <http://vimdoc.sourceforge.net/htmldoc/visual.html#visual-operators>
-" so why even bother? If we ever do want to start using visual mode, see:
-"     <http://usevim.com/2012/05/11/visual/>
+" so why even bother?
+" TODO: see, <http://usevim.com/2012/05/11/visual/>
 " Also, looks like in inser mode we can use <C-d> and <C-t> to un/indent...
 "     <http://vim.wikia.com/wiki/Avoid_the_escape_key>
 "vmap <Tab> <C-T>
@@ -595,6 +620,7 @@ set linebreak          " (lbr) Only break lines at characters in &breakat;
                        " i.e., not in the middle of words.
                        " N.B., the default &breakat contains a space.
 "set breakat=" ^I!@*-+;:,./?"
+"set breakindent       " Visually indent when soft wrapping lines.
 set nolist             " Disable &list because it invalidates &linebreak
     " This behavior is deemed to be 'a feature':
     " <https://groups.google.com/forum/#!topic/comp.editors/blelxLchTPg>
@@ -617,7 +643,7 @@ function! DisableHardWrapping()
     set formatoptions-=a
     set formatoptions+=l
     set formatoptions+=1
-endfunc
+endfun
 call DisableHardWrapping()
 
 
@@ -674,6 +700,11 @@ if (v:version > 700) && has('spell')
     " (N.B., this is how you spell <ctrl-space>. Also, we can't
     " use <C-s> because the terminal steals that to mean "stop output")
     nnoremap <C-@> :setlocal spell!<CR>
+    " BUG: we need to have spell enabled in order to use `[s`, `]s`,
+    " etc. Is there a way to enable it and instead just toggle whether
+    " they're highlighted or not? Also, should have highlighting the
+    " errors turn off cursorline/cursorcolumn, since those override the
+    " spell highlighting in an obnoxious way.
 
     " TODO: try this idea from <http://stackoverflow.com/a/5041384/358069>
     "if has('autocmd')
@@ -714,7 +745,7 @@ function! ToggleHighlightSpaces()
     " The \ze ends the match, so that only the spaces are highlighted.
     syntax match spaceBeforeTab display " \+\ze\t"
     highlight link spaceBeforeTab Error
-endfunc
+endfun
 
 " I forget where I got this cursor resetting stuff from, but a
 " different variant is at <https://dougblack.io/words/a-good-vimrc.html>
@@ -816,6 +847,9 @@ set splitbelow           " When splitting horizontally, split below
 "set formatexpr=
 "set formatprg=
 
+" The thing `g@` uses.
+"set operatorfunc=
+
 " The thing the <S-k> key command uses.
 "set keywordprg=man\ -s
 
@@ -823,6 +857,7 @@ set splitbelow           " When splitting horizontally, split below
 "set grepprg=grep\ -nHr\ $*
 " TODO: cf., <https://robots.thoughtbot.com/faster-grepping-in-vim>,
 " the comment to <https://stackoverflow.com/a/4889864/358069>
+" TODO: try <https://github.com/BurntSushi/ripgrep> maybe?
 
 " The thing `:make` uses.
 "set makeprg=make
@@ -892,6 +927,8 @@ noremap <Leader>p :set paste<CR>:put  *<CR>:set nopaste<CR>
 " BUG: this doesn't seem to be working either :(
 "nnoremap <C-s> :w<CR>
 "inoremap <C-s> <ESC>:w<CR>
+" TODO: try using <D-...> which is the OSX command/apple key. (Alas,
+" that doesn't seem to work either...)
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1018,7 +1055,7 @@ endif
 "    set noshowcmd
 "    set scrolloff=999
 "    Limelight
-"endfunction
+"endfun
 "
 " TODO: how to ensure we keep this up to date with the values we
 " set above for our defaults?
@@ -1026,7 +1063,7 @@ endif
 "    set showcmd
 "    set scrolloff=5
 "    Limelight!
-"endfunction
+"endfun
 "
 "autocmd! User GoyoEnter nested call <SID>goyo_enter()
 "autocmd! User GoyoLeave nested call <SID>goyo_leave()
@@ -1056,12 +1093,12 @@ map =jd :.,+1!~/.vim/macro_jd.pl
 "   execute "normal {j^YP"
 "   execute (".!ghc -XNoMonomorphismRestriction -w % -e \":t " . expand("<cword>") . "\"")
 "   redraw!
-"endfunction
+"endfun
 "
 "function Haskell()
 "   map <buffer> <silent> tt :call HaskellType()<CR>
 "   " more haskell stuff here
-"endfunction
+"endfun
 "
 "autocmd BufRead,BufNewFile *.{ag,hs,lhs,ghs} call Haskell()
 "
@@ -1082,7 +1119,7 @@ map =jd :.,+1!~/.vim/macro_jd.pl
 "   endif
 "   execute 'setlocal makeprg=' . g:ghc . '\ ' . escape(b:ghc_staticoptions,' ') .'\ -e\ :q\ %'
 "   let b:my_changedtick -=1
-"endfunction
+"endfun
 "
 "autocmd BufEnter *.hs,*.lhs :call SetToCabalBuild()
 
