@@ -1,4 +1,4 @@
-# This is wren gayle romano's bash login script     ~ 2017.05.28
+# wren gayle romano's bash login script             ~ 2017.07.21
 #
 # It's fairly generic (with weirder things at the bottom),
 # but it's designed to be usable for all my accounts with no(!)
@@ -543,24 +543,7 @@ fi
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# ~~~~~ Server variables
-
-case "${_localhost}" in
-    ereshkigal)
-        elsamelys='zaurus@192.168.129.201'
-        banks='wren@cl.indiana.edu'
-        # TODO: We should switch this one to wrengr, like everything else.
-        miller='wrnthorn@nlp.indiana.edu'
-        # TODO: does sourceforge stuff even still work?
-        #sourceforge='winterkoninkje@shell.sourceforge.net'
-        #pbwdm_sfsite="${sourceforge}:/home/users/w/wi/winterkoninkje/pbwdm/htdocs"
-        haskell_community='wren@community.haskell.org'
-    ;;
-    google)
-        google_workstation='wrengr@wrengr0.mtv.corp.google.com'
-        ciruela='wrengr@ciruela.mtv.corp.google.com'
-    ;;
-esac
+# No longer setting variables for various servers; instead see ~/.ssh/config
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
