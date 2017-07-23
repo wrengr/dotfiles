@@ -454,6 +454,8 @@ endfun
 call <SID>LineNrStandard()
 
 
+" BUG: when editing git commit messages, <C-n> gets overridden by
+" some sort of autocomplete thing...
 " HT: <https://github.com/alialliallie/vimfiles/blob/master/vimrc>
 nnoremap <silent> <C-n> :call <SID>LineNrToggle()<CR>
 function! <SID>LineNrToggle()

@@ -126,9 +126,8 @@ fi
 
 # N.B. some `su`s don't reset $USER properly without `-` or `-l`,
 # and `who` vs `whoami` vs `id` can return different things in the
-# same way. Using `su -` *should* rectify this
-
-# And some places (drkatz, sting,...) unset $USER with `su -` ::sigh::
+# same way. Using `su -` *should* rectify this, but some places
+# (e.g., drkatz, sting,...) *unset* $USER when using `su -` ::sigh::
 if [ "X${USER}" = 'X' ]; then
     # Even if I'm not root, I should still be alarmed
     export USER='UNKNOWN'
@@ -243,8 +242,9 @@ if [ "${_localhost}" = 'ereshkigal' ]; then
     if [ -r $_agent_file ]; then
         # We don't need the -e if we're passing the PID directly.
         # N.B., passing -e or -U (or -u?) overrides the -p flag.
+        # TODO: why did I use perl's BEGIN/END, instead of just printing it out when we hit it?
         if ps -co pid,user,command -p `
-                cat .ssh/agent |
+                cat $_agent_file |
                 perl -nle '
                     BEGIN {$pid = 0;}
                     $pid = $1 if m/^SSH_AGENT_PID=(\d+)/;
@@ -315,6 +315,11 @@ if [ "${_localhost}" = 'ereshkigal' ]; then
     export LD_LIBRARY_PATH
 fi
 
+# N.B., Fink has GNU tar, which doesn't play nicely with the BSD
+# tar that ships with OSX. As written /sw/bin trumps /usr/bin. If
+# we actually care about having access to both of them, we should
+# do some sort of symlink or alias thing to select the one we mean/want.
+
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ Set up paths
@@ -339,6 +344,7 @@ case "${_localhost}" in
             _push PATH    "$JAVA_HOME/bin"
             _push MANPATH "$JAVA_HOME/man"
         fi
+        unset _JAVA_HOME
 
         MAPLE_HOME='/Library/Frameworks/Maple.framework/Versions/2015'
         if [ -x "$MAPLE_HOME" ]; then
@@ -559,17 +565,11 @@ fi
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ `ls` aliases
 
-# Apparently Bash>=4.0 adds a new ";&" thing for allowing fallthrough.
-# That'd help us DRY for Darwin vs FreeBSD, but it isn't portable
-# to systems with older versions of Bash.
 case "${_uname}" in
-    Darwin)
+    Darwin | FreeBSD)
         alias ls='ls -G' # turn on color
         alias lv='ls -v' # unicode. opposite is -q (=default)
-    ;;
-    FreeBSD)
-        alias ls='ls -G'
-        # TODO: does 'ls -v' work here too?
+        # TODO: does -v actually work on FreeBSD? or just on OSX?
     ;;
     Linux)
         # This should work for all GNU-using systems (e.g., Debian
@@ -579,26 +579,6 @@ case "${_uname}" in
         # existing. Can use the _exists function defined below.
         eval `dircolors -b`
         alias ls='ls --color=auto'
-    ;;
-    SunOS)
-        # Color ls doesn't exist on Solaris, unless we install/use GNU
-        case "${_localhost}" in
-        psu)
-            # drkatz and walt are "special" and lack `dircolors`
-            [ -x /pkgs/gnu/bin/dircolors ] &&
-                eval `/pkgs/gnu/bin/dircolors -b`
-
-            # `ls` is a symlink to `gls` on drkatz, real elsewhere
-            # `gls` is used on drkatz, walt, chandra($cat_solaris)...
-            if [ -x /pkgs/gnu/bin/ls ]; then
-                alias ls='/pkgs/gnu/bin/ls  --color=auto'
-            elif [ -x /pkgs/gnu/bin/gls ]; then
-                alias ls='/pkgs/gnu/bin/gls --color=auto'
-            # This is for Chandra ($cat_solaris)
-            elif [ -x /opt/csw/bin/gls ]; then
-                alias ls='/opt/csw/bin/gls  --color=auto'
-            fi
-        esac
     ;;
 esac
 
@@ -627,6 +607,8 @@ function ll.() {
 # ~~~~~ Other basic aliases
 
 alias grep='grep --color'
+alias egrep='egrep --color=auto'
+alias fgrep='fgrep --color=auto'
 
 case "${_localhost}" in
     ereshkigal | miller | banks )
@@ -634,7 +616,10 @@ case "${_localhost}" in
         alias ldd='otool -L'
     ;;
     elsamelys | UNKNOWN )
-        unalias grep # stupid grep, no color
+        # stupid grep, no color
+        unalias grep
+        unalias egrep
+        unalias fgrep
     ;;
     google )
         case "${_uname}" in
@@ -650,18 +635,6 @@ case "${_localhost}" in
                 # for `blaze build` and `blaze test` would to similar
                 # if we have aliases. N.B., that explodes if we haven't
                 # run `prodaccess` recently enough.
-            ;;
-        esac
-    ;;
-    psu)
-        case "${_uname}" in
-            SunOS)
-                [ "${USER}" = 'wren' ] &&
-                    alias prolog='sicstus' # for cs.pdx.edu only
-
-                unalias grep # stupid grep, no color
-                [ -e /pkgs/gnu/bin/grep ] && # try gnu for color
-                    alias grep='/pkgs/gnu/bin/grep --color'
             ;;
         esac
     ;;
@@ -695,6 +668,7 @@ alias fmt='fmt -l 0 -t 4' # Turn off space2tab conversion and set tabstop=4
 
 alias rd='rmdir'
 alias md='mkdir'
+
 # HACK: trying to work around `clear` not behaving properly on
 # Ubuntu/gnome-terminal. This is a gross hack because whenever we
 # ssh into somewhere, the version of `cl` there is going to be based
@@ -794,7 +768,8 @@ if [ "${_localhost}" = 'ereshkigal' ]; then
 fi
 
 # Remove .DS_Store items in this folder and subfolders
-# TODO: should we use the -delete flag insted of -exec?
+# Re using -delete vs -exec: <https://unix.stackexchange.com/a/167824>,
+# <https://unix.stackexchange.com/a/194348>
 alias rm-ds-store='find . -name .DS_Store -exec rm {} \;'
 
 # TODO: just learn to use dc & bc already
