@@ -134,6 +134,7 @@ Plug 'airblade/vim-gitgutter', has('signs') ? {} : { 'on' : [] }
 "Plug 'scrooloose/nerdtree',         { 'on': 'NERDTreeToggle' }
 "Plug 'Xuyuanp/nerdtree-git-plugin', { 'on': 'NERDTreeToggle' }
 "Plug 'justinmk/vim-dirvish'  " An alternative to nerdtree.
+"Plug 'Shougo/vimfiler.vim'   " An alternative to netrw.
 "Plug 'tpope/vim-vinegar'     " Enhancing netrw to obviate nerdtree.
 "Plug 'eiginn/netrw'          " In case we want newer than the built-in version.
 " cf., <https://shapeshed.com/vim-netrw/>
@@ -772,7 +773,7 @@ endif
 " BUG: these patterns don't seem to work everywhere (e.g., inside
 " `function!` itself; though it works just fine inside `if`)
 command -nargs=0 HighlightSpaces call <SID>HighlightSpaces()
-function! <SID>HighlightSpaces()
+function! s:HighlightSpaces()
     " TODO: should prolly guard this one based on how &expandtab is set.
     syntax match hardTab display "\t"
     highlight link hardTab Error
@@ -841,7 +842,7 @@ endif
 "     https://github.com/thoughtbot/dotfiles/blob/master/vimrc
 
 "set lazyredraw          " Don't redraw while running macros, for speed
-"set hidden              " Hide buffers when they are abandoned (see also &bufhidden)
+"set hidden              " Hide buffers when they are abandoned (see also &bufhidden). Cf., <http://items.sjbach.com/319/configuring-vim-right>
 "set autochdir           " Change directory to the file in the current window
 "set nojoinspaces        " No additional spaces when joining lines with <J>
 "set esckeys             " Allow cursor keys within insert mode
@@ -896,6 +897,10 @@ set splitbelow           " When splitting horizontally, split below
 " TODO: cf., <https://robots.thoughtbot.com/faster-grepping-in-vim>,
 " the comment to <https://stackoverflow.com/a/4889864/358069>
 " TODO: try <https://github.com/BurntSushi/ripgrep> maybe?
+"if executable('rg')
+"    set grepprg=rg\ --vimgrep\ --no-heading
+"    set grepformat=%f:%l:%m
+"endif
 
 " The thing `:make` uses.
 "set makeprg=make
@@ -937,6 +942,11 @@ noremap <Leader>p :set paste<CR>:put  *<CR>:set nopaste<CR>
 " INSERT mode yet.)
 " HT: <https://dougblack.io/words/a-good-vimrc.html>
 "nnoremap gV `[v`]
+
+" Auto indent pasted text
+" HT: <https://github.com/victormours/dotfiles/blob/master/vim/vimrc>
+"nnoremap p p=`]<C-o>
+"nnoremap P P=`]<C-o>
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -999,13 +1009,45 @@ endif
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Movement
 
-" More gental scrolling with Shift-up/down
+" Gentler scrolling with Shift-up/down
 map  <S-Up>   10k10<C-Y>zz
 imap <S-Up>   <ESC>10k10<C-Y>zzi
 map  <S-Down> 10j10<C-E>zz
 imap <S-Down> <ESC>10j10<C-E>zzi
 map  <C-Up>   <C-u>M
 map  <C-Down> <C-d>M
+
+
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+" ~~~~~ Buffers, Splits, &c.
+" I hate <Q> switching to ex-mode. Also, I hate that wiping buffers
+" also kills the window it's in. So we remap <Q> to close buffers
+" nicely.
+nnoremap Q :call <SID>BufferDelete()<CR>
+function! s:BufferDelete()
+    if &modified
+        " Not using `echoerr` because that causes a double error
+        " message (the error itself, and the function exiting in
+        " error).
+        echohl ErrorMsg
+        echomsg "E37: No write since last change. Not closing buffer."
+        echohl NONE
+    elseif winnr('$') == 1 " Only one window, so there are no splits to lose.
+        bdelete
+        echo "Buffer deleted."
+    elseif len(filter(range(1, bufnr('$')), 'buflisted(v:val)')) == 1
+        bdelete
+        echo "Buffer deleted. Created new buffer."
+    else
+        " BUG: if the current buffer is open in multiple windows,
+        " still destroys the split. Supposedly we should be able to
+        " fix that by `windo b#` or the like, but that doesn't quite
+        " work for me... TODO: see <https://stackoverflow.com/a/44950143/358069> or <https://github.com/qpkorr/vim-bufkill> or <https://stackoverflow.com/a/29236158/358069> or <http://vim.wikia.com/wiki/Deleting_a_buffer_without_closing_the_window>
+        bprevious
+        bdelete #
+        echo "Buffer deleted."
+    endif
+endfun
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
