@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" wren gayle romano's vim config                    ~ 2017.07.22
+" wren gayle romano's vim config                    ~ 2017.07.24
 "
 " For guidance, see ~/.vim/README
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -89,6 +89,7 @@ Plug 'chriskempson/tomorrow-theme'
 Plug 'junegunn/limelight.vim', { 'on':  'Limelight' }
 
 "Plug 'scrooloose/syntastic'
+"Plug 'luochen1990/rainbow'
 
 
 " ~~~~~ Tabline & Statusline (just the basics; see also Buffers & Tabs)
@@ -132,18 +133,42 @@ Plug 'airblade/vim-gitgutter', has('signs') ? {} : { 'on' : [] }
 " ~~~~~ File-tree browsing
 "Plug 'scrooloose/nerdtree',         { 'on': 'NERDTreeToggle' }
 "Plug 'Xuyuanp/nerdtree-git-plugin', { 'on': 'NERDTreeToggle' }
-"Plug 'justinmk/vim-dirvish' " an alternative to nerdtree
-"Plug 'wincent/command-t'
-"Plug 'eiginn/netrw'         " Nice file browsing with -
-"let g:netrw_altfile = 1
-"Plug 'tpope/vim-vinegar'
+"Plug 'justinmk/vim-dirvish'  " An alternative to nerdtree.
+"Plug 'tpope/vim-vinegar'     " Enhancing netrw to obviate nerdtree.
+"Plug 'eiginn/netrw'          " In case we want newer than the built-in version.
+" cf., <https://shapeshed.com/vim-netrw/>
+let g:netrw_altfile      = 1  " 1= Make <C-^> return to the last-edited file.
+let g:netrw_banner       = 0  " 0= hide the banner. (Toggle with <I>)
+let g:netrw_liststyle    = 2  " 2= `ls -CF` style.  (Toggle with <i>)
+let g:netrw_browse_split = 4  " Which window/split to open files into.
+let g:netrw_winsize      = 25 " a percentage of the available extent.
+let g:netrw_altv         = 1  " a~la &splitright or not
+let g:netrw_list_hide    = '\(^\|\s\s\)\zs\.\S\+' " Toggle hiddenness with <gh>
+" TODO: if we don't use vinegar, then should copy-paste the stuff
+" for using 'suffixes' in lieu of the default strange C-oriented
+" sorting. Also for enhancing the hidden files based on 'wildignore'.
+" I do dislike vinegar's nmap for <->; would rather use <Q> or something
+" else I don't use. (I mean the <-> mapping that applies to all
+" buffers; not the local one inside the netrw window, that one's
+" fine.)
+"
+" Also, apparently netrw is extremely buggy (especially the tree-view); so that's the main reason to wantto go for something else <https://www.reddit.com/r/vim/comments/22ztqp/why_does_nerdtree_exist_whats_wrong_with_netrw/cgs4aax/>
+"
+"augroup wrengrvinegar
+"autocmd!
+" The `:bp\|` part is so it doesn't kill the window it's in when it closes.
+"autocmd FileType netrw
+"    \  nnoremap <buffer> q :bp\|bd #<CR>
+"    \| nnoremap <buffer> ~ :edit ~/<CR>
+"augroup END
 
 
 " ~~~~~ Searching
 "Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 "Plug 'Shougo/unite.vim'
 "Plug 'ctrlpvim/ctrlp.vim'
-"Plug 'rking/ag.vim'              " Lightning fast :Ag searcher
+"Plug 'wincent/command-t'
+"Plug 'rking/ag.vim'              " use :Ag instead of :grep
 "Plug 'vim-scripts/IndexedSearch'
 "Plug 'vim-scripts/SmartCase'
 "Plug 'vim-scripts/gitignore'
@@ -204,6 +229,8 @@ endif
 "Plug 'godlygeek/tabular' | Plug 'plasticboy/vim-markdown', { 'for': 'markdown' }
 " <https://stackoverflow.com/questions/10964681/enabling-markdown-highlighting-in-vim>
 "Plug 'tpope/vim-markdown', { 'for': 'markdown' }
+"Plug 'plasticboy/vim-markdown', { 'for': 'markdown' }
+"Plug 'mzlogin/vim-markdown-toc', { 'for': 'markdown' }
 
 " ~~~~~ Language Support: misc others.
 "Plug 'moll/vim-node', { 'for': 'javascript' }
@@ -242,7 +269,7 @@ endif
 "Plug 'tomtom/tcomment_vim'
 "Plug 'tpope/vim-rsi'
 "Plug 'tpope/vim-endwise'
-"Plug 'tpope/vim-repeat'
+"Plug 'tpope/vim-repeat' " better <.> repetition support
 "Plug 'tpope/vim-sleuth'
 "Plug 'tpope/vim-unimpaired'
 "Plug 'tpope/vim-commentary'
@@ -327,7 +354,7 @@ endif
 " particularly helpful when dealing with ssh+screen, since that
 " seems to cause issues with redrawing.
 " TODO: might consider adding :nohlsearch<CR> before the redraw?
-nnoremap <C-l> :redraw!<CR>
+nnoremap <silent> <C-l> :redraw!<CR>
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -442,7 +469,7 @@ set cursorline           " highlight the whole line the cursor is on
 " ~~~~~ Line numbers
 
 " Factored out so we can toggle highlight colors easily.
-function! <SID>LineNrStandard()
+function! s:LineNrStandard()
     set norelativenumber
     set number
     " CursorLineNr is same as TomorrowNightBright
@@ -458,7 +485,7 @@ call <SID>LineNrStandard()
 " some sort of autocomplete thing...
 " HT: <https://github.com/alialliallie/vimfiles/blob/master/vimrc>
 nnoremap <silent> <C-n> :call <SID>LineNrToggle()<CR>
-function! <SID>LineNrToggle()
+function! s:LineNrToggle()
     if &relativenumber == 1
         call <SID>LineNrStandard()
     else
@@ -546,7 +573,7 @@ set history=100                  " size of command and search history
 
 " HT: <https://superuser.com/a/433998>, <https://superuser.com/a/264067>
 command -nargs=0 ClearUndoHistory call <SID>ClearUndoHistory()
-function! <SID>ClearUndoHistory()
+function! s:ClearUndoHistory()
     let my_ul = &ul
     set ul=-1
     " Dunno how this exe line is supposed to work, but it ends up marking
@@ -645,7 +672,7 @@ set nolist             " Disable &list because it invalidates &linebreak
 "     <http://stackoverflow.com/a/2312888/358069>
 "     <http://stackoverflow.com/a/23326474/358069>
 command -nargs=0 DisableHardWrapping call <SID>DisableHardWrapping()
-function! <SID>DisableHardWrapping()
+function! s:DisableHardWrapping()
     set textwidth=0 wrapmargin=0 " can't hard-wrap at column zero, ha!
     " Must remove each one individually, because -= is string-based.
     set formatoptions-=t
