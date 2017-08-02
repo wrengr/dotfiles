@@ -76,6 +76,12 @@
 [log]
     # abbrevCommit = true
     mailmap = true
+[grep]
+    # Use -n by default.
+    lineNumber = true
+    # "basic" = -G / grep; "extended" = -E / egrep; "fixed" = -F / fgrep;
+    # "perl" = -P / pcre.
+    patternType = extended
 
 
 # TODO: consider also: <http://www.caliban.org/ruby/acoc.shtml>
@@ -139,6 +145,10 @@
     #unmerged =
 
 # TODO: add a [pretty] stanza? <https://github.com/ddopson/dotfiles/blob/master/.gitconfig>
+
+
+# TODO: anything else fun in <https://github.com/tmsanrinsha/dotfiles/blob/master/home/.gitconfig> ?
+
 
 # There are ways of making 'pull --rebase' the default, but it seems
 # to take a non-trivial amount of work; so I'm just using an alias
