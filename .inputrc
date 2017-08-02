@@ -1,14 +1,42 @@
-# Display list for tab-completion with single tab only
-set show-all-if-ambiguous On
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# wren gayle romano's GNU Readline config           ~ 2017.08.01
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# Enable unicode input
+# Enable unicode input and output.
 set meta-flag on
 set input-meta on
 set output-meta on
 set convert-meta off
 
-# Complete symlinked dirs as 'dir/' rather than just 'dir'
+# Make \a visible instead of audible.
+# (Most of our terminals do this already, but just to be sure.)
+set bell-style visible
+
+# Display list for tab-completion with single tab only.
+set show-all-if-ambiguous on
+
+# Make Tab autocomplete regardless of filename case.
+set completion-ignore-case on
+
+# Complete symlinked dirs as 'dir/' rather than just 'dir'.
 set mark-symlinked-directories on
+
+# Be more intelligent when autocompleting by also looking at the text after
+# the cursor. For example, when the current line is "cd ~/src/mozil", and
+# the cursor is on the "z", pressing Tab will not autocomplete it to "cd
+# ~/src/mozillail", but to "cd ~/src/mozilla". (This is supported by the
+# Readline used by Bash 4.)
+# HT: <https://github.com/cypher/dotfiles/blob/master/inputrc>
+set skip-completed-text on
 
 # TODO: play around with this to see if we want it
 # <http://vim.wikia.com/wiki/Use_vi_shortcuts_in_terminal>
+#set editing-mode vi
+
+# TODO: some keybindings for faster movement
+# <https://gist.github.com/gregorynicholas/1812027>
+# <http://ascii-table.com/ansi-escape-sequences.php>
+# <http://ascii-table.com/ansi-escape-sequences-vt-100.php>
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ fin.
