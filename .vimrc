@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" wren gayle romano's vim config                    ~ 2017.07.24
+" wren gayle romano's vim config                    ~ 2017.08.01
 "
 " For guidance, see ~/.vim/README
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -142,8 +142,8 @@ let g:netrw_altfile      = 1  " 1= Make <C-^> return to the last-edited file.
 let g:netrw_banner       = 0  " 0= hide the banner. (Toggle with <I>)
 let g:netrw_liststyle    = 2  " 2= `ls -CF` style.  (Toggle with <i>)
 let g:netrw_browse_split = 4  " Which window/split to open files into.
-let g:netrw_winsize      = 25 " a percentage of the available extent.
-let g:netrw_altv         = 1  " a~la &splitright or not
+let g:netrw_winsize      = 25 " What percent of the available extent to use.
+let g:netrw_altv         = 1  " 1= &splitright
 let g:netrw_list_hide    = '\(^\|\s\s\)\zs\.\S\+' " Toggle hiddenness with <gh>
 " TODO: if we don't use vinegar, then should copy-paste the stuff
 " for using 'suffixes' in lieu of the default strange C-oriented
@@ -649,6 +649,11 @@ endif
 "vmap <Tab> <C-T>
 "vmap <S-Tab> <C-D>
 
+" Reselect visual block after indent/outdent
+" HT: <https://github.com/cypher/dotfiles/blob/master/vim/bindings.vim>
+"vnoremap < <gv
+"vnoremap > >gv
+
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Line wrapping (or not, as the case may be)
@@ -897,6 +902,7 @@ set splitbelow           " When splitting horizontally, split below
 " TODO: cf., <https://robots.thoughtbot.com/faster-grepping-in-vim>,
 " the comment to <https://stackoverflow.com/a/4889864/358069>
 " TODO: try <https://github.com/BurntSushi/ripgrep> maybe?
+" TODO: see also <https://github.com/cypher/dotfiles/blob/master/vim/extensions.vim#L177>
 "if executable('rg')
 "    set grepprg=rg\ --vimgrep\ --no-heading
 "    set grepformat=%f:%l:%m
@@ -1002,6 +1008,9 @@ if has('autocmd')
         " TODO: actual support for Agda
         " <http://wiki.portal.chalmers.se/agda/agda.php?n=Main.VIMEditing>
         autocmd BufNewFile,BufRead *.agda :set ft=haskell
+
+        " Try to enforce correct spelling and short messages.
+        autocmd Filetype gitcommit setlocal spell nocursorline textwidth=72
     augroup END
 endif
 
