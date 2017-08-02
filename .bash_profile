@@ -1,4 +1,4 @@
-# wren gayle romano's bash login script             ~ 2017.07.21
+# wren gayle romano's bash login script             ~ 2017.08.01
 #
 # It's fairly generic (with weirder things at the bottom),
 # but it's designed to be usable for all my accounts with no(!)
@@ -472,7 +472,8 @@ export PATH MANPATH LD_LIBRARY_PATH JAVA_HOME
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ Set up other common env variables
 
-export PAGER='less -is'
+# BUG: for some reason, setting LESS breaks git-log (unless we include -r).
+export PAGER="less -isq"
 export MANPAGER="${PAGER}"
 export EDITOR='vim'
 
@@ -606,6 +607,7 @@ function ll.() {
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ Other basic aliases
 
+# TODO: set and export GREP_OPTIONS instead?
 alias grep='grep --color'
 alias egrep='egrep --color=auto'
 alias fgrep='fgrep --color=auto'

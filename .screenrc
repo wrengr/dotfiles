@@ -47,8 +47,8 @@ defbce "on"            # Turn BCE (background color erase) on by default
 
 # Make backspace sane on Debian systems.
 # HT: <https://github.com/cypher/dotfiles/blob/master/screenrc>
-termcapinfo xterm 'bc@:bs@'
-termcapinfo xterm-color 'bc@:bs@'
+#termcapinfo xterm 'bc@:bs@'
+#termcapinfo xterm-color 'bc@:bs@'
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ fin.
