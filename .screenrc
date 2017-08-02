@@ -1,5 +1,5 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# wren gayle romano's GNU Screen config             ~ 2017.07.21
+# wren gayle romano's GNU Screen config             ~ 2017.08.01
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # <https://www.gnu.org/software/screen/manual/html_node/String-Escapes.html>
 # <http://aperiodic.net/screen/truncation_padding_escapes>
@@ -16,7 +16,7 @@ shell $SHELL           # The shell to use (prepend `-` to make it a login-shell)
 #term "screen"         # What to initialize TERM to (`-T vt100`)
 
 # ~~~~~ History &c.
-defscrollback 1500     # (`-h 1500`)
+defscrollback 15000    # A~la the -h flag
 #deflog on             # Enable logging for all new windows by default
 #logfile $HOME/.screen-logs/%Y%m%d-%n.log
 #logfile flush 10      # How many seconds to wait before flushing to filesystem
@@ -41,6 +41,14 @@ termcapinfo xterm 'Co#256:AB=\E[48;5;%dm:AF=\E38;5;%dm'
 defbce "on"            # Turn BCE (background color erase) on by default
 
 # ~~~~~ Keybindings
+# Copy screen clipboard to mac clipboard.
+# HT: <https://github.com/cypher/dotfiles/blob/master/screenrc>
+#bind b eval "writebuf" "exec sh -c 'pbcopy < /tmp/screen-exchange'"
+
+# Make backspace sane on Debian systems.
+# HT: <https://github.com/cypher/dotfiles/blob/master/screenrc>
+termcapinfo xterm 'bc@:bs@'
+termcapinfo xterm-color 'bc@:bs@'
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ fin.
