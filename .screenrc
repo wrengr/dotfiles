@@ -1,5 +1,5 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# wren gayle romano's GNU Screen config             ~ 2017.08.01
+# wren gayle romano's GNU Screen config             ~ 2017.08.10
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # <https://www.gnu.org/software/screen/manual/html_node/String-Escapes.html>
 # <http://aperiodic.net/screen/truncation_padding_escapes>
@@ -23,6 +23,13 @@ defscrollback 15000    # A~la the -h flag
 #logtstamp [on|off]    # Enable writing timestamps every N seconds
 #logtstamp after 120   # How often to timestamp
 #logtstamp string "-- %n:%t -- time-stamp -- %M/%d/%y %c:%s --\n"
+
+# Clear screen after exiting vim; like TERM=xterm, and unlike TERM=vt100
+# or the default behavior of TERM=screen. (Alternatively, or if you
+# have issues outside of GNU Screen: vim sends the &t_ti string to the
+# terminal when on startup, and sends the &t_te string on shutdown; so
+# you can configure those as desired <https://vi.stackexchange.com/a/436>)
+altscreen on
 
 # ~~~~~ Caption, Messages, &c.
 # The %t defaults to whatever program you started initially. To

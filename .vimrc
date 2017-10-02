@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" wren gayle romano's vim config                    ~ 2017.08.01
+" wren gayle romano's vim config                    ~ 2017.10.01
 "
 " For guidance, see ~/.vim/README
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -144,7 +144,7 @@ let g:netrw_liststyle    = 2  " 2= `ls -CF` style.  (Toggle with <i>)
 let g:netrw_browse_split = 4  " Which window/split to open files into.
 let g:netrw_winsize      = 25 " What percent of the available extent to use.
 let g:netrw_altv         = 1  " 1= &splitright
-let g:netrw_list_hide    = '\(^\|\s\s\)\zs\.\S\+' " Toggle hiddenness with <gh>
+let g:netrw_list_hide    = '\(^\|\s\s\)\zs\.[^\.]\+' " Toggle hiddenness with <gh>
 " TODO: if we don't use vinegar, then should copy-paste the stuff
 " for using 'suffixes' in lieu of the default strange C-oriented
 " sorting. Also for enhancing the hidden files based on 'wildignore'.
@@ -214,6 +214,7 @@ let g:netrw_list_hide    = '\(^\|\s\s\)\zs\.\S\+' " Toggle hiddenness with <gh>
 "Plug 'Twinside/vim-hoogle',           { 'for': 'haskell' }
 
 " ~~~~~ Language Support: HDLs
+" TODO: need to make these play nice with Coq, since both use *.v
 Plug 'mtikekar/vim-bsv',               { 'for': 'bsv' } " For BSV, not for BS!!
 "Plug 'hanw/vim-bluespec',             { 'for': 'bsv' } " Another BSV plugin
 "Plug 'michaeltanner/vim-bluespec',    { 'for': 'bsv' } " Yet another BSV
@@ -240,6 +241,7 @@ endif
 "Plug 'fatih/vim-go', { 'for': 'go' }
 "let g:go_fmt_command = "goimports"
 "Plug 'nsf/gocode', { 'rtp': 'vim', 'do': '~/.vim/plugged/gocode/vim/symlink.sh', 'for': 'go' }
+Plug 'jvoorhis/coq.vim', { 'for': 'coq' }
 
 
 " ~~~~~ Etc.
