@@ -269,7 +269,7 @@
     # (N.B., for-each-ref doesn't support --color nor %cr)
     # What fields are supported: <http://stackoverflow.com/a/21868228>
     # HT: <https://gist.github.com/mwhite/6887990>
-    # TODO: is there a way to combine this info with the "mb" and "bv" info?
+    # TODO: is there a way to combine this info with the "mb" and "bb" info?
     # TODO: is there any way to color this like we do for the others?
     lm = "!git for-each-ref \
         --sort='-authordate' \
@@ -280,7 +280,6 @@
     # List the modification date of files in the current directory (in order of file name).
     # BUG: there's some kind of typo here re the quoting. What's wrong?
     #lslm = "!git ls-tree -z --name-only HEAD | xargs -0 -n1 -I{} -- git log -1 --format='%aI {}' {} | sed -re 's/^([^T]+)T\S+(.*)/\1\2/'"
-    bv = branch -vv
     # HT: <https://gist.github.com/pksunkara/988716>
     whois = "!sh -c 'git log -i -1 --pretty=\"format:%an <%ae>%n\" --author=\"$1\"' -"
     # HT: <https://gist.github.com/mwhite/6887990>
