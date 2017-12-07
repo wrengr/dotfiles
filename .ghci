@@ -122,6 +122,17 @@ putStrLn ""
 -- Or, if you want the Haskell logo: set your terminal to use one of the <https://github.com/ryanoasis/nerd-fonts> and use e61f (larger) or e777 (smaller).
 -- :set prompt "\ESC[94m\STX  \ESC[m\STX"
 
+----------------------------------------------------------------
+-- These are required for using a local install of bare GHC for work. Of
+-- course, this also requires having a local installation that's more
+-- up-to-date than the standard one.
+-- :set -fplugin=GHC.TypeLits.KnownNat.Solver
+-- :set -fplugin=GHC.TypeLits.Extra.Solver
+-- :set -fplugin=GHC.TypeLits.Normalise
+
+-- These are from gnezdo at work:
+:def test (\t -> return $ "Test.Framework.defaultMain [testCase \"" ++ t ++ "\"" ++ t ++ "]")
+:def testp (\t -> return $ "Test.Framework.defaultMain [testProperty \"" ++ t ++ "\"" ++ t ++ "]")
 
 -- * At the end to reduce startup verbiage
 :set +s

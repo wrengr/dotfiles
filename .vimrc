@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" wren gayle romano's vim config                    ~ 2017.10.01
+" wren gayle romano's vim config                    ~ 2017.10.29
 "
 " For guidance, see ~/.vim/README
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -212,6 +212,7 @@ let g:netrw_list_hide    = '\(^\|\s\s\)\zs\.[^\.]\+' " Toggle hiddenness with <g
 "Plug 'nbouscal/vim-stylish-haskell',  { 'for': 'haskell' }
 "Plug 'neovimhaskell/haskell-vim',     { 'for': 'haskell' }
 "Plug 'Twinside/vim-hoogle',           { 'for': 'haskell' }
+"Plug 'itchyny/vim-haskell-indent',    { 'for': 'haskell' } " In lieu of the default thing, which is awful.
 
 " ~~~~~ Language Support: HDLs
 " TODO: need to make these play nice with Coq, since both use *.v
@@ -590,6 +591,16 @@ function! s:ClearUndoHistory()
     unlet my_ul
 endfun
 
+" An analogue of :delmarks but for registers.
+" HT: <https://vi.stackexchange.com/a/10528>
+" TODO: see also <https://stackoverflow.com/a/26043227>
+" BUG: this doesn't seem to remove them from ~/.viminfo thus the clearing
+" of the registers doesn't persist across sessions!
+command -nargs=0 ClearRegisters call <SID>ClearRegisters()
+function! s:ClearRegisters()
+    for i in range(34,122) | silent! call setreg(nr2char(i), []) | endfor
+endfun
+
 " The following line has some sort of typo about '<' for vim-6.2
 set viminfo='20,<100,s100,\"100
 "           |   |    |    |
@@ -683,11 +694,13 @@ command -nargs=0 DisableHardWrapping call <SID>DisableHardWrapping()
 function! s:DisableHardWrapping()
     set textwidth=0 wrapmargin=0 " can't hard-wrap at column zero, ha!
     " Must remove each one individually, because -= is string-based.
-    set formatoptions-=t
-    set formatoptions-=c
-    set formatoptions-=a
-    set formatoptions+=l
-    set formatoptions+=1
+    set formatoptions-=t " Don't autowrap text using &textwidth
+    set formatoptions-=c " Don't autowrap comments using &textwidth
+    "set formatoptions-=r " Don't autoinsert the comment leader on <Enter>
+    "set formatoptions-=o " Don't autoinsert the comment leader on <o> or <O>
+    set formatoptions-=a " Disable 'auto-format' of paragraphs.
+    set formatoptions+=l " Don't break long lines when in insert mode.
+    set formatoptions+=1 " Break before one-letter words, not after.
 endfun
 DisableHardWrapping
 
@@ -1116,7 +1129,10 @@ let g:airline_section_z=''
 " ~~~~~ gitgutter configuration
 if has('signs')
     set updatetime=500
-    let g:gitgutter_sign_column_always = 1
+    " Older versions of gitgutter used this variable:
+    "let g:gitgutter_sign_column_always = 1
+    " Newer ones complain that we should switch to:
+    set signcolumn=yes
     "let g:gitgutter_max_signs = 500 " default=500
     "let g:gitgutter_map_keys = 0 " don't set up default mappings
     " Default mappings:

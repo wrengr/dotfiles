@@ -144,7 +144,7 @@
     untracked = cyan
     #unmerged =
 
-# TODO: add a [pretty] stanza? <https://github.com/ddopson/dotfiles/blob/master/.gitconfig>
+# TODO: add a [pretty] stanza, so we can reuse things like the "lol" or "lola" formatting with "rofl" and "top" too (or via a simple flag for any ad-hoc command we run) <https://github.com/ddopson/dotfiles/blob/master/.gitconfig> To drop the commit message from the output of "top", just set --format or --pretty to the empty string (or whatever it is you want to see).
 
 
 # TODO: anything else fun in <https://github.com/tmsanrinsha/dotfiles/blob/master/home/.gitconfig> ?
@@ -221,10 +221,24 @@
     pr    = pull --rebase
     ra    = rebase --abort
     rc    = rebase --continue
-    # AKA: commute the diff goddamnit!
-    ro    = rebase --onto
     # For getting rebases to work when they cherry picked you, or similar.
     rs    = rebase --skip
+    # Something akin to how rebasing onto your parent *should* work;
+    # i.e., commute the patches godammit!
+    # Supposedly this should look at "branch.<name>.remote" and
+    # "branch.<name>.merge" (just like the no-argument `git pull` does),
+    # select all the commits between then (exclusive) and the most recent
+    # one (inclusive), commute them to occur after the parent branch,
+    # and set the current branch to point to that new end-of-commits. I
+    # say "supposedly" because sometimes it just drops all those commits
+    # on the floor and sets the current branch to point directly to the
+    # parent. I've no idea why that happens; but when it does, just using
+    # a vanilla `git rebase` seems to work (because it uses the parent
+    # as the <exclude-from> point, rather than trying to determine it from
+    # "branch.<name>.{remote,merge}").
+    rop   = "!git rebase --onto $(git-parent)"
+    # BUG: this won't tab-complete the branch name, unlike `oo` itself
+    oorop = "!f(){ git oo $1 && git rop ; }; f"
     wdiff = diff --color-words
     # This will unrecord the most recent commit. N.B., you can also
     # use "~1" instead of "^" at the end; or "~N" to revert the
@@ -254,7 +268,7 @@
     # TODO: actually, the brokenness here may have something to do with
     # Chromium defining their own git_new_branch.py command.
     #new-branch = "!f(){ \
-    #    old=\"`git rev-parse --abbrev-ref HEAD)\"; \
+    #    old=\"`git rev-parse --abbrev-ref HEAD`\"; \
     #    git checkout -b \"$1\" \"$old\" ; \
     #    git branch --set-upstream-to=\"$old\"; \
     #    }; f"
@@ -277,12 +291,15 @@
         refs/heads | sed -e 's@refs/heads/@@'"
     # Show the most recent tag
     lt = describe --tags --abbrev=0
+    # Show all tags
+    tags = for-each-ref --format='%(refname:short)' refs/tags/
     # List the modification date of files in the current directory (in order of file name).
     # BUG: there's some kind of typo here re the quoting. What's wrong?
     #lslm = "!git ls-tree -z --name-only HEAD | xargs -0 -n1 -I{} -- git log -1 --format='%aI {}' {} | sed -re 's/^([^T]+)T\S+(.*)/\1\2/'"
     # HT: <https://gist.github.com/pksunkara/988716>
     whois = "!sh -c 'git log -i -1 --pretty=\"format:%an <%ae>%n\" --author=\"$1\"' -"
     # HT: <https://gist.github.com/mwhite/6887990>
+    # See also: <https://github.com/MarkLodato/scripts/blob/master/git-alias>
     aliases = "!git config -l | grep alias | cut -c 7-"
     # Get rid of dangling patches in the repo.
     gc-for-reals = "!git reflog expire --expire=now --all && git gc --prune=now"

@@ -16,6 +16,8 @@ use strict;
 # * show remote-tracking branches too (a la git-branch's -a/--all)
 # * how to sort the tree (by last-modified, by name, by "weight"
 #   so that it's mostly right/bottom branching,...)
+# * filtering the tree (by last-modified, etc), maybe? cf.,
+#   <https://github.com/MarkLodato/scripts/blob/master/git-recent-branches>
 
 # TODO: inline this where appropriate in order to get better diagnostics
 # about what command we were trying to run when this exploded. (and/or

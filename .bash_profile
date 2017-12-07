@@ -1,4 +1,4 @@
-# wren gayle romano's bash login script             ~ 2017.08.01
+# wren gayle romano's bash login script             ~ 2017.11.21
 #
 # It's fairly generic (with weirder things at the bottom),
 # but it's designed to be usable for all my accounts with no(!)
@@ -713,6 +713,20 @@ alias :q!='exit'
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ Other helpful functions, aliases, and Perl microprograms
+
+# A variant of `cd` which canonicalizes the path.
+function ccd() {
+    local _dir='.'
+    if [ $# -gt 1 ]; then
+        echo "Usage: ccd [dir]"
+        return 1
+    elif [ $# -eq 1 ]; then
+        _dir="$1"
+    fi
+
+    # Assumes we have my ~/local/bin/_abspath
+    cd "$(_abspath -k ${_dir})"
+}
 
 # Safely copy directories
 # BUG: dirname doesn't seem to deal with .. right
