@@ -1,0 +1,61 @@
+#!/bin/bash
+# Try to rebase the current branch onto a new parent.
+# wren gayle romano <wrengr@x.com>                  ~ 2017.10.06
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# N.B., by naming this as we have and having it on our path, this
+# script will be automagically run if someone says `git reparent`;
+# no aliases required!
+
+# TODO: Add a flag to toggle color for the error messages
+# TODO: Add flags for verbose mode & for dryrun mode
+# TODO: allow NEW_PARENT to be a commit-id, rather than forcing it to be a branch-id. And if it's a commit-id, then skip the final `git branch --set-upstream-to=` part. (Perhaps using a different executable name, if we can't automatically distinguish between the two cases.)
+# TODO: cf., <https://github.com/MarkLodato/git-reparent> for doing better about commuting patches rather than the git bs about applying diffs. <http://git.661346.n2.nabble.com/Announcing-git-reparent-tp7574982p7575061.html>
+if [[ $# -ne 1 ]]; then
+    cat << __END_USAGE__
+Usage: ${0##*/} NEW_PARENT
+
+Change the parent of the current branch to NEW_PARENT. This will not only
+change which branch is _called_ the parent, but also take all the commits
+since this branch diverged from its old/current parent and rebase them
+onto the new parent.
+__END_USAGE__
+    exit 1
+fi
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+function _error() { >&2 echo -e "\033[1;31m${0##*/}:\033[0m \033[1m$*\033[0m"; }
+
+# TODO: use $(git rev-parse --sq-quote -p "$1") instead?
+NEW_PARENT="$1"
+# See also: <https://wincent.com/wiki/Legal_Git_branch_names>
+if ! git show-ref --quiet --verify -- "refs/heads/$NEW_PARENT"; then
+    # TODO: will those escape chars still work right now that we've abstracted?
+    _error "Not a valid branch:\033[0m \033[1;33m$NEW_PARENT"
+    exit 1
+fi
+
+THIS_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if [[ $THIS_BRANCH = '' ]]; then
+    _error 'Couldn'\''t figure out which branch we'\''re on!'
+    _error "(Are we actually in a git repo?: `pwd`)"
+    exit 1
+fi
+
+OLD_PARENT=$(git-parent $THIS_BRANCH)
+if [[ $OLD_PARENT = '' ]]; then
+    _error "Couldn't figure out the parent of\033[0m \033[1;33m$THIS_BRANCH"
+    exit 1
+fi
+
+git rebase --onto $NEW_PARENT $OLD_PARENT $THIS_BRANCH
+ERRNO=$?
+if [[ $ERRNO -ne 0 ]]; then
+    _error 'Rebase failed, trying to recover...'
+    git rebase --abort || exit 1
+    exit $ERRNO
+fi
+git branch --set-upstream-to=$NEW_PARENT || exit $?
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ fin.
+exit 0
