@@ -1,6 +1,6 @@
 -- -*- mode: haskell; -*-
+-- wren gayle romano's ghci login script            ~ 2017.11.21
 
-----------------------------------------------------------------
 -- For more inspiration, see:
 -- <http://www.haskell.org/pipermail/haskell-cafe/2007-September/032260.html>
 -- <http://www.cs.kent.ac.uk/people/staff/cr3/toolbox/haskell/dot-squashed.ghci>
@@ -11,7 +11,7 @@
 
 
 ----------------------------------------------------------------
--- * Helpful commands and tool integration
+-- * Tool integration and other helpful commands
 
 -- :. <file>             Source commands from <file>
 :def . readFile
@@ -22,8 +22,7 @@
 -- :ls [...]             Get a directory listing
 :def ls \str -> return (":!ls " ++ str)
 
--- :stdout <var> <cmd>    Execute <cmd>, redirecting stdout to <var>
---     Named thus to avoid conflict with :r for :reload, etc.
+-- :stdout <var> <cmd>   Execute <cmd>, redirecting stdout to <var>
 :{
 :def stdout \varcmd ->
         case break Data.Char.isSpace varcmd of
@@ -37,7 +36,8 @@
                 , "System.IO.hClose h"
                 , cmd
                 , "GHC.Handle.hDuplicateTo sto System.IO.stdout"
-                , "let readFileNow f = readFile f >>= \\t -> Data.List.length t `seq` return t"
+                , "let readFileNow f = readFile f >>= \\t -> "
+                    ++ "Data.List.length t `seq` return t"
                 , var ++ " <- readFileNow f"
                 , "System.Directory.removeFile f"
                 ]
@@ -45,28 +45,39 @@
         }
 :}
 
-
--- * Integration with the hlint code style tool
+-- * Integration with HLint.
 :{
 :def hlint \_ -> return $ unlines
         [ ":unset +t +s"
         , ":set -w"
         , ":stdout hlintvar1 :show modules"
-        , ":cmd return (\":!hlint \" ++ (concat $ Data.List.intersperse \" \" "
-              ++ "(map (fst . break (==',') . Data.List.drop 2 . snd . "
-              ++ "break (== '(')) $ lines hlintvar1)))"
+        , ":cmd "
+            ++ "( return"
+            ++ ". unwords"
+            ++ ". (:) \":!hlint\""
+            ++ ". map"
+            ++ "    ( takeWhile (/= ',')"
+            ++ "    . Data.List.drop 2"
+            ++ "    . dropWhile (/= '(')"
+            ++ "    )"
+            ++ ". lines"
+            ++ "$ hlintvar1"
+            ++ ")"
         , ":set +t +s -Wall"
         ]
 :}
 
-
--- * See also ghc-paths based solutions
+-- * Integration with Hoogle (etc).
+-- (See also ghc-paths based solutions)
 :def url        \str -> return $ ":!open -a /Applications/Safari.app " ++ str
 :def hoogle     \str -> return $ ":!hoogle --count=15 \"" ++ str ++ "\""
 -- :def hoogle_url \str -> return $ ":url http://haskell.org/hoogle/?hoogle=" ++ str
--- :def ??? ":!hoogle --info %" -- what's a good name for that?
+-- :def ??? ":!hoogle --info %"  -- TODO: what's a good name for that?
 :def ghc_pkg    \str -> return $ ":!ghc-pkg " ++ str
 
+-- * Run a Test.Framework test (HT: gnezdo)
+:def testc \t -> return $ "Test.Framework.defaultMain [testCase \"" ++ t ++ "\"" ++ t ++ "]"
+:def testp \t -> return $ "Test.Framework.defaultMain [testProperty \"" ++ t ++ "\"" ++ t ++ "]"
 
 -- * With GOA (for reference, rather than actual use)
 -- :m - Prelude
@@ -88,22 +99,30 @@
 
 
 ----------------------------------------------------------------
--- * Some language extensions we always want on:
+-- * Language extensions we always want on:
 :set -XNoMonomorphismRestriction
+:set -XBangPatterns
 :set -XFlexibleContexts
 :set -XTypeOperators
 
+-- * Type-checker plugins for GHC.
+-- (At work, these are required for running things with a local
+-- installation of bare GHC, instead of jumping through hoops to
+-- use Blaze. Of course, to support type-checker plugins, we need
+-- a more recent version of GHC than the one that ships by default.)
+{-
+:set -fplugin=GHC.TypeLits.KnownNat.Solver
+:set -fplugin=GHC.TypeLits.Extra.Solver
+:set -fplugin=GHC.TypeLits.Normalise
+-}
 
--- * Some flags for the debugger
--- For more info see
+-- * Debugger flags
 -- <http://www.haskell.org/ghc/dist/current/docs/users_guide/ghci-debugger.html>
 :set -fbreak-on-error
 -- :set -fbreak-on-exception
 
-
--- * If in a Cabal directory, auto-include Cabal's CPP macros
+-- * If in a Cabal directory, be sure to auto-include Cabal's CPP macros
 :set -optP-include -optPdist/build/autogen/cabal_macros.h
-
 
 -- * Other helpful notes
 -- Use -fobject-code            to compile modules before loading.
@@ -114,26 +133,21 @@ putStrLn "\tUse :e to edit the current file, and :r to reload"
 putStrLn ""
 :set editor vim
 
-
 -- * Colorful prompt
 -- <http://blog.havenisms.com/colorizing-the-ghci-prompt>
--- BUG: this messes up GHCi's readline/editline stuff though. I.e., where the cursor is on the page when linewraps happen, etc. This is still true as of GHC-7.6.3
+-- BUG: this messes up GHCi's readline/editline stuff though.
+-- I.e., where the cursor is on the page when linewraps happen,
+-- etc. I last verified this bug as of GHC-7.6.3 (so there's always
+-- a chance it may have been fixed since then.)
 -- :set prompt "\O33[32;1m%s\O33[34;1m>\O33[0m "
--- Or, if you want the Haskell logo: set your terminal to use one of the <https://github.com/ryanoasis/nerd-fonts> and use e61f (larger) or e777 (smaller).
+--
+-- Or, if you want the Haskell logo: set your terminal to use one
+-- of the <https://github.com/ryanoasis/nerd-fonts> and use e61f
+-- (larger) or e777 (smaller).
 -- :set prompt "\ESC[94m\STX  \ESC[m\STX"
 
+
 ----------------------------------------------------------------
--- These are required for using a local install of bare GHC for work. Of
--- course, this also requires having a local installation that's more
--- up-to-date than the standard one.
--- :set -fplugin=GHC.TypeLits.KnownNat.Solver
--- :set -fplugin=GHC.TypeLits.Extra.Solver
--- :set -fplugin=GHC.TypeLits.Normalise
-
--- These are from gnezdo at work:
-:def test (\t -> return $ "Test.Framework.defaultMain [testCase \"" ++ t ++ "\"" ++ t ++ "]")
-:def testp (\t -> return $ "Test.Framework.defaultMain [testProperty \"" ++ t ++ "\"" ++ t ++ "]")
-
 -- * At the end to reduce startup verbiage
 :set +s
 
