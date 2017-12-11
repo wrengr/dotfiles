@@ -1,4 +1,4 @@
-# wren gayle romano's bash login script             ~ 2017.11.21
+# wren gayle romano's bash login script             ~ 2017.12.10
 #
 # It's fairly generic (with weirder things at the bottom),
 # but it's designed to be usable for all my accounts with no(!)
@@ -57,8 +57,8 @@ case "${_hostname}" in
 
     *.haskell.org | lun)           _localhost='haskell' ;;
     *.google.com)
-        # BUG: doesn't distinguish between my workstation and
-        # ciruela (both Goobuntu), vs my laptop (OSX)
+        # BUG: doesn't distinguish between maracuya & ciruela
+        # (both Goobuntu), vs my laptop (OSX).
         _localhost='google'
     ;;
 
@@ -331,21 +331,9 @@ fi
 
 case "${_localhost}" in
     ereshkigal)
-        # We use Java6 (needed for ADE) instead of the default
-        # Java5. But we don't actually alter OSX's default Java
-        # (i.e., '/Library/Java/Home') since doing that can cause
-        # problems with built-in OS stuff.
-        _JAVA_HOME='/System/Library/Frameworks/JavaVM.framework/Versions/1.6/Home'
-        # HACK: at some point we got rid of this? We guard things
-        # just so the periodic whatis script stops complaining (since
-        # man and path don't actually care)
-        if [ -x "$_JAVA_HOME" ]; then
-            export JAVA_HOME="$_JAVA_HOME"
-            _push PATH    "$JAVA_HOME/bin"
-            _push MANPATH "$JAVA_HOME/man"
-        fi
-        unset _JAVA_HOME
-
+        # Technically we should no longer need to add this to PATH,
+        # since we've added it to /etc/paths.d . However, it looks
+        # like there's no analogue for MANPATH
         MAPLE_HOME='/Library/Frameworks/Maple.framework/Versions/2015'
         if [ -x "$MAPLE_HOME" ]; then
             _push PATH    "$MAPLE_HOME/bin"
@@ -356,6 +344,13 @@ case "${_localhost}" in
         unset MAPLE_HOME
 
         # Various things we've installed (and stowed) without Fink.
+
+        # Technically, texbin is already on the path; but we want
+        # to move up up so it shadows /sw; otherwise we won't get the
+        # new programs.
+        _push  PATH       '/Library/TeX/texbin'
+        _push  MANPATH    '/Library/Tex/texman'
+
         _push  PATH       '/usr/local/bin'
         _push  MANPATH    '/usr/local/share/man'
         _push  MANPATH    '/usr/local/man'
@@ -511,6 +506,8 @@ case "${_localhost}" in
         #export GIT_AUTHOR_EMAIL='wrengr@chromium.org'
     ;;
     *)
+        # TODO: they're retiring that email server; so need to
+        # switch to a different email now...
         export GIT_AUTHOR_EMAIL='wren@community.haskell.org'
     ;;
 esac
