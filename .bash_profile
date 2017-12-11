@@ -650,11 +650,6 @@ _exists whereami || alias whereami='echo $HOSTNAME'
 _exists whatis   || alias whatis='man -f'
 _exists apropos  || alias apropos='man -k'
 
-alias vi='vim'        # since some places have actual `vi`
-alias view='vim -R'   # --"--
-alias ex='vim -e'     # --"--
-alias nano='nano -iw' # keep indentation on \n, no-wrap lines
-
 # BUG: the -l flag seems to be an OSXism, and isn't supported on
 # Goobuntu. Actually, *all* the args are different between Ubuntu-likes
 # and OSX! Looks like we really must write our own version afterall.

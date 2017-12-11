@@ -1,5 +1,6 @@
 #!/bin/bash
 # Must use Bash in order to safely source our ~/.bash_profile !!
+# Also, this script must be run as root, else it won't work.
 
 # The built-in periodic whatis script seems to be somewhat buggy,
 # so we do it ourselves. N.B., this doesn't entirely replace the
