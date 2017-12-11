@@ -470,6 +470,7 @@ export PATH MANPATH LD_LIBRARY_PATH JAVA_HOME
 # BUG: for some reason, setting LESS breaks git-log (unless we include -r).
 export PAGER="less -isq"
 export MANPAGER="${PAGER}"
+# BUG: for some reason git is picking up /usr/bin/vim rather than /sw/bin/vim, even though the latter comes first on PATH...
 export EDITOR='vim'
 
 

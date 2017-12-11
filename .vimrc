@@ -1132,8 +1132,11 @@ if has('signs')
     " Older versions of gitgutter use this variable:
     let g:gitgutter_sign_column_always = 1
     " Newer versions complain that we should switch to this one;
-    " however, older versions of vim don't recognize it.
-    " TODO: what's the appropriate conditional to automatically pick the right one?
+    " however, older versions of vim (namely the version 7.4 one
+    " that ships with OSX) don't recognize it.
+    " TODO: what's the appropriate conditional to automatically
+    " pick the right one? If it truly is a vim versioning thing, then
+    " it's somewhere between 7.4 and 8.0; but if it's something else...
     "set signcolumn=yes
     "let g:gitgutter_max_signs = 500 " default=500
     "let g:gitgutter_map_keys = 0 " don't set up default mappings
