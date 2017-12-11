@@ -1129,15 +1129,15 @@ let g:airline_section_z=''
 " ~~~~~ gitgutter configuration
 if has('signs')
     set updatetime=500
-    " Older versions of gitgutter use this variable:
-    let g:gitgutter_sign_column_always = 1
-    " Newer versions complain that we should switch to this one;
-    " however, older versions of vim (namely the version 7.4 one
-    " that ships with OSX) don't recognize it.
-    " TODO: what's the appropriate conditional to automatically
-    " pick the right one? If it truly is a vim versioning thing, then
-    " it's somewhere between 7.4 and 8.0; but if it's something else...
-    "set signcolumn=yes
+    " Newer versions of gitgutter replaced g:gitgutter_sign_column_always
+    " with &signcolumn, and complain about using the old variable.
+    " However, older versions of vim (e.g., the version 7.4 which
+    " ships with OSX 10.12.6) don't have &signcolumn.
+    if exists('&signcolumn')
+        set signcolumn=yes
+    else
+        let g:gitgutter_sign_column_always = 1
+    endif
     "let g:gitgutter_max_signs = 500 " default=500
     "let g:gitgutter_map_keys = 0 " don't set up default mappings
     " Default mappings:
