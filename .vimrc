@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" wren gayle romano's vim config                    ~ 2017.10.29
+" wren gayle romano's vim config                    ~ 2017.12.10
 "
 " For guidance, see ~/.vim/README
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1129,10 +1129,12 @@ let g:airline_section_z=''
 " ~~~~~ gitgutter configuration
 if has('signs')
     set updatetime=500
-    " Older versions of gitgutter used this variable:
-    "let g:gitgutter_sign_column_always = 1
-    " Newer ones complain that we should switch to:
-    set signcolumn=yes
+    " Older versions of gitgutter use this variable:
+    let g:gitgutter_sign_column_always = 1
+    " Newer versions complain that we should switch to this one;
+    " however, older versions of vim don't recognize it.
+    " TODO: what's the appropriate conditional to automatically pick the right one?
+    "set signcolumn=yes
     "let g:gitgutter_max_signs = 500 " default=500
     "let g:gitgutter_map_keys = 0 " don't set up default mappings
     " Default mappings:
