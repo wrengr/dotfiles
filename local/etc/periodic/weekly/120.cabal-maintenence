@@ -1,6 +1,16 @@
 #!/bin/sh
-# Perform some regular maintinence of Cabal
+# Perform some regular Cabal maintinence
 
+# TODO: liberalize this to (a) use $HOME or ~ rather than hard-coding
+# it, and (b) maybe consider allowing whatever `cabal` is on the $PATH
+# rather than requiring a cabal-install installed version.
+cabal='/Users/wren/.cabal/bin/cabal'
+
+# Since these scripts are part of my dotfiles repo, but not all my
+# machines use cabal (or have a local cabal-install installed version
+# of it), we guard against that. Since we don't consider this an
+# error, we use rc=0.
+[ ! -x "$cabal" ] && exit 0
 rc=0
-/Users/wren/.cabal/bin/cabal update || rc=3
+$cabal update || rc=3
 exit $rc

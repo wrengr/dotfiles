@@ -1,20 +1,24 @@
 #!/bin/bash
-# Must use Bash in order to safely source our ~/.bash_profile !!
-# Also, this script must be run as root, else it won't work.
+# Must use Bash in order to safely source our ~/.bash_profile !
+# Also, this script must be run as root, else it won't work!
 
 # The built-in periodic whatis script seems to be somewhat buggy,
 # so we do it ourselves. N.B., this doesn't entirely replace the
 # old script, since we don't bother doing anything with locales.
 # We may want to add that in the future.
 
-rc=0
 
-# We do this to make sure we get everything in my standard setup.
-# We might want to factor out the part that sets up the MANPATH so
-# as to avoid running all the rest of it.
-# BUG: this complains about our `l.` functions not being valid identifiers!
-. /Users/wren/.bash_profile || rc=2
-[ $rc -ne 0 ] && exit $rc
+# We source my Bash profile to make sure we get everything in my
+# standard setup. We might want to factor out the part that sets
+# up the MANPATH so as to avoid running all the rest of it.
+#
+# TODO: liberalize this to use $HOME or ~ rather than hard-coding it.
+bash_profile='/Users/wren/.bash_profile'
+# Guard against the file not existing (or not having read permissions).
+[ ! -r "$bash_profile" ] && exit 2
+# BUG: this complains about my `l.` functions not being valid identifiers!
+. $bash_profile || exit 2
+
 
 echo ''
 echo 'Rebuilding whatis database (for real this time):'
@@ -32,6 +36,12 @@ cleaned_manpath="`echo "$MANPATH" |
 # TODO: use `sed -e :a -e 'N;s/\n/,/;ba'` (or perhaps with `ta` in
 # lieu of `ba`) in lieu of the paste command? Or maybe use tr in
 # lieu of paste?
+#
+# TODO: add this step between the grep and paste (or something like it):
+#   while read line; do [ -d "$line" ] && echo "$line"; done |
+# N.B., we'll need to do ~-expansion first, since [-d] doesn't...
 
+# TODO: detect when being run as non-root, and print a better error message.
+rc=0
 /usr/libexec/makewhatis.local "$cleaned_manpath" || rc=3
 exit $rc

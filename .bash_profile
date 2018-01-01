@@ -1,4 +1,4 @@
-# wren gayle romano's bash login script             ~ 2017.12.10
+# wren gayle romano's bash login script             ~ 2017.12.31
 #
 # It's fairly generic (with weirder things at the bottom),
 # but it's designed to be usable for all my accounts with no(!)
@@ -421,6 +421,8 @@ _push MANPATH '~/local/man'
 # (since something is seriously wrong).
 # N.B. [ ! -z ] and [ ! -z "" ] and [ -s "" ] all return false
 #      But [ -s ] returns true!!!
+# TODO: use the "type" or "command -v" built-in, rather than using `which`:
+# <https://stackoverflow.com/a/677212>
 if [ ! -z "`which sed`" -a -x "`which sed`" ]; then
     # BUG: we don't ~-expand MANPATH (not that anything is there...)
 
@@ -642,6 +644,8 @@ esac
 
 # Parse `which` to return whether it found something or not
 # (Since normally it returns success either way)
+# TODO: use the "type" or "command -v" built-in, rather than using `which`:
+# <https://stackoverflow.com/a/677212>
 function _exists() { which "$1" 2>&1 | grep ^/ >/dev/null ; }
 
 function whoall() { who -u | awk '{if ($6 != "old") print $0}' | sort ; }

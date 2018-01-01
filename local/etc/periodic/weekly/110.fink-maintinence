@@ -1,5 +1,10 @@
 #!/bin/sh
-# Perform some regular maintinence of Fink
+# Perform some regular Fink maintinence
+
+# Since these scripts are part of my dotfiles repo, but not all my
+# machines use fink, we guard against fink not being installed.
+# Since we don't consider this an error, we use rc=0.
+[ ! -x /sw/bin/fink ] && exit 0
 
 rc=0
 # TODO: maybe also consider running cleanup with the --deb flag
