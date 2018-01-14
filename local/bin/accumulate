@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 # This program is a modified version of:
 #     <http://blog.plover.com/prog/accumulate.html>
 # wren gayle romano <wren@cpan.org>                 ~ 2012.02.19
@@ -11,6 +11,8 @@
 # * disable the silencing of undefined $F[$opt{v}]
 # * sort the keys (instead of relying on calling `sort` afterwards)
 # * removing the lags for -k and -v, a la MJD's comments?
+# * allow specifying other ways to split columns, besides just
+#   assuming split-on-space.
 
 use warnings;
 use strict;

@@ -12,6 +12,7 @@ if [ ! -e '_DUPLICATES' ]; then
 			print "$a$b";' |
 		accumulate -U > _DUPLICATES
 fi
+# TODO: if the file already exists, read through it and prune out files that no longer exist. Also (the first time around) maybe construct a reverse index, so that we can add in any new files that have appeared (without having to scan through all the files).
 
 cat _DUPLICATES |
     perl -nle '

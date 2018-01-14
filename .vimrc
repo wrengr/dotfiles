@@ -85,6 +85,12 @@ Plug 'chriskempson/tomorrow-theme'
 "Plug 'junegunn/seoul256.vim' " Low-contrast color scheme
 "Plug 'vim-scripts/wombat256.vim'
 "Plug 'dtinth/vim-colors-dtinth256'
+" vim port of TextMate's Monokai theme.
+" This has some nice qualities to it, but it uses a light grey
+" background in lieu of a black background, which makes it all
+" washed out and hard to read for files with lots of comments (like
+" this one).
+"Plug 'tomasr/molokai'
 
 " Limit colorization to local paragraphs/hunks.
 " This is really slick, and combines nicely with Goyo. However, it
