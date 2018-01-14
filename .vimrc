@@ -1,19 +1,14 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" wren gayle romano's vim config                    ~ 2017.12.10
+" wren gayle romano's vim config                    ~ 2018.01.13
 "
 " For guidance, see ~/.vim/README
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 " ~~~~~ Minimal preamble before loading plugins.
-" Avoid compatibility with legacy vi.
-set nocompatible
-" One should never parse modelines by default, it's a security
-" vulnerability. <http://usevim.com/2012/03/28/modelines/>
-set nomodeline
-" Is our terminal connection 'fast'? (hint: is it no longer the 1970s?)
-set ttyfast
-" Don't start in insert mode. That's some emacs kinda silliness.
-set noinsertmode
+set nocompatible " Avoid compatibility with legacy vi. (Must come first)
+set nomodeline   " Avoid insecurity! <http://usevim.com/2012/03/28/modelines/>
+set ttyfast      " Avoid thinking we're still in the 1970s.
+set noinsertmode " Avoid emacs-emulating silliness.
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -46,13 +41,22 @@ if empty(glob('~/.vim/autoload/plug.vim'))
     endif
 endif
 
+
 " TODO: how can we get plug.vim to open its status window on the right? I
 " tried setting g:plug_window, but can't get it to work...
 
 
+" From <https://github.com/junegunn/vim-plug/wiki/tips>,
+"      <https://github.com/junegunn/vim-plug/wiki/faq>
+" TODO: should we add the <SID> stuff?
+function! PlugCond(cond, ...)
+    let opts = get(a:000, 0, {})
+    return a:cond ? opts : extend(opts, { 'on': [], 'for': [] })
+endfun
+
+
 " We use ~/.vim/bundle since that's what most other plugin managers
-" use. However, all the vim-plug docs prefer ~/.vim/plugged instead.
-" So beware.
+" use. However, n.b., the vim-plug docs prefer ~/.vim/plugged instead.
 call plug#begin('~/.vim/bundle')
 " TODO: use 'git@github.com:$WHO/$WHAT.git' formatting instead, to
 " use the git protocol in lieu of https.
@@ -67,15 +71,16 @@ call plug#begin('~/.vim/bundle')
 " But is it actually organized correctly for use as a plugin?
 "Plug 'jamessan/vim-gnupg'
 " Default to using ascii-armor. Hopefuly this'll help deal with the
-" bug where saving modified files causes them to be saves as binary
+" bug where saving modified files causes them to be saved as binary
 " in spite of the *.asc suffix.
+" BUG: this seems not to be working...
 let g:GPGPreferArmor=1
 
 
 " ~~~~~ Color schemes & Syntax highlighting
-" TODO: should we guard this for?: has('syntax') && (&t_Co > 2 || has('gui_running'))
-" TODO: cf., the Cond function <https://github.com/junegunn/vim-plug/wiki/faq>
-" TODO: do we need to do anything special since the vim code isn't top level?
+" TODO: this is one of the slower plugins to load, so we should
+" guard it for when we actually need it. But then what exactly should
+" we guard for?: has('syntax') && (&t_Co > 2 || has('gui_running'))
 Plug 'chriskempson/tomorrow-theme'
 "Plug 'junegunn/seoul256.vim' " Low-contrast color scheme
 "Plug 'vim-scripts/wombat256.vim'
@@ -94,6 +99,8 @@ Plug 'junegunn/limelight.vim', { 'on':  'Limelight' }
 
 " ~~~~~ Tabline & Statusline (just the basics; see also Buffers & Tabs)
 Plug 'vim-airline/vim-airline'
+" TODO: this is one of the slower ones to load. Is there a way to
+" guard it to only load the g:airline_theme we actually want/use?
 Plug 'vim-airline/vim-airline-themes'
 " This is necessary for the pretty airline wedges; but doesn't seem
 " to work well on OSX/iTerm2 (see notes below). For Monaco, things
@@ -118,7 +125,7 @@ Plug 'vim-airline/vim-airline-themes'
 
 
 " ~~~~~ Git & other VCSes
-Plug 'airblade/vim-gitgutter', has('signs') ? {} : { 'on' : [] }
+Plug 'airblade/vim-gitgutter', PlugCond(has('signs'))
 "Plug 'mhinz/vim-signify' " like gitgutter, but for other VCSes
 " If you use Signify, then you should g:signify_disable_by_default=1
 " (or use EDITOR='vim --cmd let\ g:signify_disable_by_default=1') to
@@ -137,32 +144,6 @@ Plug 'airblade/vim-gitgutter', has('signs') ? {} : { 'on' : [] }
 "Plug 'Shougo/vimfiler.vim'   " An alternative to netrw.
 "Plug 'tpope/vim-vinegar'     " Enhancing netrw to obviate nerdtree.
 "Plug 'eiginn/netrw'          " In case we want newer than the built-in version.
-" cf., <https://shapeshed.com/vim-netrw/>
-let g:netrw_altfile      = 1  " 1= Make <C-^> return to the last-edited file.
-let g:netrw_banner       = 0  " 0= hide the banner. (Toggle with <I>)
-let g:netrw_liststyle    = 2  " 2= `ls -CF` style.  (Toggle with <i>)
-let g:netrw_browse_split = 4  " Which window/split to open files into.
-let g:netrw_winsize      = 25 " What percent of the available extent to use.
-let g:netrw_altv         = 1  " 1= &splitright
-let g:netrw_list_hide    = '\(^\|\s\s\)\zs\.[^\.]\+' " Toggle hiddenness with <gh>
-" TODO: if we don't use vinegar, then should copy-paste the stuff
-" for using 'suffixes' in lieu of the default strange C-oriented
-" sorting. Also for enhancing the hidden files based on 'wildignore'.
-" I do dislike vinegar's nmap for <->; would rather use <Q> or something
-" else I don't use. (I mean the <-> mapping that applies to all
-" buffers; not the local one inside the netrw window, that one's
-" fine.)
-"
-" Also, apparently netrw is extremely buggy (especially the tree-view); so that's the main reason to wantto go for something else <https://www.reddit.com/r/vim/comments/22ztqp/why_does_nerdtree_exist_whats_wrong_with_netrw/cgs4aax/>
-"
-"augroup wrengrvinegar
-"autocmd!
-" The `:bp\|` part is so it doesn't kill the window it's in when it closes.
-"autocmd FileType netrw
-"    \  nnoremap <buffer> q :bp\|bd #<CR>
-"    \| nnoremap <buffer> ~ :edit ~/<CR>
-"augroup END
-
 
 " ~~~~~ Searching
 "Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
@@ -227,12 +208,12 @@ if has('autocmd')
 endif
 
 " ~~~~~ Language Support: Markdown / Pandoc
-"Plug 'vim-pandoc/vim-pandoc', { 'for': 'markdown.pandoc' }
+"Plug 'vim-pandoc/vim-pandoc',        { 'for': 'markdown.pandoc' }
 "Plug 'vim-pandoc/vim-pandoc-syntax', { 'for': 'markdown.pandoc' }
 "Plug 'godlygeek/tabular' | Plug 'plasticboy/vim-markdown', { 'for': 'markdown' }
 " <https://stackoverflow.com/questions/10964681/enabling-markdown-highlighting-in-vim>
-"Plug 'tpope/vim-markdown', { 'for': 'markdown' }
-"Plug 'plasticboy/vim-markdown', { 'for': 'markdown' }
+"Plug 'tpope/vim-markdown',       { 'for': 'markdown' }
+"Plug 'plasticboy/vim-markdown',  { 'for': 'markdown' }
 "Plug 'mzlogin/vim-markdown-toc', { 'for': 'markdown' }
 
 " ~~~~~ Language Support: misc others.
@@ -247,8 +228,7 @@ Plug 'jvoorhis/coq.vim', { 'for': 'coq' }
 
 " ~~~~~ Etc.
 "Plug 'junegunn/goyo.vim'  " A vim variant of OmmWriter; good with limelight.
-" TODO: cf., the Cond function <https://github.com/junegunn/vim-plug/wiki/faq>
-"Plug 'junegunn/vim-xmark', has('mac') ? {} : { 'on' : [] }
+"Plug 'junegunn/vim-xmark', PlugCond(has('mac'))
 "Plug 'SirVer/ultisnips' | Plug 'honza/vim-snippets'
 "Plug 'tpope/vim-sensible' " More-sensible defaults
 "Plug 'tomtom/quickfixsigns_vim'
@@ -265,48 +245,38 @@ Plug 'jvoorhis/coq.vim', { 'for': 'coq' }
 " and <https://github.com/wklken/k-vim/blob/master/vimrc>
 " and <https://github.com/amix/vimrc/blob/master/vimrcs/basic.vim>
 " and <https://github.com/nicdumz/dotfiles/blob/master/.vimrc>
+" and <https://github.com/AntJanus/my-dotfiles/blob/master/.vimrc>
 "Plug 'wellle/targets.vim'
 "Plug 'sheerun/vim-polyglot'
-"Plug 'sjl/vitality.vim'  " for Vim + iTerm2 (+ tmux)
+"Plug 'sjl/vitality.vim'               " for Vim + iTerm2 (+ tmux)
 "Plug 'grassdog/tagman.vim'
 "Plug 'terryma/vim-expand-region'
 "Plug 'tomtom/tcomment_vim'
 "Plug 'tpope/vim-rsi'
 "Plug 'tpope/vim-endwise'
-"Plug 'tpope/vim-repeat' " better <.> repetition support
+"Plug 'tpope/vim-repeat'               " better <.> repetition support
 "Plug 'tpope/vim-sleuth'
 "Plug 'tpope/vim-unimpaired'
 "Plug 'tpope/vim-commentary'
-"Plug 'danro/rename.vim' " Allow to :Rename files
+"Plug 'danro/rename.vim'               " Allow to :Rename files
 "Plug 'flowtype/vim-flow'
-"Plug 'airblade/vim-rooter' " Automatically find root project directory
+"Plug 'airblade/vim-rooter'            " Automatically find project's root dir
 "let g:rooter_disable_map = 1
 "let g:rooter_silent_chdir = 1
-"Plug 'AndrewRadev/splitjoin.vim' " Expand / wrap hashes etc.
+"Plug 'AndrewRadev/splitjoin.vim'      " Expand / wrap hashes etc.
 "Plug 'christoomey/vim-tmux-navigator' " Navitate freely between tmux and vim
-"Plug 'ashisha/image.vim' " View images as ASCII art
+"Plug 'ashisha/image.vim'              " View images as ASCII art
 "Plug 'majutsushi/tagbar'
 " Some other stuff from <http://www.stephendiehl.com/posts/vim_2016.html>
-"Plug 'tomtom/tlib_vim' " Some kind of utility functions...
+"Plug 'tomtom/tlib_vim'                " Some kind of utility functions...
 "Plug 'MarcWeber/vim-addon-mw-utils'
-"Plug 'garbas/vim-snipmate' " TextMate-like snippet features
+"Plug 'garbas/vim-snipmate'            " TextMate-like snippet features
 "Plug 'scrooloose/nerdcommenter'
 "Plug 'Shougo/vimproc.vim', { 'do': 'make' }
 call plug#end()
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" ~~~~~ Re-preamble, for paranoia's sake
-" TODO: is this actually necessary? Can we instead write a check
-" that guards to warn us if any of the plugins above have changed
-" these?
-set nocompatible
-set nomodeline
-set ttyfast
-set noinsertmode
-
-
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Unicode support
 " N.B., if the occurence of the utf8 characters below glitches out
@@ -890,6 +860,48 @@ set splitbelow           " When splitting horizontally, split below
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+" ~~~~~ netrw
+" BUG: for some reason netrw_alto and netrw_altv aren't working. I
+" tried moving all the netrw stuff down here, just in case setting
+" &sb reset things; but alas that's not it...
+" TODO: cf., <https://stackoverflow.com/a/36676859>,
+" <http://www.vim.org/scripts/script.php?script_id=1075>.
+" We should probably switch to using 'eiginn/netrw' rather than
+" whatever version ships built-in; though see the notes there about
+" needing to uninstall the older version first...
+
+" cf., <https://shapeshed.com/vim-netrw/>
+let g:netrw_altfile      = 1  " 1= Make <C-^> return to the last-edited file.
+let g:netrw_alto         = 0  " 1= make :Sex &splitbelow (default: &sb)
+let g:netrw_altv         = 1  " 1= make :Vex &splitright (default: &spr)
+let g:netrw_banner       = 0  " 0= hide the banner. (Toggle with <I>)
+let g:netrw_liststyle    = 2  " 2= `ls -CF` style.  (Toggle with <i>)
+let g:netrw_browse_split = 0  " Which window/split to open files into.
+let g:netrw_winsize      = 25 " What percent of the available extent to use.
+let g:netrw_list_hide    = '\(^\|\s\s\)\zs\.[^\.]\+' " Toggle hiddenness with <gh>
+
+" TODO: if we don't use vinegar, then should copy-paste the stuff
+" for using 'suffixes' in lieu of the default strange C-oriented
+" sorting. Also for enhancing the hidden files based on 'wildignore'.
+" I do dislike vinegar's nmap for <->; would rather use <Q> or something
+" else I don't use. (I mean the <-> mapping that applies to all
+" buffers; not the local one inside the netrw window, that one's
+" fine.)
+"
+" Also, apparently netrw is extremely buggy (especially the tree-view);
+" so that's the main reason to want to go for something else
+" <https://www.reddit.com/r/vim/comments/22ztqp/why_does_nerdtree_exist_whats_wrong_with_netrw/cgs4aax/>
+"
+"augroup wrengrvinegar
+"autocmd!
+" The `:bp\|` part is so it doesn't kill the window it's in when it closes.
+"autocmd FileType netrw
+"    \  nnoremap <buffer> q :bp\|bd #<CR>
+"    \| nnoremap <buffer> ~ :edit ~/<CR>
+"augroup END
+
+
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Helper/external programs (beware portability)
 
 " The shell used for `!` and `:!` commands.
@@ -1041,9 +1053,26 @@ imap <S-Down> <ESC>10j10<C-E>zzi
 map  <C-Up>   <C-u>M
 map  <C-Down> <C-d>M
 
+" Move by display-lines rather than by file-lines
+noremap <Up>   gk
+noremap k      gk
+noremap <Down> gj
+noremap j      gj
+
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Buffers, Splits, &c.
+
+" Make it easier to move around between splits.
+" TODO: should we do the same for <C-Up/Down/Left/Right> ?
+" TODO: is there any good abbreviation for <C-w><C-w> ?
+"nnoremap <C-h> <C-w>h
+"nnoremap <C-k> <C-w>k
+"nnoremap <C-l> <C-w>l
+" N.B., <C-j> is the same thing as <NL>
+"nnoremap <C-j> <C-w>j
+
+
 " I hate <Q> switching to ex-mode. Also, I hate that wiping buffers
 " also kills the window it's in. So we remap <Q> to close buffers
 " nicely.
