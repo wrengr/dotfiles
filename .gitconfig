@@ -16,6 +16,8 @@
     user = wrengr
 [core]
     # Just to be sure.
+    # BUG: for some reason git is picking up /usr/bin/vim rather
+    # than /sw/bin/vim, even though the latter comes first in PATH...
     editor = vim
     # Chromium style demands we disable autocrlf.
     # TODO: do we want this everywhere else? Can we guard it to be
@@ -81,7 +83,7 @@
     lineNumber = true
     # "basic" = -G / grep; "extended" = -E / egrep; "fixed" = -F / fgrep;
     # "perl" = -P / pcre.
-    patternType = extended
+    patternType = basic
 
 
 # TODO: consider also: <http://www.caliban.org/ruby/acoc.shtml>
@@ -144,7 +146,32 @@
     untracked = cyan
     #unmerged =
 
-# TODO: add a [pretty] stanza, so we can reuse things like the "lol" or "lola" formatting with "rofl" and "top" too (or via a simple flag for any ad-hoc command we run) <https://github.com/ddopson/dotfiles/blob/master/.gitconfig> To drop the commit message from the output of "top", just set --format or --pretty to the empty string (or whatever it is you want to see).
+# Cf., <https://github.com/ddopson/dotfiles/blob/master/.gitconfig>
+[pretty]
+    # N.B., the %C(auto) color was introduced in git 1.8.3 (24 May 2013)
+    # N.B., the meaning of %C(auto) for %h and %H is color.diff.commit
+    # (whereas %t, %T, %p, and %P are all colorless). Whereas for
+    # %d and %D is uses color.decorate
+    #
+    # TODO: consider moving the %d to the end of the line? T'would
+    # differ from lol, but would help keep the branch/tag info from
+    # interfering with reading the commit subjects...
+    #
+    # BUG: unlike the lol alias (i.e., using --oneline) this doesn't
+    # mix well with --stat etc. The docs say that --pretty=tformat:blah
+    # (or --format=blah) is what --oneline uses to get "terminator
+    # semantics" rather than the "separator semantics" of
+    # --pretty=format:blah. But for some reason, using lola with
+    # --stat etc introduces an additional blank line (with the
+    # vertical bar from the --graph) before it prints the stats.
+    # And if you try using --pretty=format:blah instead, then we
+    # still get that vertical bar followed by a newline before the
+    # stats; that only gets rid of the newline just *before* the
+    # vertical bar.
+    #
+    # N.B., there's some strange glitch here where double-quotes
+    # work as quotes, but single-quotes show up as literals.
+    lola = tformat:"%C(auto)%h%Creset %Cgreen(%cr)%Creset %Cblue<%aN>%Creset%C(auto)%d%Creset %s"
 
 
 # TODO: anything else fun in <https://github.com/tmsanrinsha/dotfiles/blob/master/home/.gitconfig> ?
@@ -179,32 +206,13 @@
     # does it not always look that way at work?
     # N.B., git-log picks up colors from color.diff. In particular,
     # the builtin --oneline will use color.diff.commit for the hash!
-    lol   = log --graph --pretty=oneline --abbrev-commit --decorate
-    # N.B., the %C(auto) color was introduced in git 1.8.3 (24 May 2013)
-    # N.B., the meaning of %C(auto) for %h and %H is color.diff.commit
-    # (whereas %t, %T, %p, and %P are all colorless). Whereas for
-    # %d and %D is uses color.decorate
-    #
-    # TODO: maybe consider turning this format string into an alias
-    # by setting pretty.<name> ?
-    #
-    # TODO: consider moving the %d to the end of the line? T'would
-    # differ from lol, but would help keep the branch/tag info from
-    # interfering with reading the commit subjects...
-    #
-    # BUG: unlike the lol alias (i.e., using --oneline) this doesn't
-    # mix well with --stat etc. The docs say that --pretty=tformat:blah
-    # (or --format=blah) is what --oneline uses to get "terminator
-    # semantics" rather than the "separator semantics" of
-    # --pretty=format:blah. But for some reason, using lola with
-    # --stat etc introduces an additional blank line (with the
-    # vertical bar from the --graph) before it prints the stats;
-    # unline --oneline and hence lol.
-    lola  = log --color --graph --pretty=tformat:'%C(auto)%h%Creset %Cgreen(%cr)%Creset %Cblue<%aN>%Creset%C(auto)%d%Creset %s'
+    lol   = log --color --graph --pretty=oneline --abbrev-commit --decorate
+    lola  = log --color --graph --pretty=lola
     # This one also shows stashes and abandoned branches/heads
-    rofl  = "!git lol $(git rev-list -g --all)"
+    rofl  = "!git lol  $(git rev-list -g --all)"
+    rofla = "!git lola $(git rev-list -g --all)"
     # Show more details of the most recent patch:
-    # (To show the diff, use `git show` or try `git diff --cached HEAD^`)
+    # (To show the diff, use `-p`, `git show`, or `git diff --cached HEAD^`)
     top   = log --stat -1
     unpushed = log @{u}..
     st    = status --branch
@@ -236,6 +244,8 @@
     # a vanilla `git rebase` seems to work (because it uses the parent
     # as the <exclude-from> point, rather than trying to determine it from
     # "branch.<name>.{remote,merge}").
+    # BUG: this also doesn't quite work right. We're going to have
+    # to write our own heavy-duty script to actually do the right thing.
     rop   = "!git rebase --onto $(git-parent)"
     # BUG: this won't tab-complete the branch name, unlike `oo` itself
     oorop = "!f(){ git oo $1 && git rop ; }; f"
