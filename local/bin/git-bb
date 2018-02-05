@@ -115,7 +115,9 @@ sub colorize {
 # TODO: when using real git and so "upstream" is always a remote branch,
 #       is there a way to get the actual parentage relation?
 # TODO: for use with git5, also get info about whether the exported
-#       version is up to date.
+#       version is up to date. Consider using something like:
+#       > git rev-list --left-right ${thisBranch}...${thatBranch}
+#       to get the ahead/behind info. (cf., <https://gist.github.com/kd35a/7924799> and <https://github.com/bill-auger/git-branch-status/>)
 # TODO: also get the %(subject), a la `git branches -vv`. (Make this
 #       optional, since I almost never care, and it almost always linewraps)
 # TODO: anything else we want from <https://stackoverflow.com/a/21868228>?
