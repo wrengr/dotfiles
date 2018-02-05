@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 # An enhanced version of `git branch -vv`
-# wren gayle romano <wrengr@google.com>             ~ 2018.01.31
+# wren gayle romano <wrengr@google.com>             ~ 2018.02.05
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # N.B., by naming this as we have and having it on our path, this
 # script will be automagically run if someone says `git bb`;
@@ -23,40 +23,53 @@ use strict;
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ Shelling out to Git
 
-# TODO: inline this where appropriate in order to get better diagnostics
-# about what command we were trying to run when this exploded. (and/or
-# take the command in as an argument instead)
-sub getExitCode {
-    if ($? == -1) {
-        die "failed to execute: $!\n";
+# A variant of backticks with explicit tokenization, for better
+# security/correctness and to avoid quotation hell.
+sub backticks {
+    open my $FH, '-|', @_
+        or die "Couldn't fork @_: $!\n";
+
+    # HACK: we assume the output is a single line. If it isn't,
+    # then when we close the file handle, that'll send SIGPIPE to
+    # the child process. If the child can't handle SIGPIPE, then
+    # when it dies it'll kill us too (via the checks below).
+    my $stdout = <$FH>;
+
+    if (close $FH) { # Both the syscall and the child process exit cleanly.
+        if (defined $stdout) { # Avoid warnings about chomping undef.
+            chomp $stdout; # This is crucial!
+            return $stdout;
+        } else {
+            # HACK: This isn't inherently bad, just never what we
+            # want for our particular use cases.
+            die "No output from @_\n";
+        }
+    } elsif ($!) { # The syscall itself failed, rather than the child process.
+        die "Couldn't close pipe to @_: $!\n";
+    } elsif ($? == -1) {
+        # Should this case obtain, then circumstances are prolly such
+        # that the open syscall would've failed before we ever even
+        # got to the close syscall; thus making this branch unreachable.
+        # But whatevs; better safe than sorry.
+        die "Couldn't execute @_: $!\n";
     } elsif ($? & 127) {
-        die sprintf "died with signal %d, %s coredump\n",
+        die sprintf "Signal %d killed @_ (%s coredump)\n",
             ($? & 127),  ($? & 128) ? 'with' : 'without';
     } else {
-        return ($? >> 8);
+        my $exit = $? >> 8; # extract the actual exit-code.
+        if ($exit) {
+            die "Exited with failure @_: $exit\n";
+        } else {
+            # The close syscall succeeded, the child process exited
+            # cleanly, and the child's exit code was zero, so...
+            die "wtf? @_\n";
+        }
     }
 }
 
-my $Git = `which git`;
-die "Couldn't locate git" unless 0 == getExitCode();
-chomp $Git; # N.B., this is crucial!
-
-sub GitBackticks {
-    # TODO: any way we can get the exit code too? so we can check getExitCode
-    # TODO: should we take arguments to specify less generic error messages?
-    open my $FH, '-|', $Git, @_ or die "Can't run git @_: $!";
-    my $stdout = <$FH>; # HACK: we assume the output is a single line.
-    close $FH or die "Couldn't close pipe to git @_: $! $?";
-    # The chomp is crucial. The guard is just to avoid warnings.
-    chomp $stdout if defined $stdout;
-    return $stdout;
-}
-
-# TODO: remove this if it remains unused.
-sub verifyBranch {
-    system($Git, 'show-ref', '--quiet', '--verify', '--', "refs/heads/$_[0]");
-    return 0 == getExitCode();
-}
+# N.B., since we're using $Git as the first argument to backticks,
+# it's especially crucial that we chomp here.
+my $Git = backticks 'which', 'git';
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -66,9 +79,11 @@ sub verifyBranch {
 # colors in one go, rather than firing off a subprocess for each
 # color? Or if that's impossible, then maybe fill in the table lazily
 # based on the colors we actually use?
-my $Reset = GitBackticks 'config', '--get-color', '', 'reset';
+
+# N.B., for getting the color reset we really do need that empty argument.
+my $Reset = backticks $Git, 'config', '--get-color', '', 'reset';
 my %Color;
-$Color{$_} = GitBackticks 'config', '--get-color', $_
+$Color{$_} = backticks $Git, 'config', '--get-color', $_
     foreach
     ( 'color.branch.current'
     , 'color.branch.upstream'
@@ -131,6 +146,7 @@ while (<$FH>) {
         , 'tracking'   => $tracking
         };
 }
+# TODO: more verbose error messages for unpacking $? into its component parts.
 close $FH or die "Couldn't close pipe: $! $?";
 
 
@@ -145,12 +161,20 @@ while (my ($branch, $info) = each %BranchInfo) {
 
     # Try to resolve remote parents.
     unless (exists $BranchInfo{$parent}) {
-        my $remote = undef; # HACK: need to fix this!!
-        # BUG: the following throws errors, killing this process before
-        # we can close the pipe! Should we use some variant of &verifyBranch
-        # I assume?
-        #my $remote = GitBackticks 'rev-parse', '--abbrev-ref',
-        #    '--symbolic-full-name', $parent . '@{upstream}';
+        my $remote = undef; # BUG: implement this!
+        # TODO: this seems to be the relevant git command; however,
+        # we've already done one step of lookup by getting the $parent
+        # from the upstream field, so this will try to look up *that*
+        # branch's upstream. Which, if it's a remote branch means git
+        # will error out (and thus kill us); which is not at all what
+        # we're after here...
+        #my $remote = backticks $Git, 'rev-parse', '--abbrev-ref',
+        #    '--symbolic-full-name', ($parent . '@{upstream}');
+        #
+        # TODO: The following if-then-else is transliterated from
+        # Chromium depot-tools; however, it doesn't match our own
+        # code (e.g., since &backticks fails unless there's output,
+        # thus the else branch below can never be taken).
         if ($remote) {
             $parent = $remote; # N.B., (locally) side-effecting.
         } else {
@@ -169,7 +193,7 @@ while (my ($branch, $info) = each %BranchInfo) {
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ Pretty-print branches
 
-my $HEAD = GitBackticks 'rev-parse', '--abbrev-ref', 'HEAD';
+my $HEAD = backticks $Git, 'rev-parse', '--abbrev-ref', 'HEAD';
 
 sub colorizeBranch {
     my ($branch) = @_;
@@ -180,6 +204,7 @@ sub colorizeBranch {
         $colorname = 'color.branch.upstream'; # HACK: What color should this be?
         $branch = '{NO_UPSTREAM}';
     } elsif (exists $Gone{$branch}) {
+        # TODO: actually, we shouldn't mark remote/tracking branches as "gone"!
         $colorname = 'color.branch.upstream'; # HACK: What color should this be?
         $branch = "{${branch}:GONE}";
     } elsif ($branch eq $HEAD) {
@@ -240,7 +265,8 @@ sub prettyPrintBranch {
                 $tracking .= colorize('color.diff.old', "-$1");
             }
         }
-        # TODO: if $tracking was originally the empty string, then maybe we should print something like '[=]'
+        # TODO: if $tracking was originally the empty string, then
+        # maybe we should print something like '[=]'
 
         # Given the visible tree structure, there's no benefit to printing
         # ${$info}{'upstream'}, so we just add the brackets here.
