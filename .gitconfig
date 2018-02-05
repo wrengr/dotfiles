@@ -100,12 +100,16 @@
     #grep, pager, decorate, showbranch
 [color "branch"]
     # TODO: is there any way to colorize the hash (a la color.diff.commit)?
-    current = magenta bold
-    upstream = red bold
+    current = cyan bold
+    upstream = magenta bold
     local = green bold
     remote = blue bold
 [color "decorate"]
-    head = magenta bold
+    # TODO: is there any way to actually state the following desired equivalences?
+    #     color.decorate.head         = color.branch.current
+    #     color.decorate.branch       = color.branch.local
+    #     color.decorate.remoteBranch = color.branch.remote
+    head = cyan bold
     branch = green bold
     remoteBranch = blue bold
     tag = yellow bold
@@ -215,7 +219,9 @@
     # (To show the diff, use `-p`, `git show`, or `git diff --cached HEAD^`)
     top   = log --stat -1
     unpushed = log @{u}..
-    st    = status --branch
+    # TODO: we want the --untracked-files=no for my dotfiles repo;
+    # but do we really want it everywhere?
+    st    = status --branch --untracked-files=no
     # What we really want most of the time.
     ci    = commit --patch
     # For when we're lazy or singleminded.
@@ -293,7 +299,7 @@
     # (N.B., for-each-ref doesn't support --color nor %cr)
     # What fields are supported: <http://stackoverflow.com/a/21868228>
     # HT: <https://gist.github.com/mwhite/6887990>
-    # TODO: is there a way to combine this info with the "mb" and "bb" info?
+    # TODO: is there a way to combine this info with the "bb" info?
     # TODO: is there any way to color this like we do for the others?
     lm = "!git for-each-ref \
         --sort='-authordate' \
@@ -319,11 +325,10 @@
     assumed = "!git ls-files -v | grep ^h | cut -c 3-"
     unassume-all = "!git assumed | xargs git update-index --no-assume-unchanged"
     assume-all = "!git st -s | awk {'print $2'} | xargs git assume"
-    # Chromium/Google-only things.
+    # Chromium depot-tools stuff.
     # TODO: how to guard these so they don't break on my other systems?
-    # N.B., `git map` comes from the same place as `git map-branches`
-    # (I think), so it's also Chromium-specific.
-    mb = map-branches
+    # TODO: will this work with Google/Perforce, or need we re-write our own version?
+    # N.B., `git map` is also from depot-tools, though it doesn't need an alias.
     ru = rebase-update
 
 

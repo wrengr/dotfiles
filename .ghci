@@ -1,5 +1,6 @@
--- -*- mode: haskell; -*-
--- wren gayle romano's ghci login script            ~ 2017.11.21
+-- wren gayle romano's ghci login script            ~ 2018.02.05
+--
+-- N.B., this file doesn't understand block-comments (<= 8.0.2 at least)
 
 -- For more inspiration, see:
 -- <http://www.haskell.org/pipermail/haskell-cafe/2007-September/032260.html>
@@ -11,7 +12,7 @@
 
 
 ----------------------------------------------------------------
--- * Tool integration and other helpful commands
+-- * Tool integration and basic shell commands.
 
 -- :. <file>             Source commands from <file>
 :def . readFile
@@ -99,40 +100,23 @@
 
 
 ----------------------------------------------------------------
--- * Language extensions we always want on:
+-- * Language extensions and type-checker plugins we always want enabled.
 :set -XNoMonomorphismRestriction
 :set -XBangPatterns
 :set -XFlexibleContexts
 :set -XTypeOperators
 
--- * Type-checker plugins for GHC.
--- (At work, these are required for running things with a local
+
+-- At work, these are required for running things with a local
 -- installation of bare GHC, instead of jumping through hoops to
 -- use Blaze. Of course, to support type-checker plugins, we need
--- a more recent version of GHC than the one that ships by default.)
-{-
-:set -fplugin=GHC.TypeLits.KnownNat.Solver
-:set -fplugin=GHC.TypeLits.Extra.Solver
-:set -fplugin=GHC.TypeLits.Normalise
--}
+-- a more recent version of GHC than the one that ships by default.
+-- :set -fplugin=GHC.TypeLits.KnownNat.Solver
+-- :set -fplugin=GHC.TypeLits.Extra.Solver
+-- :set -fplugin=GHC.TypeLits.Normalise
 
--- * Debugger flags
--- <http://www.haskell.org/ghc/dist/current/docs/users_guide/ghci-debugger.html>
-:set -fbreak-on-error
--- :set -fbreak-on-exception
 
--- * If in a Cabal directory, be sure to auto-include Cabal's CPP macros
-:set -optP-include -optPdist/build/autogen/cabal_macros.h
-
--- * Other helpful notes
--- Use -fobject-code            to compile modules before loading.
--- Use -hide-package <pkg>      to do the obvious.
--- Use --extra-lib-dir=/usr/lib to resolve trouble with iconv linking in cabal.
-putStrLn ""
-putStrLn "\tUse :e to edit the current file, and :r to reload"
-putStrLn ""
-:set editor vim
-
+----------------------------------------------------------------
 -- * Colorful prompt
 -- <http://blog.havenisms.com/colorizing-the-ghci-prompt>
 -- BUG: this messes up GHCi's readline/editline stuff though.
@@ -148,7 +132,24 @@ putStrLn ""
 
 
 ----------------------------------------------------------------
--- * At the end to reduce startup verbiage
+:set editor vim
+
+-- * If in a Cabal directory, be sure to auto-include Cabal's CPP macros
+:set -optP-include -optPdist/build/autogen/cabal_macros.h
+
+-- * Other helpful notes:
+-- Use -fobject-code            to compile modules before loading.
+-- Use -hide-package <pkg>      to do the obvious.
+-- Use --extra-lib-dir=/usr/lib to resolve trouble with iconv linking in cabal.
+
+-- * Debugger flags
+-- <http://www.haskell.org/ghc/dist/current/docs/users_guide/ghci-debugger.html>
+:set -fbreak-on-error
+-- :set -fbreak-on-exception
+
+-- * Give memory and timing info
+-- (N.B., must be at the end of this file, else we'll get a whole
+-- bunch of verbiage every time we start up.)
 :set +s
 
 ----------------------------------------------------------------

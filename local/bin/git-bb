@@ -1,9 +1,9 @@
 #!/usr/bin/env perl
 # An enhanced version of `git branch -vv`
-# wren gayle romano <wrengr@x.com>                  ~ 2017.07.21
+# wren gayle romano <wrengr@google.com>             ~ 2018.01.31
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # N.B., by naming this as we have and having it on our path, this
-# script will be automagically run if someone says `git bv`;
+# script will be automagically run if someone says `git bb`;
 # no aliases required!
 
 use warnings;
@@ -19,6 +19,10 @@ use strict;
 # * filtering the tree (by last-modified, etc), maybe? cf.,
 #   <https://github.com/MarkLodato/scripts/blob/master/git-recent-branches>
 
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~ Shelling out to Git
+
 # TODO: inline this where appropriate in order to get better diagnostics
 # about what command we were trying to run when this exploded. (and/or
 # take the command in as an argument instead)
@@ -26,135 +30,270 @@ sub getExitCode {
     if ($? == -1) {
         die "failed to execute: $!\n";
     } elsif ($? & 127) {
-        die sprintf "child died with signal %d, %s coredump\n",
+        die sprintf "died with signal %d, %s coredump\n",
             ($? & 127),  ($? & 128) ? 'with' : 'without';
     } else {
         return ($? >> 8);
     }
 }
 
-my $GIT = `which git`;
+my $Git = `which git`;
 die "Couldn't locate git" unless 0 == getExitCode();
-chomp $GIT; # N.B., this is crucial!
+chomp $Git; # N.B., this is crucial!
 
 sub GitBackticks {
     # TODO: any way we can get the exit code too? so we can check getExitCode
     # TODO: should we take arguments to specify less generic error messages?
-    open my $FH, '-|', $GIT, @_ or die "Can't run git @_: $!";
-    my $stdout = <$FH>; # N.B., we assume the output is a single line.
+    open my $FH, '-|', $Git, @_ or die "Can't run git @_: $!";
+    my $stdout = <$FH>; # HACK: we assume the output is a single line.
     close $FH or die "Couldn't close pipe to git @_: $! $?";
-    # N.B., the chomp is crucial. The guard is just to avoid warnings.
+    # The chomp is crucial. The guard is just to avoid warnings.
     chomp $stdout if defined $stdout;
     return $stdout;
 }
+
+# TODO: remove this if it remains unused.
+sub verifyBranch {
+    system($Git, 'show-ref', '--quiet', '--verify', '--', "refs/heads/$_[0]");
+    return 0 == getExitCode();
+}
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~ Color configuration
 
 # TODO: is there any way to make this faster? i.e., to get all the
 # colors in one go, rather than firing off a subprocess for each
 # color? Or if that's impossible, then maybe fill in the table lazily
 # based on the colors we actually use?
-my %color = (
-    'color.branch.current' => '',
-    'color.branch.upstream' => '',
-    'color.branch.local' => '',
-    'color.branch.remote' => '',
-#    'color.branch.plain' => '', # Could be used for our "no color"?
-#    'color.decorate.head' => '', # Should equal 'color.branch.current' imo.
-#    'color.decorate.branch' => '', # Should equal 'color.branch.local' imo.
-#    'color.decorate.remoteBranch' => '', # Should equal 'color.branch.remote' imo.
-#    'color.decorate.tag' => '',
-#    'color.decorate.stash' => '',
-    'color.diff.commit' => '',
-    'color.diff.old' => '', # We use this for how far behind we are
-    'color.diff.new' => '', # we use this for how far ahead we are
-#    'color.diff.plain' => '', # Could be used for our "no color"?
-);
-foreach my $colorname (keys %color) {
-    $color{$colorname} = GitBackticks 'config', '--get-color', $colorname;
-}
-my $reset = GitBackticks 'config', '--get-color', '', 'reset';
+my $Reset = GitBackticks 'config', '--get-color', '', 'reset';
+my %Color;
+$Color{$_} = GitBackticks 'config', '--get-color', $_
+    foreach
+    ( 'color.branch.current'
+    , 'color.branch.upstream'
+    , 'color.branch.local'
+    , 'color.branch.remote'
+    # 'color.branch.plain'          # TODO: Could be used for our "no color"?
+    # 'color.decorate.head'         # Should equal 'color.branch.current' imo.
+    # 'color.decorate.branch'       # Should equal 'color.branch.local' imo.
+    # 'color.decorate.remoteBranch' # Should equal 'color.branch.remote' imo.
+    # 'color.decorate.tag'          # TODO: would this ever be helpful?
+    # 'color.decorate.stash'        # TODO: would this ever be helpful?
+    , 'color.diff.commit'
+    , 'color.diff.old'              # We use this for tracking-behind
+    , 'color.diff.new'              # we use this for tracking-ahead
+    # 'color.diff.plain'            # TODO: Could be used for our "no color"?
+    );
 
-my $HEAD = GitBackticks 'rev-parse', '--abbrev-ref', 'HEAD';
-
-sub verifyBranch {
-    system($GIT, 'show-ref', '--quiet', '--verify', '--', "refs/heads/$_[0]");
-    # "\033[1;31m${0##*/}:\033[0m \033[1mNot a valid branch:\033[0m \033[1;33m$CHILD\033[0m"
-    return 0 == getExitCode();
+sub colorize {
+    my ($colorname, $string) = @_;
+    # TODO: guard against unknown/unexpected $colorname.
+    # TODO: add config stuff to handle dis-/enabling color.
+    return $Color{$colorname} . $string . $Reset;
 }
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~ Gather branch information
 
 # TODO: when using real git and so "upstream" is always a remote branch,
-# is there a way to get the actual parentage relation?
-# TODO: for use with git5, also get info about whether the exported version is up to date.
-# TODO: also get the %(subject), a la `git bv`. (Make this optional, since I almost never care, and it almost always linewraps)
-# TODO: anything else we want from <https://stackoverflow.com/a/21868228>? Maybe the relative date and author/committer name, like lola has?
-# TODO: define a single structure which combines this information with the color info, so that we don't need to manually keep the order of things in sync.
-my $REFS_FORMAT = join '%09',
+#       is there a way to get the actual parentage relation?
+# TODO: for use with git5, also get info about whether the exported
+#       version is up to date.
+# TODO: also get the %(subject), a la `git branches -vv`. (Make this
+#       optional, since I almost never care, and it almost always linewraps)
+# TODO: anything else we want from <https://stackoverflow.com/a/21868228>?
+#       Maybe the relative date and author/committer name, like lola has?
+# TODO: define a single structure which combines this information with
+#       the color info, so that we don't need to manually keep the
+#       order of things in sync.
+my $BranchInfoFormat = join '%09',
     '%(refname:short)',
     '%(objectname:short)', # The git hash.
     '%(authordate:short)', # YYYY-MM-DD
-    # '%(push:short)', # "the local ref which represents the @{push} location for the refname" ??? what is a @{push}?
+    # '%(push:short)', # This is described as """the local ref which represents the @{push} location for the refname""", but what the heck is a "@{push}"?
     '%(upstream:short)',
-    '%(upstream:track,nobracket)'; # the string "gone", or (join ', ', "ahead \d+", "behind \d+")
+    '%(upstream:track,nobracket)'; # The "gone/ahead/behind" string.
 open my $FH, '-|',
-    $GIT, 'for-each-ref', "--format=$REFS_FORMAT", 'refs/heads'
+    $Git, 'for-each-ref', "--format=$BranchInfoFormat", 'refs/heads'
         or die "Can't run git for-each-ref: $!";
-my %branches = ();
+my %BranchInfo = ();
 while (<$FH>) {
     chomp;
     my ($branch, $hash, $authordate, $upstream, $tracking) = split "\t";
-    $branches{$branch} = [$hash, $authordate, $upstream, $tracking];
+    # TODO: move the splitting/parsing of $tracking to here.
+    $BranchInfo{$branch} =
+        { 'branch'     => $branch
+        , 'hash'       => $hash
+        , 'authordate' => $authordate
+        , 'upstream'   => $upstream
+        , 'tracking'   => $tracking
+        };
 }
 close $FH or die "Couldn't close pipe: $! $?";
 
 
-# TODO: once we print things as a tree, adjust this to incorporate
-# the indentation level. (I.e., in case we have a shallow branch
-# with a long name, vs a deep branch with a short name.)
-my $maxBranchLength = 0;
-foreach my $branch (sort keys %branches) {
-    my $length = length $branch;
-    $maxBranchLength = $length if $length > $maxBranchLength;
-}
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~ Determine the root branches.
+my %Gone;     # Treated as a set.
+my %Roots;    # Treated as a set.
+my %Children; # A hash of (lists treated as) sets.
+while (my ($branch, $info) = each %BranchInfo) {
+    my $parent = ${$info}{'upstream'};
+    die "Null upstream for branch $branch\n" unless $parent;
 
-# TODO: actually print as a tree, a la Chromium depot tools' git-map-branches
-foreach my $branch (sort keys %branches) {
-    my $tracking = $branches{$branch}[3];
-    if ($tracking eq 'gone') {
-        # TODO: want a color here! but which one? Would 'color.diff.whitespace' be appropriate, or 'color.status.untracked' or... what?
-    } else {
-        my $orig = $tracking;
-        $tracking = '';
-        if ($orig =~ m/ahead\s+(\d+)/) {
-            $tracking .= $color{'color.diff.new'} . 'ahead ' . $1 . $reset;
+    # Try to resolve remote parents.
+    unless (exists $BranchInfo{$parent}) {
+        my $remote = undef; # HACK: need to fix this!!
+        # BUG: the following throws errors, killing this process before
+        # we can close the pipe! Should we use some variant of &verifyBranch
+        # I assume?
+        #my $remote = GitBackticks 'rev-parse', '--abbrev-ref',
+        #    '--symbolic-full-name', $parent . '@{upstream}';
+        if ($remote) {
+            $parent = $remote; # N.B., (locally) side-effecting.
+        } else {
+            # Git can't find the parent, so mark it as gone.
+            $Gone{$parent} = 1;
         }
-        if ($orig =~ m/behind\s+(\d+)/) {
-            $tracking .= ', ' if $tracking;
-            $tracking .= $color{'color.diff.old'} . 'behind ' . $1 . $reset;
-        }
+        # The parent isn't a local branch, so mark it as a root.
+        $Roots{$parent} = 1;
     }
 
+    # Add ourself to our parent's children.
+    push @{$Children{$parent}}, $branch;
+}
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~ Pretty-print branches
+
+my $HEAD = GitBackticks 'rev-parse', '--abbrev-ref', 'HEAD';
+
+sub colorizeBranch {
+    my ($branch) = @_;
+    my $colorname;
+    if (not $branch) {
+        # This case is taken from Chromium depot-tools' git-map-branches,
+        # though I've never encountered it myself...
+        $colorname = 'color.branch.upstream'; # HACK: What color should this be?
+        $branch = '{NO_UPSTREAM}';
+    } elsif (exists $Gone{$branch}) {
+        $colorname = 'color.branch.upstream'; # HACK: What color should this be?
+        $branch = "{${branch}:GONE}";
+    } elsif ($branch eq $HEAD) {
+        # TODO: need to generalize this test to also catch when the
+        # current branch (i.e., according to git, not whatever $branch
+        # happened to be passed as an argument) is the literal string
+        # 'HEAD' (according to what the depot-tools version does; though
+        # I've never encountered that issue), or also being some other
+        # branch which happens to point at the same hash as $HEAD does.
+        $colorname = 'color.branch.current';
+        # TODO: iff color is disabled, then we may want to add a
+        # prefix/suffix to $branch, like `git branch -vv` and Chromium
+        # depot-tools' git-map-branches.
+    } else {
+        $colorname = 'color.branch.local';
+    }
+    return colorize $colorname, $branch;
+}
+
+# TODO: we ought to break this out into a more general string-builder
+# sort of thing. Especially since we have a notion of columns and
+# padding them to align.
+sub prettyPrintBranch {
+    my ($branch, $paddingWidth, $treeDepth) = @_;
+    my $columnSeparator = '  ';
+
+    # HACK: We want to print the (putative) branch, even if it has no info.
     print '',
-        ($branch eq $HEAD
-            ? $color{'color.branch.current'}
-            : $color{'color.branch.local'}),
-        $branch,
-        $reset,
-        (' ' x ($maxBranchLength - length $branch)),
-        ' ',
-        $color{'color.diff.commit'},
-        $branches{$branch}[0], # hash
-        $reset,
-        ' ',
-        # $color{...},
-        $branches{$branch}[1], # authordate
-        # $reset,
-        ' [',
-        # TODO: should we pad this up to $maxBranchLength too?
-        $color{'color.branch.upstream'}, # or color.branch.{local,remote} ?
-        $branches{$branch}[2], # upstream
-        $reset,
-        ($tracking ne '' ? ': ' : ''),
-        $tracking,
-        "]\n";
+        ('  ' x $treeDepth),
+        colorizeBranch($branch),
+        # TODO: update this padding to work correctly vis-a-vis munging $branch
+        (' ' x ($paddingWidth - 2*$treeDepth - length $branch)),
+        $columnSeparator;
+
+    # TODO: clean up this guarding.
+    if (exists $BranchInfo{$branch}) {
+        my $info = $BranchInfo{$branch}; # Cache the hash lookup.
+        # TODO: avoid the need for this caching by passing it in,
+        # via the "while (my ($k,$v) = each %h)" idiom in lieu of our
+        # current foreach.
+
+        my $tracking = ${$info}{'tracking'};
+        if (not defined $tracking) {
+            # TODO: actually handle this case!
+            die "Undefined tracking info for branch $branch\n";
+        } elsif ($tracking eq 'gone') {
+            # TODO: want a color here! but which one? Would
+            # 'color.diff.whitespace' be appropriate, or
+            # 'color.status.untracked' or... what?
+        } else {
+            my $orig = $tracking;
+            $tracking = '';
+            if ($orig =~ m/ahead\s+(\d+)/) {
+                $tracking .= colorize('color.diff.new', "+$1");
+            }
+            if ($orig =~ m/behind\s+(\d+)/) {
+                $tracking .= ', ' if $tracking;
+                $tracking .= colorize('color.diff.old', "-$1");
+            }
+        }
+        # TODO: if $tracking was originally the empty string, then maybe we should print something like '[=]'
+
+        # Given the visible tree structure, there's no benefit to printing
+        # ${$info}{'upstream'}, so we just add the brackets here.
+        $tracking = "[$tracking]" if $tracking ne '';
+
+        print '',
+            colorize('color.diff.commit', ${$info}{'hash'}),
+            $columnSeparator,
+            ${$info}{'authordate'},
+            $columnSeparator,
+            $tracking;
+    }
+    print "\n";
+}
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~ Recursively construct and traverse the tree.
+
+# TODO: must adjust this to incorporate the indentation level of the
+# tree. We want to make sure that deep branches don't overflow due to
+# indentation; also would be nice to not have excessive padding whenever
+# the only long branch names are shallow.
+my $MaxBranchLength = 0;
+foreach my $branch (keys %BranchInfo) {
+    my $length = length $branch;
+    $MaxBranchLength = $length if $length > $MaxBranchLength;
+}
+
+# Hylomorphism to unfold the tree from %Roots and then immediately consume
+# it by calling &prettyPrintBranch on each node. To simplify the separation
+# of the unfold and the prettyprinting we use a poor-man's recursion to
+# build the tree from a stack. Of course, this means we never really have
+# the tree in hand; which will make it hard to add support for flexible
+# sorting/ordering.
+my @BranchQueue = sort keys %Roots;
+my $Depth = 0;
+while (@BranchQueue) {
+    my $branch = shift @BranchQueue;
+    if ($branch) {
+        prettyPrintBranch($branch, $MaxBranchLength, $Depth);
+
+        # TODO: the depot-tools version pops the branch out of the
+        # hash... why? is that necessary for us?
+        if (exists $Children{$branch}) {
+            ++$Depth;
+            unshift @BranchQueue, ''; # HACK: sentinel for decrementing $Depth.
+            unshift @BranchQueue, sort @{$Children{$branch}};
+            # TODO: decrement $Depth once those branches are done.
+        }
+    } else {
+        --$Depth; # Interpet the sentinels.
+    }
 }
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
