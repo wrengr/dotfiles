@@ -21,7 +21,7 @@ use strict;
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# ~~~~~ Shelling out to Git
+# ~~~~~ Shelling out
 
 # A variant of backticks with explicit tokenization, for better
 # security/correctness and to avoid quotation hell.
@@ -123,12 +123,13 @@ sub colorize {
 # TODO: define a single structure which combines this information with
 #       the color info, so that we don't need to manually keep the
 #       order of things in sync.
-my $BranchInfoFormat = join '%09',
-    '%(refname:short)',
-    '%(objectname:short)', # The git hash.
-    '%(authordate:short)', # YYYY-MM-DD
-    # '%(push:short)', # This is described as """the local ref which represents the @{push} location for the refname""", but what the heck is a "@{push}"?
-    '%(upstream:short)',
+my $BranchInfoFormat = join '%09', # Tab should be a safe delimiter to use.
+    '%(refname:short)',    # The name of the branch in question.
+    '%(objectname:short)', # The git hash that branch currently points to.
+    '%(authordate:short)', # The YYYY-MM-DD that hash was authored.
+    # '%(push:short)',     # Where `git push` goes (may differ from upstream).
+    '%(upstream:short)',   # Short name of parent branch, for pretty printing.
+    '%(upstream:remotename)', # The repo name where $upstream lives, if it's remote.
     '%(upstream:track,nobracket)'; # The "gone/ahead/behind" string.
 open my $FH, '-|',
     $Git, 'for-each-ref', "--format=$BranchInfoFormat", 'refs/heads'
@@ -136,13 +137,15 @@ open my $FH, '-|',
 my %BranchInfo = ();
 while (<$FH>) {
     chomp;
-    my ($branch, $hash, $authordate, $upstream, $tracking) = split "\t";
+    my ($branch, $hash, $authordate, $upstream, $remote, $tracking) = split "\t";
     # TODO: move the splitting/parsing of $tracking to here.
+    # TODO: also get info about the git5/citc refname, so we can print our tracking info relative to that too. (or at least print a boolean about whether the citc is up to date or no.)
     $BranchInfo{$branch} =
         { 'branch'     => $branch
         , 'hash'       => $hash
         , 'authordate' => $authordate
         , 'upstream'   => $upstream
+        , 'remote'     => $remote
         , 'tracking'   => $tracking
         };
 }
@@ -151,42 +154,39 @@ close $FH or die "Couldn't close pipe: $! $?";
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# ~~~~~ Determine the root branches.
+# ~~~~~ Determine the root set (and other sets).
 my %Gone;     # Treated as a set.
+my %Remote;   # Treated as a set.
 my %Roots;    # Treated as a set.
 my %Children; # A hash of (lists treated as) sets.
-while (my ($branch, $info) = each %BranchInfo) {
+while (my ($child, $info) = each %BranchInfo) {
+    die "No info for branch $child\n" unless $info;
     my $parent = ${$info}{'upstream'};
-    die "Null upstream for branch $branch\n" unless $parent;
 
-    # Try to resolve remote parents.
     unless (exists $BranchInfo{$parent}) {
-        my $remote = undef; # BUG: implement this!
-        # TODO: this seems to be the relevant git command; however,
-        # we've already done one step of lookup by getting the $parent
-        # from the upstream field, so this will try to look up *that*
-        # branch's upstream. Which, if it's a remote branch means git
-        # will error out (and thus kill us); which is not at all what
-        # we're after here...
-        #my $remote = backticks $Git, 'rev-parse', '--abbrev-ref',
-        #    '--symbolic-full-name', ($parent . '@{upstream}');
-        #
-        # TODO: The following if-then-else is transliterated from
-        # Chromium depot-tools; however, it doesn't match our own
-        # code (e.g., since &backticks fails unless there's output,
-        # thus the else branch below can never be taken).
-        if ($remote) {
-            $parent = $remote; # N.B., (locally) side-effecting.
+        # If the parent isn't local, it must be a root.
+        # (Regardless of whether it's remote or gone.)
+        $Roots{$parent} = 1;
+
+        # TODO: not sure this'll end up doing the right thing for
+        # standard git repos (i.e., when not using git5). That is,
+        # typically we have every local branch be tracking the remote
+        # version of that same branch; but that means we'll end up
+        # with a flat "tree" rather than printing out the appropriate
+        # dependency tree. The Chromium depot-tools version tries calling:
+        # > git rev-parse --abbrev-ref --symbolic-full-name $child@{upstream}
+        # before giving up and putting things into %Gone. But that
+        # doesn't quite work for me...
+        if (${$info}{'remote'}) {
+            $Remote{$parent} = 1;
         } else {
-            # Git can't find the parent, so mark it as gone.
+            # The upstream is neither local nor remote, so it must be gone.
             $Gone{$parent} = 1;
         }
-        # The parent isn't a local branch, so mark it as a root.
-        $Roots{$parent} = 1;
     }
 
-    # Add ourself to our parent's children.
-    push @{$Children{$parent}}, $branch;
+    # Include ourself among our parent's children.
+    push @{$Children{$parent}}, $child;
 }
 
 
@@ -202,11 +202,12 @@ sub colorizeBranch {
         # This case is taken from Chromium depot-tools' git-map-branches,
         # though I've never encountered it myself...
         $colorname = 'color.branch.upstream'; # HACK: What color should this be?
-        $branch = '{NO_UPSTREAM}';
+        $branch = '{NONE}';
     } elsif (exists $Gone{$branch}) {
-        # TODO: actually, we shouldn't mark remote/tracking branches as "gone"!
         $colorname = 'color.branch.upstream'; # HACK: What color should this be?
         $branch = "{${branch}:GONE}";
+    } elsif (exists $Remote{$branch}) {
+        $colorname = 'color.branch.remote';
     } elsif ($branch eq $HEAD) {
         # TODO: need to generalize this test to also catch when the
         # current branch (i.e., according to git, not whatever $branch
