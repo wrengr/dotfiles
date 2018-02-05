@@ -637,6 +637,9 @@ case "${_localhost}" in
                 # for `blaze build` and `blaze test` would to similar
                 # if we have aliases. N.B., that explodes if we haven't
                 # run `prodaccess` recently enough.
+
+                # Ditto, but for gghci
+                complete -o nospace -F _blaze::complete_build_target_wrapper gghci
             ;;
         esac
     ;;
