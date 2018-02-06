@@ -75,7 +75,7 @@ sub backticks {
         # HACK: we assume the output is a single line. If it isn't,
         # then when we close the file handle, that'll send SIGPIPE to
         # the child process. If the child can't handle SIGPIPE, then
-        # when it dies it'll kill us too (via the checks below).
+        # when it dies it'll kill us too (via &withPipe 's checks).
         my $stdout = <$FH>;
 
         if (defined $stdout) { # Avoid warnings about chomping undef.
@@ -98,11 +98,11 @@ my $Git = backticks 'which', 'git';
 # ~~~~~ Color configuration
 
 # TODO: is there any way to make this faster? i.e., to get all the
-# colors in one go, rather than firing off a subprocess for each
-# color? Or if that's impossible, then maybe fill in the table lazily
-# based on the colors we actually use?
+# colors in one go, rather than firing off a process for each one?
+# Or if that's impossible, then maybe fill in the table lazily based
+# on the colors we actually use?
 
-# N.B., for getting the color reset we really do need that empty argument.
+# N.B., for getting the reset we really do need that empty argument.
 my $Reset = backticks $Git, 'config', '--get-color', '', 'reset';
 my %Color;
 $Color{$_} = backticks $Git, 'config', '--get-color', $_
@@ -156,6 +156,9 @@ my $BranchInfoFormat = join '%09', # Tab should be a safe delimiter to use.
     '%(upstream)',         # Long version, for detecting remote branches.
     '%(upstream:track,nobracket)'; # The "gone/ahead/behind" string.
 
+# TODO: when the parent isn't in refs/heads, we still want to get
+# its info (if possible). E.g., so we can print the hash for remote
+# branches.
 my %BranchInfo = ();
 withPipe $Git, 'for-each-ref', "--format=$BranchInfoFormat", 'refs/heads',
     sub {
@@ -176,11 +179,13 @@ withPipe $Git, 'for-each-ref', "--format=$BranchInfoFormat", 'refs/heads',
             my ($remote) = $upstreamLong =~ m@^refs/remotes/([^/]+)@;
 
             # TODO: move the splitting/parsing of $tracking to here.
-
+            #
             # TODO: also get info about the git5/citc refname, so
             # we can print our tracking info relative to that too.
-            # (or at least print a boolean about whether the citc is
-            # up to date or no.)
+            # We can use:
+            # > git rev-list --left-right --count ${thisBranch}...${thatBranch}
+            # To get the ahead/behind info a la $tracking.
+
             $BranchInfo{$branch} =
                 { 'branch'     => $branch
                 , 'hash'       => $hash
@@ -194,14 +199,16 @@ withPipe $Git, 'for-each-ref', "--format=$BranchInfoFormat", 'refs/heads',
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# ~~~~~ Determine the root set (and other sets).
+# ~~~~~ Build the parentage table, root set, etc.
 my %Gone;     # Treated as a set.
 my %Remote;   # Treated as a set.
 my %Roots;    # Treated as a set.
 my %Children; # A hash of (lists treated as) sets.
 while (my ($child, $info) = each %BranchInfo) {
-    die "No info for branch $child\n" unless $info;
     my $parent = ${$info}{'upstream'};
+
+    # Include ourself among our parent's children.
+    push @{$Children{$parent}}, $child;
 
     unless (exists $BranchInfo{$parent}) {
         # If the parent isn't local, it must be a root.
@@ -220,21 +227,54 @@ while (my ($child, $info) = each %BranchInfo) {
         if (${$info}{'remote'}) {
             $Remote{$parent} = 1;
         } else {
-            # The upstream is neither local nor remote, so it must be gone.
+            # Our parent is neither local nor remote, so it must be gone.
             $Gone{$parent} = 1;
         }
     }
-
-    # Include ourself among our parent's children.
-    push @{$Children{$parent}}, $child;
 }
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# ~~~~~ Pretty-print branches
+# ~~~~~ Recursively construct and traverse the tree.
+
+# Hylomorphism to unfold the tree from %Roots and then immediately
+# consume it by calling some visitor function on each node. We deforest
+# both the tree itself and the recursion used to construct it; thus,
+# we only ever store a stack of nodes left to expand, and the tree
+# is only ever realized in the trace of program execution. That's
+# nice for performance, but it makes it trickier to add support for
+# certain types of tree transformations.
+sub walkTree (&) {
+    my ($visitor) = @_;
+
+    my $depth = 0;
+    my @queue = sort keys %Roots;
+    while (@queue) {
+        my $branch = shift @queue;
+        if (defined $branch) { # Check for sentinels
+            &$visitor($depth, $branch);
+
+            if (exists $Children{$branch}) {
+                ++$depth;
+                # Before pushing the children we push a sentinel
+                # indicating when we need to decrement $depth.
+                # TODO: is there a better sentinel than undef?
+                unshift @queue, undef;
+                unshift @queue, sort @{$Children{$branch}};
+            }
+        } else {
+            --$depth; # Interpet the sentinels.
+        }
+    }
+}
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~ Pretty-print the tree.
 
 my $HEAD = backticks $Git, 'rev-parse', '--abbrev-ref', 'HEAD';
 
+# Auto-magically determine the appropriate colorization for a branch.
 sub colorizeBranch {
     my ($branch) = @_;
     my $colorname;
@@ -265,28 +305,46 @@ sub colorizeBranch {
     return colorize $colorname, $branch;
 }
 
-# TODO: we ought to break this out into a more general string-builder
-# sort of thing. Especially since we have a notion of columns and
-# padding them to align.
-sub prettyPrintBranch {
-    my ($branch, $paddingWidth, $treeDepth) = @_;
-    my $columnSeparator = '  ';
+# TODO: would prolly be better to use a real formatting/string-builder
+# thing, rather than doing this ad hoc thing ourselves.
+my $ColumnSeparator = '  ';
+my $Indentation = 2; # how many spaces to indent by per $depth.
 
-    # HACK: We want to print the (putative) branch, even if it has no info.
+# First walk the tree to get the maximum adjusted branch length,
+# to align/pad the first column. We don't simply iterate over the
+# keys of %BranchInfo because that would make it difficult to
+# incorporate the depth adjustment.
+#
+# TODO: We'd really rather get the length directly from &prettyPrintBranch,
+# so that we can properly handle %Gone munging as well. Alas, there
+# seems no clean way to do that, since we'd need to make sure not to
+# count the colorizing control characters as part of the string length.
+my $MaxBranchLength = 0;
+walkTree {
+    my ($depth, $branch) = @_;
+    my $length = $Indentation * $depth + length $branch;
+    $MaxBranchLength = $length if $length > $MaxBranchLength;
+};
+
+# Now walk the tree a second time to pretty print it.
+walkTree {
+    my ($depth, $branch) = @_;
+
+    # Print the branch name, even if it has no $info.
+    # TODO: would it be worth munging this even more to avoid
+    # printing trailing spaces whenever $info is lacking?
     print '',
-        ('  ' x $treeDepth),
+        (' ' x ($Indentation * $depth)),
         colorizeBranch($branch),
-        # TODO: update this padding to work correctly vis-a-vis munging $branch
-        (' ' x ($paddingWidth - 2*$treeDepth - length $branch)),
-        $columnSeparator;
+        # TODO: update this padding to work correctly vis-a-vis
+        # $branch being munged by &colorizeBranch when it's gone, etc.
+        (' ' x ($MaxBranchLength - $Indentation * $depth - length $branch)),
+        $ColumnSeparator;
 
-    # TODO: clean up this guarding.
-    if (exists $BranchInfo{$branch}) {
-        my $info = $BranchInfo{$branch}; # Cache the hash lookup.
-        # TODO: avoid the need for this caching by passing it in,
-        # via the "while (my ($k,$v) = each %h)" idiom in lieu of our
-        # current foreach.
-
+    my $info = $BranchInfo{$branch};
+    if (defined $info) {
+        # TODO: should prolly move this parsing of $tracking to
+        # where we first build the info record.
         my $tracking = ${$info}{'tracking'};
         if (not defined $tracking) {
             # TODO: actually handle this case!
@@ -315,69 +373,12 @@ sub prettyPrintBranch {
 
         print '',
             colorize('color.diff.commit', ${$info}{'hash'}),
-            $columnSeparator,
+            $ColumnSeparator,
             ${$info}{'authordate'},
-            $columnSeparator,
+            $ColumnSeparator,
             $tracking;
     }
     print "\n";
-}
-
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# ~~~~~ Recursively construct and traverse the tree.
-
-# Hylomorphism to unfold the tree from %Roots and then immediately consume
-# it by calling &prettyPrintBranch on each node. To simplify the separation
-# of the unfold and the prettyprinting we use a poor-man's recursion to
-# build the tree from a stack. Of course, this means we never really have
-# the tree in hand; which will make it hard to add support for flexible
-# sorting/ordering.
-sub walkTree (&) {
-    my ($visitor) = @_;
-
-    my @queue = sort keys %Roots;
-    my $depth = 0;
-    while (@queue) {
-        my $branch = shift @queue;
-        if ($branch eq '') {
-            --$depth; # Interpet the sentinels.
-        } else {
-            &$visitor($depth, $branch);
-
-            if (exists $Children{$branch}) {
-                ++$depth;
-                unshift @queue, ''; # HACK: sentinel for decrementing $Depth.
-                unshift @queue, sort @{$Children{$branch}};
-            }
-        }
-    }
-}
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# ~~~~~ Pretty print the tree.
-
-# First walk the tree to get the maximum branch length for column
-# padding. We don't simply iterate over the keys of %BranchInfo because
-# that would make it difficult to incorporate the depth adjustment.
-#
-# TODO: We'd really rather get the length directly from &prettyPrintBranch,
-# so that we can properly handle %Gone munging as well. Alas, there
-# seems no clean way to do that, since we'd need to make sure not to
-# count the colorizing control characters as part of the string length.
-my $MaxBranchLength = 0;
-walkTree {
-    my ($depth, $branch) = @_;
-    my $length = 2 * $depth + length $branch;
-    $MaxBranchLength = $length if $length > $MaxBranchLength;
-};
-
-# Then walk it again to print it out.
-# TODO: now that we've factored out &walkTree, we can/should prolly
-# (re)inline &prettyPrintBranch here.
-walkTree {
-    my ($depth, $branch) = @_;
-    prettyPrintBranch($branch, $MaxBranchLength, $depth);
 };
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
