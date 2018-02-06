@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" wren gayle romano's vim config                    ~ 2018.01.13
+" wren gayle romano's vim config                    ~ 2018.02.05
 "
 " For guidance, see ~/.vim/README
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -182,7 +182,8 @@ Plug 'airblade/vim-gitgutter', PlugCond(has('signs'))
 "Plug 'michaeljsmith/vim-indent-object' " ii / ai
 "Plug 'vim-scripts/Align'
 
-"" For more reliable indenting and performance
+"" For more reliable indenting and performance (&fdm=syntax is notoriously slow)
+" TODO: consider using <https://github.com/Konfekt/FastFold>
 "set foldmethod=indent
 "set fillchars="fold: "
 
@@ -837,7 +838,18 @@ endif
 "     http://www.apaulodesign.com/vimrc.html
 "     https://github.com/thoughtbot/dotfiles/blob/master/vimrc
 
-"set lazyredraw          " Don't redraw while running macros, for speed
+" Improve latency/responsiveness by not redrawing while running macros.
+"
+" This also improves latency for scrolling when there's a lot of
+" syntax highlighting going on (e.g., the recent regression when
+" editing Perl files). Alas, it makes scrolling choppy whenever the
+" viewport moves. So which is worse: lagginess or choppiness?
+" TODO: it might help to set &regexpengine=1 <https://stackoverflow.com/a/25276429>
+" TODO: or perhaps setting &ttyscroll to something small (when redrawing is fast but scrolling is slow)
+" TODO: maybe also `hi NonText cterm=NONE ctermfg=NONE`, as suggested by :help slow-terminal
+" TODO: if all else fails, maybe it's an iTerm2 problem. Try setting opacity to 100% and blur to 0. (This seems an unlikely culprit, since I'm only really encountering issues with Perl files.)
+set lazyredraw
+
 "set hidden              " Hide buffers when they are abandoned (see also &bufhidden). Cf., <http://items.sjbach.com/319/configuring-vim-right>
 "set autochdir           " Change directory to the file in the current window
 "set nojoinspaces        " No additional spaces when joining lines with <J>
@@ -1050,6 +1062,8 @@ endif
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Movement
+
+" TODO: consider setting &scrolljump
 
 " Gentler scrolling with Shift-up/down
 map  <S-Up>   10k10<C-Y>zz
