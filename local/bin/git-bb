@@ -9,10 +9,9 @@
 use warnings;
 use strict;
 
-# TODO: parse input flags, and print usage info.
 # TODO: configuration options for:
-# * more/less verbosity
-# * yes/no color output
+# * more/less verbosity (both what branch info is printed, and debugging info)
+# * disable/enable color
 # * show remote-tracking branches too (a la git-branch's -a/--all)
 # * how to sort the tree (by last-modified, by name, by "weight"
 #   so that it's mostly right/bottom branching,...)
@@ -23,27 +22,28 @@ use strict;
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ Shelling out
 
-# A variant of backticks with explicit tokenization, for better
-# security/correctness and to avoid quotation hell.
-sub backticks {
+# Open a pipe and pass it to a block, being sure to close it and
+# provide detailed error messages.
+#
+# TODO: add caller info to the `die` messages, to ease debuging.
+sub withPipe {
+    # We put the block at the end (rather than using prototypes to
+    # avoid the need for the `sub` keyword) because the block is
+    # likely to be longer than the command, so this way looks better
+    # overall.
+    my $block = pop;
+
+    # Require the command to be explicitly tokenized, to minimize
+    # problems about correctness, security, and quotation hell.
     open my $FH, '-|', @_
         or die "Couldn't fork @_: $!\n";
 
-    # HACK: we assume the output is a single line. If it isn't,
-    # then when we close the file handle, that'll send SIGPIPE to
-    # the child process. If the child can't handle SIGPIPE, then
-    # when it dies it'll kill us too (via the checks below).
-    my $stdout = <$FH>;
+    my $ret = &$block($FH);
 
+    # N.B., it's the `close` call itself which sets both $! and $?
     if (close $FH) { # Both the syscall and the child process exit cleanly.
-        if (defined $stdout) { # Avoid warnings about chomping undef.
-            chomp $stdout; # This is crucial!
-            return $stdout;
-        } else {
-            # HACK: This isn't inherently bad, just never what we
-            # want for our particular use cases.
-            die "No output from @_\n";
-        }
+        # If the continuation returned anything, forward that along to callers.
+        return $ret;
     } elsif ($!) { # The syscall itself failed, rather than the child process.
         die "Couldn't close pipe to @_: $!\n";
     } elsif ($? == -1) {
@@ -53,18 +53,40 @@ sub backticks {
         # But whatevs; better safe than sorry.
         die "Couldn't execute @_: $!\n";
     } elsif ($? & 127) {
-        die sprintf "Signal %d killed @_ (%s coredump)\n",
-            ($? & 127),  ($? & 128) ? 'with' : 'without';
+        my $signal = $? & 127;
+        my $core   = ($? & 128) ? "with" : "without";
+        die "Signal $signal killed @_ ($core coredump)\n";
+    } elsif ($? >> 8) { # extract the actual exit-code.
+        my $exit = $? >> 8;
+        die "Exited with failure @_: $exit\n";
     } else {
-        my $exit = $? >> 8; # extract the actual exit-code.
-        if ($exit) {
-            die "Exited with failure @_: $exit\n";
-        } else {
-            # The close syscall succeeded, the child process exited
-            # cleanly, and the child's exit code was zero, so...
-            die "wtf? @_\n";
-        }
+        # The close syscall succeeded, the child process exited
+        # cleanly, and the child's exit code was zero, so...
+        die "wtf? @_\n";
     }
+}
+
+# A variant of backticks with explicit tokenization, for better
+# security/correctness and to avoid quotation hell.
+sub backticks {
+    return withPipe @_, sub {
+        my $FH = shift;
+
+        # HACK: we assume the output is a single line. If it isn't,
+        # then when we close the file handle, that'll send SIGPIPE to
+        # the child process. If the child can't handle SIGPIPE, then
+        # when it dies it'll kill us too (via the checks below).
+        my $stdout = <$FH>;
+
+        if (defined $stdout) { # Avoid warnings about chomping undef.
+            chomp $stdout; # This is crucial!
+            return $stdout;
+        } else {
+            # This isn't inherently bad, just never what we want
+            # for our particular use cases.
+            die "No output from @_\n";
+        }
+    };
 }
 
 # N.B., since we're using $Git as the first argument to backticks,
@@ -116,9 +138,9 @@ sub colorize {
 #       is there a way to get the actual parentage relation?
 # TODO: for use with git5, also get info about whether the exported
 #       version is up to date. Consider using something like:
-#       > git rev-list --left-right ${thisBranch}...${thatBranch}
+#       > git rev-list --left-right --count ${thisBranch}...${thatBranch}
 #       to get the ahead/behind info. (cf., <https://gist.github.com/kd35a/7924799> and <https://github.com/bill-auger/git-branch-status/>)
-# TODO: also get the %(subject), a la `git branches -vv`. (Make this
+# TODO: also get the %(subject), a la `git branch -vv`. (Make this
 #       optional, since I almost never care, and it almost always linewraps)
 # TODO: anything else we want from <https://stackoverflow.com/a/21868228>?
 #       Maybe the relative date and author/committer name, like lola has?
@@ -131,28 +153,44 @@ my $BranchInfoFormat = join '%09', # Tab should be a safe delimiter to use.
     '%(authordate:short)', # The YYYY-MM-DD that hash was authored.
     # '%(push:short)',     # Where `git push` goes (may differ from upstream).
     '%(upstream:short)',   # Short name of parent branch, for pretty printing.
-    '%(upstream:remotename)', # The repo name where $upstream lives, if it's remote.
+    '%(upstream)',         # Long version, for detecting remote branches.
     '%(upstream:track,nobracket)'; # The "gone/ahead/behind" string.
-open my $FH, '-|',
-    $Git, 'for-each-ref', "--format=$BranchInfoFormat", 'refs/heads'
-        or die "Can't run git for-each-ref: $!";
+
 my %BranchInfo = ();
-while (<$FH>) {
-    chomp;
-    my ($branch, $hash, $authordate, $upstream, $remote, $tracking) = split "\t";
-    # TODO: move the splitting/parsing of $tracking to here.
-    # TODO: also get info about the git5/citc refname, so we can print our tracking info relative to that too. (or at least print a boolean about whether the citc is up to date or no.)
-    $BranchInfo{$branch} =
-        { 'branch'     => $branch
-        , 'hash'       => $hash
-        , 'authordate' => $authordate
-        , 'upstream'   => $upstream
-        , 'remote'     => $remote
-        , 'tracking'   => $tracking
-        };
-}
-# TODO: more verbose error messages for unpacking $? into its component parts.
-close $FH or die "Couldn't close pipe: $! $?";
+withPipe $Git, 'for-each-ref', "--format=$BranchInfoFormat", 'refs/heads',
+    sub {
+        my $FH = pop;
+        while (<$FH>) {
+            chomp;
+            my ($branch, $hash, $authordate, $upstreamShort, $upstreamLong, $tracking) = split "\t";
+
+            # If (and only if!!) the upstream branch is a remote-tracking
+            # branch, then set $remote to the name of the remote repo
+            # where that branch lives. This differs from '%(upstream:remotename)'
+            # (introduced in git-2.16) which will sometimes return '.'
+            # as the name of the "remote" repo when the branch is in fact
+            # local.
+            # N.B., as written, local branches will have $remote
+            # be undefined, rather than being a defined but false
+            # value like the empty string.
+            my ($remote) = $upstreamLong =~ m@^refs/remotes/([^/]+)@;
+
+            # TODO: move the splitting/parsing of $tracking to here.
+
+            # TODO: also get info about the git5/citc refname, so
+            # we can print our tracking info relative to that too.
+            # (or at least print a boolean about whether the citc is
+            # up to date or no.)
+            $BranchInfo{$branch} =
+                { 'branch'     => $branch
+                , 'hash'       => $hash
+                , 'authordate' => $authordate
+                , 'upstream'   => $upstreamShort
+                , 'remote'     => $remote
+                , 'tracking'   => $tracking
+                };
+        }
+    };
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -289,41 +327,58 @@ sub prettyPrintBranch {
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ Recursively construct and traverse the tree.
 
-# TODO: must adjust this to incorporate the indentation level of the
-# tree. We want to make sure that deep branches don't overflow due to
-# indentation; also would be nice to not have excessive padding whenever
-# the only long branch names are shallow.
-my $MaxBranchLength = 0;
-foreach my $branch (keys %BranchInfo) {
-    my $length = length $branch;
-    $MaxBranchLength = $length if $length > $MaxBranchLength;
-}
-
 # Hylomorphism to unfold the tree from %Roots and then immediately consume
 # it by calling &prettyPrintBranch on each node. To simplify the separation
 # of the unfold and the prettyprinting we use a poor-man's recursion to
 # build the tree from a stack. Of course, this means we never really have
 # the tree in hand; which will make it hard to add support for flexible
 # sorting/ordering.
-my @BranchQueue = sort keys %Roots;
-my $Depth = 0;
-while (@BranchQueue) {
-    my $branch = shift @BranchQueue;
-    if ($branch) {
-        prettyPrintBranch($branch, $MaxBranchLength, $Depth);
+sub walkTree (&) {
+    my ($visitor) = @_;
 
-        # TODO: the depot-tools version pops the branch out of the
-        # hash... why? is that necessary for us?
-        if (exists $Children{$branch}) {
-            ++$Depth;
-            unshift @BranchQueue, ''; # HACK: sentinel for decrementing $Depth.
-            unshift @BranchQueue, sort @{$Children{$branch}};
-            # TODO: decrement $Depth once those branches are done.
+    my @queue = sort keys %Roots;
+    my $depth = 0;
+    while (@queue) {
+        my $branch = shift @queue;
+        if ($branch eq '') {
+            --$depth; # Interpet the sentinels.
+        } else {
+            &$visitor($depth, $branch);
+
+            if (exists $Children{$branch}) {
+                ++$depth;
+                unshift @queue, ''; # HACK: sentinel for decrementing $Depth.
+                unshift @queue, sort @{$Children{$branch}};
+            }
         }
-    } else {
-        --$Depth; # Interpet the sentinels.
     }
 }
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~ Pretty print the tree.
+
+# First walk the tree to get the maximum branch length for column
+# padding. We don't simply iterate over the keys of %BranchInfo because
+# that would make it difficult to incorporate the depth adjustment.
+#
+# TODO: We'd really rather get the length directly from &prettyPrintBranch,
+# so that we can properly handle %Gone munging as well. Alas, there
+# seems no clean way to do that, since we'd need to make sure not to
+# count the colorizing control characters as part of the string length.
+my $MaxBranchLength = 0;
+walkTree {
+    my ($depth, $branch) = @_;
+    my $length = 2 * $depth + length $branch;
+    $MaxBranchLength = $length if $length > $MaxBranchLength;
+};
+
+# Then walk it again to print it out.
+# TODO: now that we've factored out &walkTree, we can/should prolly
+# (re)inline &prettyPrintBranch here.
+walkTree {
+    my ($depth, $branch) = @_;
+    prettyPrintBranch($branch, $MaxBranchLength, $depth);
+};
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ fin.
