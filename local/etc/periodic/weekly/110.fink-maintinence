@@ -6,6 +6,16 @@
 # Since we don't consider this an error, we use rc=0.
 [ ! -x /sw/bin/fink ] && exit 0
 
+# BUG: sometimes one of the following commands requires entering
+# my password, thus they're no good as actual cron jobs. They didn't
+# used to (or they already had credentials from somewhere else for
+# some reason), so what changed?
+#
+# In any case, we print this stuff here so that at least we'll know
+# who/why it's asking for passwords.
+echo ''
+echo 'Self-updating Fink:'
+
 rc=0
 # TODO: maybe also consider running cleanup with the --deb flag
 /sw/bin/fink cleanup || rc=3

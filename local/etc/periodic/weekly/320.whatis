@@ -22,11 +22,17 @@ bash_profile='/Users/wren/.bash_profile'
 
 echo ''
 echo 'Rebuilding whatis database (for real this time):'
+# TODO: detect if we're not root and print a warning if we're not...
 
 # The original uses MANPATH=`/usr/bin/manpath -q` rather than
 # trusting the environment variable. What is the force of doing
 # that? It drops a bunch of the stuf we set in .bash_profile, so
 # how can we make .bash_profile update what manpath returns?
+#
+# BUG: despite this cleanup, `find` is complaining about ~/local/man
+# not existing. I'm not sure if that's because of tilde-expansion not
+# working or because it actually doesn't exist. Either way, we need
+# to improve this cleaning to handle such things.
 cleaned_manpath="`echo "$MANPATH" |
     sed 's/:/\n/g' |
     sort |
