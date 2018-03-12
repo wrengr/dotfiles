@@ -1,15 +1,11 @@
 #!/usr/bin/env perl
 # An enhanced version of `git branch -vv`
-# wren gayle romano <wrengr@google.com>             ~ 2018.02.05
+# wren gayle romano <wrengr@google.com>             ~ 2018.03.01
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# N.B., by naming this as we have and having it on our path, this
-# script will be automagically run if someone says `git bb`;
-# no aliases required!
-
 use warnings;
 use strict;
 
-# TODO: configuration options for:
+# TODO: add configuration options for:
 # * more/less verbosity (both what branch info is printed, and debugging info)
 # * disable/enable color
 # * show remote-tracking branches too (a la git-branch's -a/--all)
@@ -22,76 +18,209 @@ use strict;
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ Shelling out
 
-# Open a pipe and pass it to a block, being sure to close it and
-# provide detailed error messages.
+# Open a pipe and pass it to a block, being sure to close it and provide
+# detailed error messages.
 #
-# TODO: add caller info to the `die` messages, to ease debuging.
+# TODO: how can we use C<caller> to try to give more info for debugging
+# purposes? First, for some reason saying things like C<caller(1)[3]>
+# introduces bizarre syntax/parsing errors all over the place. Second,
+# using C<(caller(1))[3]> fixes that but ends up giving us an uninitialized
+# value...
 sub withPipe {
-    # We put the block at the end (rather than using prototypes to
-    # avoid the need for the `sub` keyword) because the block is
-    # likely to be longer than the command, so this way looks better
-    # overall.
+    # We take the block argument at the end (rather than using prototypes
+    # to avoid the need for the C<sub> keyword) because the block is likely
+    # to be longer than the command, so this way is prettier overall.
     my $block = pop;
 
     # Require the command to be explicitly tokenized, to minimize
     # problems about correctness, security, and quotation hell.
     open my $FH, '-|', @_
-        or die "Couldn't fork @_: $!\n";
+        or die "withPipe: @_\n\tCouldn't fork: $!\n";
 
+    # N.B., this seems surprisingly fragile for some reason. See the
+    # comment in C<backticks>.
     my $ret = &$block($FH);
 
-    # N.B., it's the `close` call itself which sets both $! and $?
+    # N.B., it's the C<close> call itself which sets both C<$!> and C<$?>
     if (close $FH) { # Both the syscall and the child process exit cleanly.
         # If the continuation returned anything, forward that along to callers.
         return $ret;
     } elsif ($!) { # The syscall itself failed, rather than the child process.
-        die "Couldn't close pipe to @_: $!\n";
+        die "withPipe: @_\n\tCouldn't close pipe: $!\n";
     } elsif ($? == -1) {
         # Should this case obtain, then circumstances are prolly such
-        # that the open syscall would've failed before we ever even
-        # got to the close syscall; thus making this branch unreachable.
+        # that the C<open> syscall would've failed before we ever even got
+        # to the C<close> syscall; thus making this branch unreachable.
         # But whatevs; better safe than sorry.
-        die "Couldn't execute @_: $!\n";
+        die "withPipe: @_\n\tCouldn't execute: $!\n";
     } elsif ($? & 127) {
         my $signal = $? & 127;
         my $core   = ($? & 128) ? "with" : "without";
-        die "Signal $signal killed @_ ($core coredump)\n";
+        die "withPipe: @_\n\tKilled by signal $signal ($core coredump)\n";
     } elsif ($? >> 8) { # extract the actual exit-code.
         my $exit = $? >> 8;
-        die "Exited with failure @_: $exit\n";
+        die "withPipe: @_\n\tNon-zero exit code: $exit\n";
     } else {
-        # The close syscall succeeded, the child process exited
+        # The C<close> syscall succeeded, the child process exited
         # cleanly, and the child's exit code was zero, so...
-        die "wtf? @_\n";
+        die "withPipe: @_\n\twtf?\n";
     }
 }
 
 # A variant of backticks with explicit tokenization, for better
 # security/correctness and to avoid quotation hell.
 sub backticks {
-    return withPipe @_, sub {
+    my $line = withPipe @_, sub {
+        # HACK: this is surprisingly fragile. If we try to inline C<$_[0]>
+        # rather than using C<shift>, then we'll always get "killed by
+        # signal 13". I have no idea how the heck that can be...
         my $FH = shift;
-
         # HACK: we assume the output is a single line. If it isn't,
-        # then when we close the file handle, that'll send SIGPIPE to
-        # the child process. If the child can't handle SIGPIPE, then
-        # when it dies it'll kill us too (via &withPipe 's checks).
-        my $stdout = <$FH>;
-
-        if (defined $stdout) { # Avoid warnings about chomping undef.
-            chomp $stdout; # This is crucial!
-            return $stdout;
-        } else {
-            # This isn't inherently bad, just never what we want
-            # for our particular use cases.
-            die "No output from @_\n";
-        }
+        # then when we close the file handle, that'll send SIGPIPE to the
+        # child process. If the child can't handle SIGPIPE, then when it
+        # dies it'll kill us too (via C<withPipe>'s checks).
+        my $line = <$FH>;
+        return $line;
     };
+    # We must float this checking outside the continuation/block passed to
+    # C<withPipe>, to ensure we have our hands on the C<@_> of C<backticks>
+    # itself rather than getting the C<@_> passed to the continuation.
+    if (defined $line) { # Avoid warnings about chomping undef.
+        chomp $line; # This is crucial!
+        return $line;
+    } else {
+        # No output isn't inherently bad, just never what we want
+        # for our particular use cases.
+        die "No output from @_\n";
+    }
 }
 
-# N.B., since we're using $Git as the first argument to backticks,
-# it's especially crucial that we chomp here.
+# N.B., since later on we'll be using C<$Git> as the first argument to
+# C<backticks>, it's especially crucial that we chomp here.
 my $Git = backticks 'which', 'git';
+
+# Return ahead/behind info like the '%(upstream:track)' format does,
+# but for an arbitrary pair of branches/commits rather than just a
+# given branch vs its upstream. We call this "divergence" since git
+# terminology is terrible and "tracking" is overloaded to mean too many
+# different things. N.B., this function doesn't validate the arguments,
+# which can cause git to barf; so be sure to validate before calling this
+# function. (For more ideas, see: <https://gist.github.com/kd35a/7924799>
+# and <https://github.com/bill-auger/git-branch-status/>).
+sub getDivergence ($$) {
+    my ($here, $there) = @_;
+    # The trailing '--' helps git not get confused when one of the
+    # branches/commits is invalid.
+    my $line = backticks $Git, 'rev-list', '--left-right', '--count', "${here}...${there}", '--';
+    if ($line =~ m/^(\d+)\s+(\d+)$/) {
+        # $1 = how far $here is ahead of $there
+        # $2 = how far $here is behind $there
+        return ($1,$2);
+    } else {
+        die "Couldn't get divergence between $here and $there\n";
+    }
+}
+
+# Run a program and return whether it exited successfully: that is,
+# we return a true value when the exit code is zero, and a false value
+# if the exit code is non-zero. If we cannot execute the child or it is
+# killed by a signal, then we die.
+sub exitsOK {
+    # TODO: we should guard against (a) the list being empty and
+    # therefore making things crash, and (b) the list being singleton
+    # which invokes DWIM parsing of the string.
+    # TODO: should redirect stdout and stderr to make sure they don't
+    # dump anything our users might see.
+    system @_;
+    # N.B., C<system> also returns C<$?> in addition to setting it.
+    if ($? == -1) {
+        die "exitsOK: @_\n\tCouldn't execute: $!\n";
+    } elsif ($? & 127) {
+        my $signal = $? & 127;
+        my $core   = ($? & 128) ? "with" : "without";
+        die "exitsOK: @_\n\tKilled by signal $signal ($core coredump)\n";
+    } else {
+        return 0 == ($? >> 8); # extract the actual exit-code, and check it.
+    }
+}
+
+sub isValidRef ($) {
+    return exitsOK $Git, 'show-ref', '--quiet', '--verify', '--', $_[0];
+}
+
+sub isValidBranch ($) {
+    return isValidRef "refs/heads/$_[0]";
+}
+
+# HT: <https://stackoverflow.com/a/3879077>
+#sub updateIndex () {
+#    # TODO: need to check that it didn't explode
+#    return exitsOK $Git, 'update-index', '-q', '--ignore-submodules', '--refresh';
+#}
+sub hasUnstagedChanges () { # aka: is the working-tree dirty?
+    # N.B., this command exits okay whenever there are *no* unstaged
+    # changes; hence the negation.
+    return not exitsOK $Git, 'diff-files', '--quiet', '--ignore-submodules', '--';
+}
+#sub getUnstagedChanges () {
+#    # TODO: `git diff-files --name-status -r --ignore-submodules --`
+#}
+sub hasUncommittedChanges () { # aka: is index-file dirty?
+    # N.B., this command exits okay whenever there are *no* uncommitted
+    # changes; hence the negation.
+    return not exitsOK $Git, 'diff-index', '--cached', '--quiet', 'HEAD', '--ignore-submodules', '--';
+}
+#sub getUncommittedChanges () {
+#    # TODO: `git diff-index --cached --name-status -r --ignore-submodules HEAD --`
+#}
+# HT: <https://stackoverflow.com/a/3921928>
+sub hasRebaseInProgress () {
+    # TODO: do `git rev-parse --git-path` just once and cache it; then
+    # we can manually append 'rebase-merge' etc. Then again, --git-path
+    # does some sort of normalization/pointer-chasing that --git-dir
+    # doesn't...
+    my $merge = backticks $Git, 'rev-parse', '--git-path', 'rebase-merge';
+    my $apply = backticks $Git, 'rev-parse', '--git-path', 'rebase-apply';
+    # TODO: when file test flags fail they return undef and set $!, so we need to check for that and respond accordingly!
+    return -d $merge or -d $apply;
+    # TODO: debug/test to verify that this actually works as intended.
+}
+# HT: <https://stackoverflow.com/q/30733415>
+sub hasMergeInProgress () {
+    # TODO: see all the todos for C<hasRebaseInProgress>.
+    my $merge = backticks $Git, 'rev-parse', '--git-path', 'MERGE_HEAD';
+    return -d $merge;
+    # TODO: debug/test to verify that this actually works as intended.
+}
+#sub hasCherrypickInProgress () {
+#   # The same idea except for whatever the "$GIT_CHERRYPICK_HEAD_FILE" name is:
+#   # cf: <https://github.com/libgit2/libgit2/blob/585b5dacc7f440a163c20117cfa35fb714a7ba7b/src/repository.c#L2733>
+#}
+#sub requireCleanWorkTree () {
+#    die "Rebase in progress. Please finish that first.\n"
+#        if hasRebaseInProgress();
+#    die "Merge in progress. Please finish that first.\n"
+#        if hasMergeInProgress();
+#    die "Cherry-pick in progress. Please finish that first.\n"
+#        if hasCherrypickInProgress();
+#    updateIndex();
+#    my $err = 0;
+#    if (hasUnstagedChanges()) {
+#        warn join "\n", "you have unstaged changes:", getUnstagedChanges();
+#        $err = 1;
+#    }
+#    if (hasUncommittedChanges()) {
+#        warn join "\n", "you have uncommitted changes:", getUncommittedChanges();
+#        $err = 1;
+#    }
+#    # TODO: or auto-stash them (and then unstash at the end of whatever)...
+#    die "Please commit or stash them.\n" if $err;
+#}
+
+
+# To test for the other billiondy ways things can be out of sync
+# (unmerged, unpushed,...), cf.:
+# <http://0xfe.blogspot.com/2010/04/improved-git-enabled-shell-prompt.html>
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -100,34 +229,37 @@ my $Git = backticks 'which', 'git';
 # TODO: is there any way to make this faster? i.e., to get all the
 # colors in one go, rather than firing off a process for each one?
 # Or if that's impossible, then maybe fill in the table lazily based
-# on the colors we actually use?
+# on the colors we actually use? (Then again, that laziness will introduce
+# unsightly lags in the output...)
 
-# N.B., for getting the reset we really do need that empty argument.
-my $Reset = backticks $Git, 'config', '--get-color', '', 'reset';
-my %Color;
-$Color{$_} = backticks $Git, 'config', '--get-color', $_
-    foreach
-    ( 'color.branch.current'
-    , 'color.branch.upstream'
-    , 'color.branch.local'
-    , 'color.branch.remote'
-    # 'color.branch.plain'          # TODO: Could be used for our "no color"?
-    # 'color.decorate.head'         # Should equal 'color.branch.current' imo.
-    # 'color.decorate.branch'       # Should equal 'color.branch.local' imo.
-    # 'color.decorate.remoteBranch' # Should equal 'color.branch.remote' imo.
-    # 'color.decorate.tag'          # TODO: would this ever be helpful?
-    # 'color.decorate.stash'        # TODO: would this ever be helpful?
-    , 'color.diff.commit'
-    , 'color.diff.old'              # We use this for tracking-behind
-    , 'color.diff.new'              # we use this for tracking-ahead
-    # 'color.diff.plain'            # TODO: Could be used for our "no color"?
-    );
+{ # Block is to limit scope/visibility of $Reset and %Color.
+    # N.B., for getting the reset we really do need that empty argument.
+    my $Reset = backticks $Git, 'config', '--get-color', '', 'reset';
+    my %Color;
+    $Color{$_} = backticks $Git, 'config', '--get-color', $_
+        foreach
+        ( 'color.branch.current'
+        , 'color.branch.upstream'
+        , 'color.branch.local'
+        , 'color.branch.remote'
+        # 'color.branch.plain'          # TODO: Could be used for our "no color"?
+        # 'color.decorate.head'         # Should equal 'color.branch.current' imo.
+        # 'color.decorate.branch'       # Should equal 'color.branch.local' imo.
+        # 'color.decorate.remoteBranch' # Should equal 'color.branch.remote' imo.
+        # 'color.decorate.tag'          # TODO: would this ever be helpful?
+        # 'color.decorate.stash'        # TODO: would this ever be helpful?
+        , 'color.diff.commit'
+        , 'color.diff.old'              # We use this for divergence-behind
+        , 'color.diff.new'              # we use this for divergence-ahead
+        # 'color.diff.plain'            # TODO: Could be used for our "no color"?
+        );
 
-sub colorize {
-    my ($colorname, $string) = @_;
-    # TODO: guard against unknown/unexpected $colorname.
-    # TODO: add config stuff to handle dis-/enabling color.
-    return $Color{$colorname} . $string . $Reset;
+    sub colorize ($$) {
+        my ($colorname, $string) = @_;
+        # TODO: guard against unknown/unexpected $colorname.
+        # TODO: add config stuff to handle dis-/enabling color.
+        return $Color{$colorname} . $string . $Reset;
+    }
 }
 
 
@@ -136,12 +268,9 @@ sub colorize {
 
 # TODO: when using real git and so "upstream" is always a remote branch,
 #       is there a way to get the actual parentage relation?
-# TODO: for use with git5, also get info about whether the exported
-#       version is up to date. Consider using something like:
-#       > git rev-list --left-right --count ${thisBranch}...${thatBranch}
-#       to get the ahead/behind info. (cf., <https://gist.github.com/kd35a/7924799> and <https://github.com/bill-auger/git-branch-status/>)
-# TODO: also get the %(subject), a la `git branch -vv`. (Make this
-#       optional, since I almost never care, and it almost always linewraps)
+# TODO: for use with git5, call C<getDivergence> to compare branches
+#       against their refs/exported (if one exists) to print how out of
+#       date they are. Similarly for remote-tracking branches with standard git.
 # TODO: anything else we want from <https://stackoverflow.com/a/21868228>?
 #       Maybe the relative date and author/committer name, like lola has?
 # TODO: define a single structure which combines this information with
@@ -165,26 +294,31 @@ withPipe $Git, 'for-each-ref', "--format=$BranchInfoFormat", 'refs/heads',
         my $FH = pop;
         while (<$FH>) {
             chomp;
-            my ($branch, $hash, $authordate, $upstreamShort, $upstreamLong, $tracking) = split "\t";
+            my ($branch, $hash, $authordate, $upstreamShort, $upstreamLong,
+                $upstreamDivergence) = split "\t";
 
             # If (and only if!!) the upstream branch is a remote-tracking
             # branch, then set $remote to the name of the remote repo
-            # where that branch lives. This differs from '%(upstream:remotename)'
-            # (introduced in git-2.16) which will sometimes return '.'
-            # as the name of the "remote" repo when the branch is in fact
-            # local.
-            # N.B., as written, local branches will have $remote
-            # be undefined, rather than being a defined but false
-            # value like the empty string.
+            # where that branch lives. This differs from
+            # '%(upstream:remotename)' (introduced in git-2.16) which
+            # will sometimes return '.' as the name of the "remote" repo
+            # when the branch is in fact local. N.B., as written, local
+            # branches will have $remote be undefined, rather than being
+            # a defined but false value like the empty string.
             my ($remote) = $upstreamLong =~ m@^refs/remotes/([^/]+)@;
 
-            # TODO: move the splitting/parsing of $tracking to here.
-            #
-            # TODO: also get info about the git5/citc refname, so
-            # we can print our tracking info relative to that too.
-            # We can use:
-            # > git rev-list --left-right --count ${thisBranch}...${thatBranch}
-            # To get the ahead/behind info a la $tracking.
+            # TODO: move the splitting/parsing of $upstreamDivergence to here.
+
+            # TODO: also gather info about whether the current branch
+            # is dirty (a la what git-status returns). To get that info
+            # via exit codes without printing stuff, do:
+            # > git diff-index --quiet HEAD --
+            # Should use color.status.changed (or maybe c.s.unmerged?)
+            # Consider also:
+            # > git diff --shortstat
+            # But that's much slower: <https://gist.github.com/sindresorhus/3898739>
+            # Whereas diff-index will fail on on branches that have no commits: <https://stackoverflow.com/a/3879077>
+            # Another option that might be worth pursuing is `git diff --no-ext-diff --quiet --exit-code` <https://github.com/sindresorhus/pure/issues/115>
 
             $BranchInfo{$branch} =
                 { 'branch'     => $branch
@@ -192,8 +326,19 @@ withPipe $Git, 'for-each-ref', "--format=$BranchInfoFormat", 'refs/heads',
                 , 'authordate' => $authordate
                 , 'upstream'   => $upstreamShort
                 , 'remote'     => $remote
-                , 'tracking'   => $tracking
+                , 'upstream-divergence' => $upstreamDivergence
+                # TODO: 'remote-divergence', 'git5-divergence',...
                 };
+
+            # HACK: this assumes $branch is unique enough that the
+            # 'refs/heads/' part gets shortened off...
+            # TODO: remove that assumption and do the right thing regardless.
+            my $git5exported = "refs/exported/$branch";
+            if (isValidRef $git5exported) {
+                # DO NOT SUBMIT: make sure this works right re refs/dereferencing.
+                my @divergence = getDivergence "refs/heads/$branch", $git5exported;
+                $BranchInfo{$branch}{'git5-divergence'} = \@divergence;
+            }
         }
     };
 
@@ -203,7 +348,7 @@ withPipe $Git, 'for-each-ref', "--format=$BranchInfoFormat", 'refs/heads',
 my %Gone;     # Treated as a set.
 my %Remote;   # Treated as a set.
 my %Roots;    # Treated as a set.
-my %Children; # A hash of (lists treated as) sets.
+my %Children; # Map parents to the (list treated as a) set of their children.
 while (my ($child, $info) = each %BranchInfo) {
     my $parent = ${$info}{'upstream'};
 
@@ -272,29 +417,42 @@ sub walkTree (&) {
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ Pretty-print the tree.
 
+# TODO: use `git symbolic-ref -q HEAD` instead, and then use s@^refs/heads/@@
+# to get the shortened name. Apparently this way is quicker than using
+# rev-parse. Their output differs when it comes to detatched-head state
+# (in which case symbolic-ref fails, whereas rev-parse resolves HEAD to
+# the string "HEAD"). <https://stackoverflow.com/a/45028375>
 my $HEAD = backticks $Git, 'rev-parse', '--abbrev-ref', 'HEAD';
 
+# TODO: what color should we really use for this? (Also, would there be
+# any point in distinguishing "gone" from "none"?)
+my $GoneColorname = 'color.branch.upstream';
+
 # Auto-magically determine the appropriate colorization for a branch.
-sub colorizeBranch {
+sub colorizeBranch ($) {
     my ($branch) = @_;
     my $colorname;
     if (not $branch) {
         # This case is taken from Chromium depot-tools' git-map-branches,
-        # though I've never encountered it myself...
-        $colorname = 'color.branch.upstream'; # HACK: What color should this be?
+        # though I've never encountered it myself. Maybe it's for handling
+        # detatched-head stuff?
+        $colorname = $GoneColorname;
         $branch = '{NONE}';
     } elsif (exists $Gone{$branch}) {
-        $colorname = 'color.branch.upstream'; # HACK: What color should this be?
+        $colorname = $GoneColorname;
+        # TODO: do we really want this string munging, or should the color
+        # be enough? Just because Chromium depot-tools' git-map-branches
+        # does it doesn't mean it's necessary for us...
         $branch = "{${branch}:GONE}";
     } elsif (exists $Remote{$branch}) {
         $colorname = 'color.branch.remote';
     } elsif ($branch eq $HEAD) {
-        # TODO: need to generalize this test to also catch when the
-        # current branch (i.e., according to git, not whatever $branch
-        # happened to be passed as an argument) is the literal string
-        # 'HEAD' (according to what the depot-tools version does; though
-        # I've never encountered that issue), or also being some other
-        # branch which happens to point at the same hash as $HEAD does.
+        # TODO: should we generalize that conditional to check for the
+        # cases where the branch is the literal string "HEAD" (which occurs
+        # in detatched-head state), or when on other branches which happen
+        # to point to the same hash as $HEAD does? Chromium depot-tools'
+        # git-map-branches does those things, though I'm not sure if we
+        # want/need to mimic that...
         $colorname = 'color.branch.current';
         # TODO: iff color is disabled, then we may want to add a
         # prefix/suffix to $branch, like `git branch -vv` and Chromium
@@ -315,7 +473,7 @@ my $Indentation = 2; # how many spaces to indent by per $depth.
 # keys of %BranchInfo because that would make it difficult to
 # incorporate the depth adjustment.
 #
-# TODO: We'd really rather get the length directly from &prettyPrintBranch,
+# TODO: We'd really rather get the length directly from C<prettyPrintBranch>,
 # so that we can properly handle %Gone munging as well. Alas, there
 # seems no clean way to do that, since we'd need to make sure not to
 # count the colorizing control characters as part of the string length.
@@ -326,6 +484,18 @@ walkTree {
     $MaxBranchLength = $length if $length > $MaxBranchLength;
 };
 
+# Collect information on all the various ways HEAD could be dirty or
+# out of sync. We float this out here to avoid introducing an unsightly
+# lag in the midle of printing the tree.
+# TODO: find some prettier way to show this info.
+# TODO: always show these checks, but with "+" vs "-" (and colors)?
+my @HeadDirtiness;
+push @HeadDirtiness, '+rebase'      if hasRebaseInProgress();
+push @HeadDirtiness, '+merge'       if hasMergeInProgress();
+#push @HeadDirtiness, '+cherrypick' if hasCherrypickInProgress();
+push @HeadDirtiness, '+uncommitted' if hasUncommittedChanges();
+push @HeadDirtiness, '+unstaged'    if hasUnstagedChanges();
+
 # Now walk the tree a second time to pretty print it.
 walkTree {
     my ($depth, $branch) = @_;
@@ -335,48 +505,71 @@ walkTree {
     # printing trailing spaces whenever $info is lacking?
     print '',
         (' ' x ($Indentation * $depth)),
-        colorizeBranch($branch),
+        (colorizeBranch $branch),
         # TODO: update this padding to work correctly vis-a-vis
-        # $branch being munged by &colorizeBranch when it's gone, etc.
+        # $branch being munged by C<colorizeBranch> when it's gone, etc.
         (' ' x ($MaxBranchLength - $Indentation * $depth - length $branch)),
         $ColumnSeparator;
 
     my $info = $BranchInfo{$branch};
     if (defined $info) {
-        # TODO: should prolly move this parsing of $tracking to
+        # TODO: should prolly move this parsing of $upstreamDivergence to
         # where we first build the info record.
-        my $tracking = ${$info}{'tracking'};
-        if (not defined $tracking) {
+        my $upstreamDivergence = ${$info}{'upstream-divergence'};
+        if (not defined $upstreamDivergence) {
             # TODO: actually handle this case!
-            die "Undefined tracking info for branch $branch\n";
-        } elsif ($tracking eq 'gone') {
-            # TODO: want a color here! but which one? Would
-            # 'color.diff.whitespace' be appropriate, or
-            # 'color.status.untracked' or... what?
+            die "Undefined divergence info for branch $branch\n";
+        } elsif ($upstreamDivergence eq '') {
+            # Everything is in sync. We change the empty string to '=='
+            # to help improve clarity for the git5 workflow. Should
+            # prolly make this a configurable option since it'll (probably)
+            # reduce clarity for standarf git workflows.
+            # TODO: should this have a color?
+            $upstreamDivergence = '==';
+        } elsif ($upstreamDivergence eq 'gone') {
+            $upstreamDivergence = colorize $GoneColorname, 'gone';
         } else {
-            my $orig = $tracking;
-            $tracking = '';
+            my $orig = $upstreamDivergence;
+            $upstreamDivergence = '';
             if ($orig =~ m/ahead\s+(\d+)/) {
-                $tracking .= colorize('color.diff.new', "+$1");
+                $upstreamDivergence .= colorize 'color.diff.new', "+$1";
             }
             if ($orig =~ m/behind\s+(\d+)/) {
-                $tracking .= ', ' if $tracking;
-                $tracking .= colorize('color.diff.old', "-$1");
+                $upstreamDivergence .= ', ' if $upstreamDivergence;
+                $upstreamDivergence .= colorize 'color.diff.old', "-$1";
             }
         }
-        # TODO: if $tracking was originally the empty string, then
-        # maybe we should print something like '[=]'
 
+        my $allDivergence = $upstreamDivergence;
+        if (exists ${$info}{'git5-divergence'}) {
+            $allDivergence .= '; ' if $upstreamDivergence;
+            # DO NOT SUBMIT: make sure this works right re refs/dereferencing.
+            my ($ahead,$behind) = @{${$info}{'git5-divergence'}};
+            $allDivergence .= 'git5: ';
+            $allDivergence .= '==' unless $ahead or $behind;
+            $allDivergence .= colorize 'color.diff.new', "+$ahead" if $ahead;
+            $allDivergence .= ', ' if $ahead and $behind;
+            $allDivergence .= colorize 'color.diff.old', "-$behind" if $behind;
+        }
         # Given the visible tree structure, there's no benefit to printing
         # ${$info}{'upstream'}, so we just add the brackets here.
-        $tracking = "[$tracking]" if $tracking ne '';
+        $allDivergence = "[$allDivergence]" if $allDivergence;
 
         print '',
-            colorize('color.diff.commit', ${$info}{'hash'}),
+            (colorize 'color.diff.commit', ${$info}{'hash'}),
             $ColumnSeparator,
             ${$info}{'authordate'},
             $ColumnSeparator,
-            $tracking;
+            $allDivergence;
+
+        # HACK: Make sure to keep this in sync with the conditional
+        # in C<colorizeBranch>.
+        if ($branch eq $HEAD) {
+            if (@HeadDirtiness) { # Avoid extraneous trailing spaces
+                # TODO: find some prettier way to show this info.
+                print join $ColumnSeparator, '', @HeadDirtiness
+            }
+        }
     }
     print "\n";
 };
