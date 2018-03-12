@@ -1,4 +1,4 @@
-# wren gayle romano's bash login script             ~ 2017.12.31
+# wren gayle romano's bash login script             ~ 2018.03.05
 #
 # It's fairly generic (with weirder things at the bottom),
 # but it's designed to be usable for all my accounts with no(!)
@@ -145,8 +145,9 @@ if [ ! -z "${PS1}" ]; then
     # N.B., `tput` returns answers based on the value of TERM,
     # not based on what the terminal actually supports!!
     if [ "`tput colors`" -gt 2 ]; then
-        # A better way even is to use [ `id -u` = 0 ]
-        # ...though that doesn't find non-root users
+        # A better way to check for root is to use [ `id -u` = 0 ]
+        # ...which perhaps might be better phrased as [ "`id -u`" -eq 0 ]
+        # ...however, alas, that doesn't find non-root users
         case "${USER}" in
             motoko | ass | root | UNKNOWN )
                 _color1='\[\e[01;31m\]' ;; # bold red
@@ -400,10 +401,19 @@ case "${_localhost}" in
                 unset  MANPATH
                 export MANPATH=`manpath`
 
-                _push PATH '~/chromium-srcs/depot_tools'
+                # This is where cabal-install puts things these days,
+                # so we need to make sure its on our path and supercedes
+                # the (ancient) version that ships with goobuntu/glinux.
+                _push PATH '~/.cabal/bin'
+
+                # (2018.03.02): Disabling these since I'm no longer
+                # doing chromium stuff, and cuz goma isn't playing nice
+                # with trying to compile GHC.
+                # BUG: This is still getting pulled in somehow!! It happens at the beginning of time: i.e., before we even enter /etc/profile, let alone enter this .bash_profile. It's not set in /etc/environment though. My current suspicion is that it's being set by Xsession or pam or something similar... (Re how to debug these sorts of things, see: <https://unix.stackexchange.com/a/154971>)
+                #_push PATH '~/chromium-srcs/depot_tools'
                 # WARNING: this will steal "gcc" and "g++" from /usr/bin
                 # And you need to do special things to get goma started.
-                _push PATH '~/chromium-srcs/goma'
+                #_push PATH '~/chromium-srcs/goma'
             ;;
         esac
     ;;
@@ -549,6 +559,8 @@ export DARCS_EMAIL="$GIT_AUTHOR_NAME <$GIT_AUTHOR_EMAIL>"
 # ~~~~~ Set up completion
 # (you don't need to enable this, if it's already enabled in
 # /etc/bash.bashrc and /etc/profile sources /etc/bash.bashrc).
+#
+# N.B., on maracuya completion is automatically enabled via /etc/profile.
 if [ -r '/etc/bash_completion' ]; then
     source '/etc/bash_completion'
 
@@ -735,9 +747,9 @@ function tarcp() {
         ( cd "$2" && tar xpf - )
  }
 
-# Actually, we can use the seq program for this; which also allows
-# setting the lower bound. Dunno if that's available on Debian, but
-# it is on Darwin/BSD.
+# Actually, we can use the `seq` program for this; which also allows
+# setting the lower bound. Dunno if that's available on stock Debian,
+# but it is on Darwin/BSD and Goobuntu/gLinux.
 #function enum() { perl -e 'print "$_\n" foreach 1..'"$1" ; }
 
 # Do `time` some number of times and average the results
@@ -799,6 +811,65 @@ sub P    { my($n,$r)=@_; return fac($n) / fac($n-$r) };
 eval join q( ), q($val = ), @ARGV, q(;);
 die $@ if $@;
 print "$val\n";'\'
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~ Google-specific functions
+
+if [ "${_localhost}" = 'google' ]; then
+
+    # This bunch of functions is to work around issues of objfs/srcfs
+    # updates breaking long-running processes in the middle of the night
+    # (2am to 4am). Intended use is to run `hold_disruptive_updates`
+    # just before the nightlong job, and then run `release_held_updates`
+    # once you're finished. To avoid holding them for too long it's
+    # suggested to call `nag_about_held_updates` in this startup profile,
+    # so that we see it often enough.
+    #
+    # TODO: is there any good way to convert this into a higher-order
+    # bracketing construct we can wrap around the long-running command?
+    # In particular, it'd be nice to do that in order to work around
+    # the issue that release_held_updates requires sudo (and the
+    # credentials from the sudo in hold_disruptive_updates will have
+    # expired by the time we call it).
+
+    hold_disruptive_updates() {
+        sudo dpkg --set-selections << EOF
+google-objfsd   hold
+srcfs           hold
+EOF
+    }
+
+    # TODO: make this prettier...
+    list_held_updates() {
+        dpkg --get-selections \
+            | grep "hold$"
+    }
+
+    release_held_updates() {
+        list_held_updates\
+            | sed 's/hold$/install/' \
+            | tee /dev/tty \
+            | sudo dpkg --set-selections
+    }
+
+    # TODO: make this prettier...
+    # Call this at the end of ~/.bash_profile. Or if we want to be
+    # really obnoxious, then we could add it to PROMPT_COMMAND or use
+    # `watch` or similar.
+    nag_about_held_updates() {
+        list_held_updates || return 0
+        echo
+        echo "Consider running:"
+        echo "  release_held_updates"
+        echo
+    }
+
+    # In the event we want it for some reason
+    force_held_updates() { sudo install-delayed-packages -u ; }
+
+    nag_about_held_updates
+fi
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

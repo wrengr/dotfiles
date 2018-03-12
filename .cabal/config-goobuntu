@@ -1,11 +1,10 @@
--- This is the configuration file for the 'cabal' command line tool.
-
--- The available configuration options are listed below.
--- Some of them have default values listed.
-
--- Lines (like this one) beginning with '--' are comments.
--- Be careful with spaces and indentation because they are
--- used to indicate layout for nested sections.
+-- Configuration for the 'cabal' commandline tool.
+-- This config variant is for:
+-- * host: maracuya
+-- * os:   glinux
+-- * arch: x86_64
+-- * cabal-install ≥ 1.20 (installed at ~/.cabal/bin)
+-- * ghc: /usr/local/stow/ghc-8.2.2
 
 
 remote-repo: hackage.haskell.org:http://hackage.haskell.org/packages/archive
@@ -15,18 +14,26 @@ remote-repo-cache: /usr/local/google/home/wrengr/.cabal/packages
 world-file: /usr/local/google/home/wrengr/.cabal/world
 -- verbose: 1
 -- compiler: ghc
--- with-compiler:
--- with-hc-pkg:
+with-compiler: /usr/local/stow/ghc-8.2.2/bin/ghc
+with-hc-pkg: /usr/local/stow/ghc-8.2.2/bin/ghc-pkg
 -- scratchdir:
 -- program-prefix: 
 -- program-suffix: 
 -- library-vanilla: True
--- library-profiling: False
+library-profiling: True
 -- shared: False
 -- executable-dynamic: False
--- executable-profiling: False
--- optimization: True
+-- -- Enabling this gives us warnings about the equivalent CLI flag being
+-- -- deprecated. Apparently this has been rolled into library-profiling?
+executable-profiling: True
+-- -- N.B., setting optimization:2 caused issues on older versions of
+-- -- cabal; but that seems to have been fixed sometime before 1.20.
+-- -- cf., the old bug <http://hackage.haskell.org/trac/hackage/ticket/368>
+optimization: 2
+-- -- The default for this one keeps switching...
 -- library-for-ghci: True
+-- -- split-objs doesn't work with ghc-7.6.3. It prolly works with
+-- -- newer versions (like our 8.2.2) yet the default is still false...
 -- split-objs: False
 -- executable-stripping: True
 -- user-install: True
@@ -41,8 +48,8 @@ world-file: /usr/local/google/home/wrengr/.cabal/world
 -- constraint:
 -- preference:
 -- solver: choose
--- documentation: False
--- doc-index-file: $datadir/doc/index.html
+documentation: True
+doc-index-file: $datadir/doc/$compiler/index.html
 -- max-backjumps: 200
 -- reorder-goals: False
 -- shadow-installed-packages:
@@ -57,10 +64,17 @@ build-summary: /usr/local/google/home/wrengr/.cabal/logs/build.log
 -- build-log:
 remote-build-reporting: anonymous
 -- one-shot: False
--- jobs:
+-- -- N.B., setting jobs isn't supported by /usr/bin/cabal (==
+-- -- version 1.16.0.2) and gives an inscrutable error message:
+-- -- <https://github.com/haskell/cabal/issues/618>
+jobs: $ncpus
 -- username:
 -- password:
 
+-- TODO: a lot of these dirs (libsubdir, datasubdir, docdir) used to
+-- use $arch-$os-$compiler by default, which seems right to me. But
+-- evidently that default got changed to only using $compiler at some
+-- point. Should we change them back to the more explicit paths?
 install-dirs user
   -- prefix: /usr/local/google/home/wrengr/.cabal
   -- bindir: $prefix/bin
@@ -84,3 +98,56 @@ install-dirs global
   -- docdir: $datadir/doc/$pkgid
   -- htmldir: $docdir/html
   -- haddockdir: $htmldir
+
+-- N.B., this stanza requires cabal-install ≥ 1.20
+haddock
+  -- So we don't need to manually pass the --haddock-hyperlink-source
+  -- flag every time.
+  hyperlink-source: True
+
+-- To prevent installing alternate versions of things, consider:
+-- <http://www.vex.net/~trebla/haskell/cabal-cabal.xhtml>
+-- (These are the same packages as in ~/.cabal/world--haskell-platform-8.2.2)
+-- constraint: alex installed
+-- constraint: async installed
+-- constraint: attoparsec installed
+-- constraint: call-stack installed
+-- constraint: case-insensitive installed
+-- constraint: fgl installed
+-- constraint: fixed installed
+-- constraint: ghc installed
+-- constraint: GLURaw installed
+-- constraint: GLUT installed
+-- constraint: half installed
+-- constraint: happy installed
+-- constraint: hashable installed
+-- constraint: haskell-src installed
+-- constraint: hscolour installed
+-- constraint: html installed
+-- constraint: HTTP installed
+-- constraint: HUnit installed
+-- constraint: integer-logarithms installed
+-- constraint: mtl installed
+-- constraint: network installed
+-- constraint: network-uri installed
+-- constraint: ObjectName installed
+-- constraint: OpenGL installed
+-- constraint: OpenGLRaw installed
+-- constraint: parallel installed
+-- constraint: parsec installed
+-- constraint: primitive installed
+-- constraint: QuickCheck installed
+-- constraint: random installed
+-- constraint: regex-base installed
+-- constraint: regex-compat installed
+-- constraint: regex-posix installed
+-- constraint: scientific installed
+-- constraint: split installed
+-- constraint: StateVar installed
+-- constraint: stm installed
+-- constraint: syb installed
+-- constraint: text installed
+-- constraint: tf-random installed
+-- constraint: unordered-containers installed
+-- constraint: vector installed
+-- constraint: zlib installed

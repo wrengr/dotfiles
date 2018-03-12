@@ -39,7 +39,10 @@
     statusHints = false
     # Disable `git push`'s hints about non-fastforward-able patches
     #pushNonFastForward = false
-    # Others: pushUpdateRejected, pushNonFFCurrent, pushNonFFMatching, pushAlreadyExists, pushFetchFirst, pushNeedsForce, statusHints, statusUoption, commitBeforeMerge, resolveConflict, implicitIdentity, detachedHead, amWorkDir, rmHints, addEmbeddedRepo
+    # Others: pushUpdateRejected, pushNonFFCurrent, pushNonFFMatching,
+    # pushAlreadyExists, pushFetchFirst, pushNeedsForce, statusHints,
+    # statusUoption, commitBeforeMerge, resolveConflict, implicitIdentity,
+    # detachedHead, amWorkDir, rmHints, addEmbeddedRepo
 [push]
     default = simple
 #[pull]
@@ -219,8 +222,7 @@
     # (To show the diff, use `-p`, `git show`, or `git diff --cached HEAD^`)
     top   = log --stat -1
     unpushed = log @{u}..
-    # TODO: we want the --untracked-files=no for my dotfiles repo;
-    # but do we really want it everywhere?
+    # Most of the time we already know about untracked files, and don't care.
     st    = status --branch --untracked-files=no
     # What we really want most of the time.
     ci    = commit --patch
@@ -237,8 +239,9 @@
     rc    = rebase --continue
     # For getting rebases to work when they cherry picked you, or similar.
     rs    = rebase --skip
-    # Something akin to how rebasing onto your parent *should* work;
-    # i.e., commute the patches godammit!
+    # A paltry attempt to commute a child's patches over new patches in
+    # the parent.
+    #
     # Supposedly this should look at "branch.<name>.remote" and
     # "branch.<name>.merge" (just like the no-argument `git pull` does),
     # select all the commits between then (exclusive) and the most recent
@@ -250,25 +253,31 @@
     # a vanilla `git rebase` seems to work (because it uses the parent
     # as the <exclude-from> point, rather than trying to determine it from
     # "branch.<name>.{remote,merge}").
-    # BUG: this also doesn't quite work right. We're going to have
-    # to write our own heavy-duty script to actually do the right thing.
+    #
+    # BUG: Write a heavy-duty script to do the right thing already!
+    # TODO: until we do the script, adding --no-ff seems to help...
     rop   = "!git rebase --onto $(git-parent)"
     # BUG: this won't tab-complete the branch name, unlike `oo` itself
     oorop = "!f(){ git oo $1 && git rop ; }; f"
     wdiff = diff --color-words
-    # This will unrecord the most recent commit. N.B., you can also
-    # use "~1" instead of "^" at the end; or "~N" to revert the
-    # N most-recent commits. <http://stackoverflow.com/q/927358/358069>
+    # This will undo the most recent commit action, leaving the changes
+    # from that commit in place. <http://stackoverflow.com/q/927358/358069>
     unrecord = reset --soft 'HEAD^'
     # Undo a `git reset`. N.B., '{1}' may not always be the one you
-    # want; cf `git reflog` <http://stackoverflow.com/a/2531803/358069>
+    # want! cf., `git reflog` <http://stackoverflow.com/a/2531803/358069>
     unreset = reset 'HEAD@{1}'
-    # Unstage some files. (Takes one or more files/paths)
-    # * To unstage only some chunks, use `git reset -p --`
+    # Undo staging the changes to some given file/path.
+    # TODO: maybe add some stuff to make this alias require an argument?
+    # TODO: add an alias for unstaging only some chunks, via `git reset -p --`
     unadd = reset --
+    # Unstage all changes in or below the current directory.
     unadd-all = reset -- .
+    # TODO: do we prefer these names for the aliases?
+    unstage = reset --
+    unstage-all = reset -- .
     # Revert (i.e., discard) all *unstaged* changes.
-    # * To remove untracked files, use `git clean -df`
+    # * To remove untracked files, use `git clean -df` (with -x
+    #   will also remove things that are otherwise .gitignore)
     # * To revert only some chunks, use `git checkout -p`
     # In all cases, you can give a specific file name instead of '.'
     # <http://stackoverflow.com/q/52704/358069>
@@ -289,9 +298,9 @@
     #    git branch --set-upstream-to=\"$old\"; \
     #    }; f"
     push-new-branch = push --set-upstream origin
-    # TODO: a version of del-branch that automatically switches to
-    # the upstream branch if we're on the branch to be
-    # deleted. (Rather than just erroring out, as `branch -d` does.)
+    # BUG: this should also update children to see this branch's upstream
+    # as their new upstream, rather than orphaning the children as this
+    # version does.
     # N.B., can use -D as a shorthand for -d --force
     del-branch = branch -d
     push-del-branch = push origin --delete

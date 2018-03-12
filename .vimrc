@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" wren gayle romano's vim config                    ~ 2018.02.05
+" wren gayle romano's vim config                    ~ 2018.02.21
 "
 " For guidance, see ~/.vim/README
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -941,6 +941,9 @@ let g:netrw_list_hide    = '\(^\|\s\s\)\zs\.[^\.]\+' " Toggle hiddenness with <g
 
 " The thing the <S-k> key command uses. (If  blank/empty, then uses `:help`)
 "set keywordprg=man\ -s
+
+" Unmap <S-k>, since I keep hitting it accidentally and never want/need it.
+map <S-k> <Nop>
 
 " The thing `:grep` uses.
 "set grepprg=grep\ -nHr\ $*
