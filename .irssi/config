@@ -165,6 +165,7 @@ channels = (
   { name = "#coq";               chatnet = "freenode";  autojoin = "yes"; },
   { name = "#agda";              chatnet = "freenode";  autojoin = "yes"; },
   { name = "#epigram";           chatnet = "freenode";  autojoin = "yes"; },
+  { name = "##dependent";        chatnet = "freenode";  autojoin = "yes"; },
   { name = "##typetheory";       chatnet = "freenode";  autojoin = "yes"; },
   { name = "##categorytheory";   chatnet = "freenode";  autojoin = "yes"; },
   { name = "#chromium";          chatnet = "freenode";  autojoin = "yes"; },
@@ -458,7 +459,7 @@ ignores = (
   ; channels = (
     "#meow", "#freegeek", "#haskell", "#haskell-ops", "#lambdanow",
     "#haskell-in-depth", "#numerical-haskell", "#ghc", "#darcs",
-    "#hakyll", "#coq", "#agda", "#epigram", "##typetheory",
+    "#hakyll", "#coq", "#agda", "#epigram", "##dependent", "##typetheory",
     "##categorytheory", "##dependent", "#lambdaladies", "#transspace",
     "#transgender", "#kink", "#star", "#soic", "#nlp" ); },
   { mask = "ghcbot";         level = "ALL"; channels = ( "#ghc" ); },
@@ -580,7 +581,7 @@ windows = {
       {
         type = "CHANNEL";
         chat_type = "IRC";
-        name = "##typetheory";
+        name = "##dependent";
         tag = "freenode";
       }
     );
@@ -592,7 +593,7 @@ windows = {
       {
         type = "CHANNEL";
         chat_type = "IRC";
-        name = "##categorytheory";
+        name = "##typetheory";
         tag = "freenode";
       }
     );
@@ -604,7 +605,7 @@ windows = {
       {
         type = "CHANNEL";
         chat_type = "IRC";
-        name = "##dependent";
+        name = "##categorytheory";
         tag = "freenode";
       }
     );
