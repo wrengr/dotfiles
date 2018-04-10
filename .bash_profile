@@ -1,4 +1,4 @@
-# wren gayle romano's bash login script             ~ 2018.03.05
+# wren gayle romano's bash login script             ~ 2018.03.19
 #
 # It's fairly generic (with weirder things at the bottom),
 # but it's designed to be usable for all my accounts with no(!)
@@ -816,7 +816,7 @@ print "$val\n";'\'
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ Google-specific functions
 
-if [ "${_localhost}" = 'google' ]; then
+if [ "${_localhost}" = 'google' ] && [ "${_uname}" = 'Linux' ]; then
 
     # This bunch of functions is to work around issues of objfs/srcfs
     # updates breaking long-running processes in the middle of the night
