@@ -30,15 +30,6 @@ servers = (
     ssl_verify = "no";
     autoconnect = "yes";
   },
-  {
-    # trans feminine only
-    address = "irc.starrevolution.org";
-    chatnet = "starrevolution";
-    port = "6697";
-    use_ssl = "yes";
-    ssl_verify = "no";
-    autoconnect = "yes";
-  },
   { address = "irc.stealth.net";  chatnet = "IRCnet";     port = "6668"; },
   { address = "irc.efnet.net";    chatnet = "EFNet";      port = "6667"; },
   { address = "irc.undernet.org"; chatnet = "Undernet";   port = "6667"; },
@@ -71,10 +62,6 @@ chatnets = {
     autosendcmd = "/ghost wrengr SEEKRIT 700";
   };
   tsukihime = {
-    type = "IRC";
-    autosendcmd = "/ghost wrengr SEEKRIT 700";
-  };
-  starrevolution = {
     type = "IRC";
     autosendcmd = "/ghost wrengr SEEKRIT 700";
   };
@@ -168,17 +155,16 @@ channels = (
   { name = "##dependent";        chatnet = "freenode";  autojoin = "yes"; },
   { name = "##typetheory";       chatnet = "freenode";  autojoin = "yes"; },
   { name = "##categorytheory";   chatnet = "freenode";  autojoin = "yes"; },
-  { name = "#chromium";          chatnet = "freenode";  autojoin = "yes"; },
+  { name = "#chromium";          chatnet = "freenode";  autojoin = "no"; },
   { name = "#lambdaladies";      chatnet = "freenode";  autojoin = "yes"; },
   { name = "#transgender";       chatnet = "tsukihime"; autojoin = "no"; },
   { name = "#kink";              chatnet = "tsukihime"; autojoin = "no"; },
-  { name = "#star";         chatnet = "starrevolution"; autojoin = "no"; },
   { name = "#soic";              chatnet = "soic";      autojoin = "yes"; },
   { name = "#nlp";               chatnet = "soic";      autojoin = "yes"; },
   {
     name = "#meow";
     chatnet = "cat";
-    autojoin = "yes";
+    autojoin = "no";
     password = "SEEKRIT";
   },
   {
