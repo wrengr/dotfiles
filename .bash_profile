@@ -1,4 +1,4 @@
-# wren gayle romano's bash login script             ~ 2018.03.19
+# wren gayle romano's bash login script             ~ 2018.05.23
 #
 # It's fairly generic (with weirder things at the bottom),
 # but it's designed to be usable for all my accounts with no(!)
@@ -56,7 +56,7 @@ case "${_hostname}" in
     # TODO: *.karst.uits.iu.edu x86_64 GNU/Linux
 
     *.haskell.org | lun)           _localhost='haskell' ;;
-    *.google.com)
+    *.corp.google.com | *.c.googlers.com)
         # BUG: doesn't distinguish between maracuya & ciruela
         # (both Goobuntu), vs my laptop (OSX).
         _localhost='google'

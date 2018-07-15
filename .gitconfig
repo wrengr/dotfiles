@@ -215,12 +215,18 @@
     # the builtin --oneline will use color.diff.commit for the hash!
     lol   = log --color --graph --pretty=oneline --abbrev-commit --decorate
     lola  = log --color --graph --pretty=lola
-    # This one also shows stashes and abandoned branches/heads
+    # Automatically filter to only show new things since parent.
+    # (Alas, seems no way to get the whole tree rooted at the parent, a la rofl)
+    ll    = "!git lol --first-parent $(git parent)^.."
+    # This one also shows stashes and abandoned branches/heads.
     rofl  = "!git lol  $(git rev-list -g --all)"
     rofla = "!git lola $(git rev-list -g --all)"
     # Show more details of the most recent patch:
     # (To show the diff, use `-p`, `git show`, or `git diff --cached HEAD^`)
     top   = log --stat -1
+    # List the files modified by a given commit (defaults to HEAD)
+    # TODO: use perl/sed/awk to translate repo-absolute paths to relative paths.
+    show-files = show --name-only --format=''
     unpushed = log @{u}..
     # Most of the time we already know about untracked files, and don't care.
     st    = status --branch --untracked-files=no
@@ -256,6 +262,7 @@
     #
     # BUG: Write a heavy-duty script to do the right thing already!
     # TODO: until we do the script, adding --no-ff seems to help...
+    # TODO: according to <https://git-scm.com/docs/gitcli> it's preferred to use the "--foo=bar" form rather than the "--foo bar" form. The manpage doesn't show it as an option, but if --onto supports that sytax, then we should use it here.
     rop   = "!git rebase --onto $(git-parent)"
     # BUG: this won't tab-complete the branch name, unlike `oo` itself
     oorop = "!f(){ git oo $1 && git rop ; }; f"
@@ -297,6 +304,7 @@
     #    git checkout -b \"$1\" \"$old\" ; \
     #    git branch --set-upstream-to=\"$old\"; \
     #    }; f"
+    # TODO: according to <https://git-scm.com/docs/gitcli> it's preferred to use the "--foo=bar" form rather than the "--foo bar" form. The manpage doesn't show it as an option, but if --set-upstream supports that sytax, then we should use it here.
     push-new-branch = push --set-upstream origin
     # BUG: this should also update children to see this branch's upstream
     # as their new upstream, rather than orphaning the children as this
@@ -310,10 +318,10 @@
     # HT: <https://gist.github.com/mwhite/6887990>
     # TODO: is there a way to combine this info with the "bb" info?
     # TODO: is there any way to color this like we do for the others?
-    lm = "!git for-each-ref \
+    lm = "for-each-ref \
         --sort='-authordate' \
-        --format='%(authordate:short)%09%(objectname:short)%09%(refname)' \
-        refs/heads | sed -e 's@refs/heads/@@'"
+        --format='%(authordate:short)%09%(objectname:short)%09%(refname:short)' \
+        refs/heads"
     # Show the most recent tag
     lt = describe --tags --abbrev=0
     # Show all tags

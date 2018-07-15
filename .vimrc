@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" wren gayle romano's vim config                    ~ 2018.02.21
+" wren gayle romano's vim config                    ~ 2018.06.07
 "
 " For guidance, see ~/.vim/README
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -133,9 +133,11 @@ Plug 'vim-airline/vim-airline-themes'
 " ~~~~~ Git & other VCSes
 Plug 'airblade/vim-gitgutter', PlugCond(has('signs'))
 "Plug 'mhinz/vim-signify' " like gitgutter, but for other VCSes
-" If you use Signify, then you should g:signify_disable_by_default=1
-" (or use EDITOR='vim --cmd let\ g:signify_disable_by_default=1') to
-" circumvent bugs at Google (b/26261118 #comment32 #comment41)
+" HACK: to get Signify to work at google,
+" (1) `let g:signify_disable_by_default=1` to circumvent <b/26261118>
+"     (see #comment32 #comment41)
+" (2) Should use <go/citcdiff> in lieu of p4's diff for better performance.
+"
 " <https://bitbucket.org/ludovicchabant/vim-lawrencium> " for Mercurial
 "Plug 'junegunn/vim-github-dashboard'
 "Plug 'tpope/vim-fugitive'
@@ -192,13 +194,17 @@ Plug 'airblade/vim-gitgutter', PlugCond(has('signs'))
 " Cf., <https://www.reddit.com/r/haskell/comments/67384o/how_do_you_haskell_in_vim/>
 " Cf., <http://www.stephendiehl.com/posts/vim_2016.html>
 " Cf., <https://github.com/begriffs/haskell-vim-now>
+" TODO: need to go through and try each of these to see which I like best ::sigh::
+"Plug 'vim-scripts/haskell.vim',       { 'for': 'haskell' } " An improvement over the default; though maybe still crap.
 "Plug 'eagletmt/ghcmod-vim',           { 'for': 'haskell' }
 "Plug 'eagletmt/neco-ghc',             { 'for': 'haskell' }
 "Plug 'edkolev/curry.vim',             { 'for': 'haskell' }
 "Plug 'enomsg/vim-haskellConcealPlus', { 'for': 'haskell' }
 "Plug 'mpickering/hlint-refactor-vim', { 'for': 'haskell' }
 "Plug 'nbouscal/vim-stylish-haskell',  { 'for': 'haskell' }
-"Plug 'neovimhaskell/haskell-vim',     { 'for': 'haskell' }
+" This isn't entirely what I want, but seems workable for now.
+Plug 'neovimhaskell/haskell-vim',      { 'for': 'haskell' } " By raichoo, inspired by idris-vim.
+"Plug 'alx741/vim-hindent',            { 'for': 'haskell' } " Suggested by raichoo if we dislike the version in 'neovimhaskell/haskell-vim'
 "Plug 'Twinside/vim-hoogle',           { 'for': 'haskell' }
 "Plug 'itchyny/vim-haskell-indent',    { 'for': 'haskell' } " In lieu of the default thing, which is awful.
 
@@ -747,13 +753,21 @@ if (v:version > 700) && has('spell')
     "    autocmd InsertLeave * setlocal spell
     "endif
 
-    " TODO: change these from TomorrowNightBright? They look
-    " tolerable enough on Ereshkigal, but look terrible on both
+    " HACK: need to change these from TomorrowNightBright, since that
+    " color scheme doesn't respect `set background=dark`. The defaults
+    " look tolerable enough on Ereshkigal, but look terrible on both
     " work machines.
-    "highlight SpellBad ...
-    "highlight SpellCap ...
-    "highlight SpellLocal ... gui=undercurl
+    " TODO: apparently the bug has to do with `cterm=bold` being interpreted to turn the text grey rather than keeping the black...
+    highlight SpellBad   ctermfg=black
+    highlight SpellCap   ctermfg=black
+    highlight SpellLocal ctermfg=black
+    "highlight SpellCap  ...
     "highlight SpellRare ...
+    " the TomorrowNightBright version is:
+    " SpellBad   term=reverse   ctermbg=9  gui=undercurl guisp=Red
+    " SpellLocal term=underline ctermbg=14 gui=undercurl guisp=Cyan
+    " SpellCap   term=reverse   ctermbg=12 gui=undercurl guisp=Blue
+    " SpellRare  term=reverse   ctermbg=13 gui=undercurl guisp=Magenta
     "
     " Some other things to colorize (not sure if they belong here or elsewhere)
     " cf., `:help hl-Pmenu`

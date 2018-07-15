@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 # Return each line single-quoted as an entry for use in shell scripts
-# wren gayle romano <wren@cpan.org>                 ~ 2006.08.08
+# wren gayle romano <wren@cpan.org>                 ~ 2018.03.19
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # Helpful to use the return values of `find` in other commands
@@ -13,6 +13,22 @@
 use strict;
 use warnings;
 
+# N.B., if we want to interpret the incoming string strictly literally,
+# then there's no need to escape the escapes. We only need to do that
+# for cases where the result will be doubly interpreted. (Since only then
+# will we first interpret away the singlequote stuff, and then interpret
+# again: so if the original string had the character sequence "\n" then
+# the second of those interpretations would result in interpreting those
+# two characters into the newline character.)
+#
+# TODO: Git seems to think that the ! character is also magical and
+# thus should be replaced with the four-character sequence '\!' in
+# order to render it non-magical again. Last I heard the only thing
+# that's magical inside of singlequotes is singlequotes themselves;
+# which <https://askubuntu.com/q/434832> confirms while expaining about
+# ! being magical when used outside of singlequotes (including within
+# doublequotes). So, if we can figure out why the heck Git thinks that,
+# then we should probably do that here too.
 while (<>) {
 	s{\x5C}{\x5C\x5C}g;         # escape escapes:       \ -> \\
 	s{\x27}{\x27\x5C\x27\x27}g; # escape single-quotes: ' -> '\''

@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 # An enhanced version of `git branch -vv`
-# wren gayle romano <wrengr@google.com>             ~ 2018.03.01
+# wren gayle romano <wrengr@google.com>             ~ 2018.04.05
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 use warnings;
 use strict;
@@ -13,6 +13,30 @@ use strict;
 #   so that it's mostly right/bottom branching,...)
 # * filtering the tree (by last-modified, etc), maybe? cf.,
 #   <https://github.com/MarkLodato/scripts/blob/master/git-recent-branches>
+
+# TODO: we may want to take some pointers from <https://github.com/git/git/blob/35f6318d44379452d8d33e880d8df0267b4a0cd0/perl/Git.pm>. We shouldn't use that directly, since it has the same profoundly terribad UI issues that the git executable does, but it may help for discovering helpful commands or discovering more hidden gotchas and corner cases.
+
+# Could use C<Getopt::Long>, but that generates a bit too free-form of
+# a CLI for my tastes.
+my $UseColor = 1;
+{ # Block is to limit the scope of variables.
+    my %UseColorValues =
+        # TODO: might should change these to "always" and "never", to match the names git uses...
+        ( 'no'  => sub { $UseColor = 0; },
+        , 'yes' => sub { $UseColor = 1; },
+        );
+    while (@ARGV) {
+        my $arg = shift @ARGV;
+        if ($arg =~ m/^--color=(.*)$/) {
+            my $callback = $UseColorValues{$1};
+            die "Unexpected value for --color: $1\n"
+                unless defined $callback;
+            &$callback();
+        } else {
+            die "Usage:...";
+        }
+    }
+}
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -39,6 +63,7 @@ sub withPipe {
 
     # N.B., this seems surprisingly fragile for some reason. See the
     # comment in C<backticks>.
+    # TODO: use C<wantarray> to determine the return type of &$block, rather than assuming scalar.
     my $ret = &$block($FH);
 
     # N.B., it's the C<close> call itself which sets both C<$!> and C<$?>
@@ -182,15 +207,16 @@ sub hasRebaseInProgress () {
     my $merge = backticks $Git, 'rev-parse', '--git-path', 'rebase-merge';
     my $apply = backticks $Git, 'rev-parse', '--git-path', 'rebase-apply';
     # TODO: when file test flags fail they return undef and set $!, so we need to check for that and respond accordingly!
-    return -d $merge or -d $apply;
+    return ((-d $merge) or (-d $apply));
     # TODO: debug/test to verify that this actually works as intended.
 }
 # HT: <https://stackoverflow.com/q/30733415>
+# BUG: this doesn't seem to actually detect it, at least sometimes it doesn't
 sub hasMergeInProgress () {
     # TODO: see all the todos for C<hasRebaseInProgress>.
     my $merge = backticks $Git, 'rev-parse', '--git-path', 'MERGE_HEAD';
     return -d $merge;
-    # TODO: debug/test to verify that this actually works as intended.
+    # TODO: that file definitely exists when a merge is in progress (since when you try to C<git merge --continue> the commit editor has a comment about knowing it's a merge commit thanks to that file and to remove the file if you really didn't mean to do a merge-commit). Still ought to work on verifying this code works as intended.
 }
 #sub hasCherrypickInProgress () {
 #   # The same idea except for whatever the "$GIT_CHERRYPICK_HEAD_FILE" name is:
@@ -230,35 +256,48 @@ sub hasMergeInProgress () {
 # colors in one go, rather than firing off a process for each one?
 # Or if that's impossible, then maybe fill in the table lazily based
 # on the colors we actually use? (Then again, that laziness will introduce
-# unsightly lags in the output...)
+# unsightly lags in the output... Though we can avoid that by first
+# building up all the output in memory, so we can force all the calls
+# to C<colorize>, then only actually print it at the very end.)
+#
+# TODO: alas, there seems to be no good way of conditionally
+# defining a function. The closest thing is to use function
+# references. Supposedly we should be able to use a glob hack to do
+# it, but that seems to cause problems due to the lack of prototypes:
+# <https://stackoverflow.com/a/588384>. Or maybe we could give an explicit
+# declaration first, in order to give the prototype, and then use the glob
+# thing to provide the definition? (Cf., how C<Getopt::Long> does things)
 
-{ # Block is to limit scope/visibility of $Reset and %Color.
-    # N.B., for getting the reset we really do need that empty argument.
-    my $Reset = backticks $Git, 'config', '--get-color', '', 'reset';
+{ # Block is to limit the scope of variables.
+    my $Reset;
     my %Color;
-    $Color{$_} = backticks $Git, 'config', '--get-color', $_
-        foreach
-        ( 'color.branch.current'
-        , 'color.branch.upstream'
-        , 'color.branch.local'
-        , 'color.branch.remote'
-        # 'color.branch.plain'          # TODO: Could be used for our "no color"?
-        # 'color.decorate.head'         # Should equal 'color.branch.current' imo.
-        # 'color.decorate.branch'       # Should equal 'color.branch.local' imo.
-        # 'color.decorate.remoteBranch' # Should equal 'color.branch.remote' imo.
-        # 'color.decorate.tag'          # TODO: would this ever be helpful?
-        # 'color.decorate.stash'        # TODO: would this ever be helpful?
-        , 'color.diff.commit'
-        , 'color.diff.old'              # We use this for divergence-behind
-        , 'color.diff.new'              # we use this for divergence-ahead
-        # 'color.diff.plain'            # TODO: Could be used for our "no color"?
-        );
+
+    if ($UseColor) {
+        # N.B., for getting the reset we really do need that empty argument.
+        $Reset = backticks $Git, 'config', '--get-color', '', 'reset';
+        $Color{$_} = backticks $Git, 'config', '--get-color', $_
+            foreach
+            ( 'color.branch.current'
+            , 'color.branch.upstream'
+            , 'color.branch.local'
+            , 'color.branch.remote'
+            # 'color.branch.plain'          # TODO: Could be used for our "no color"?
+            # 'color.decorate.head'         # Should equal 'color.branch.current' imo.
+            # 'color.decorate.branch'       # Should equal 'color.branch.local' imo.
+            # 'color.decorate.remoteBranch' # Should equal 'color.branch.remote' imo.
+            # 'color.decorate.tag'          # TODO: would this ever be helpful?
+            # 'color.decorate.stash'        # TODO: would this ever be helpful?
+            , 'color.diff.commit'
+            , 'color.diff.old'              # We use this for divergence-behind
+            , 'color.diff.new'              # we use this for divergence-ahead
+            # 'color.diff.plain'            # TODO: Could be used for our "no color"?
+            );
+    }
 
     sub colorize ($$) {
         my ($colorname, $string) = @_;
         # TODO: guard against unknown/unexpected $colorname.
-        # TODO: add config stuff to handle dis-/enabling color.
-        return $Color{$colorname} . $string . $Reset;
+        return ($UseColor ? $Color{$colorname} . $string . $Reset : $string);
     }
 }
 
@@ -327,7 +366,7 @@ withPipe $Git, 'for-each-ref', "--format=$BranchInfoFormat", 'refs/heads',
                 , 'upstream'   => $upstreamShort
                 , 'remote'     => $remote
                 , 'upstream-divergence' => $upstreamDivergence
-                # TODO: 'remote-divergence', 'git5-divergence',...
+                # TODO: 'remote-divergence',...
                 };
 
             # HACK: this assumes $branch is unique enough that the
@@ -335,7 +374,6 @@ withPipe $Git, 'for-each-ref', "--format=$BranchInfoFormat", 'refs/heads',
             # TODO: remove that assumption and do the right thing regardless.
             my $git5exported = "refs/exported/$branch";
             if (isValidRef $git5exported) {
-                # DO NOT SUBMIT: make sure this works right re refs/dereferencing.
                 my @divergence = getDivergence "refs/heads/$branch", $git5exported;
                 $BranchInfo{$branch}{'git5-divergence'} = \@divergence;
             }
@@ -429,6 +467,8 @@ my $HEAD = backticks $Git, 'rev-parse', '--abbrev-ref', 'HEAD';
 my $GoneColorname = 'color.branch.upstream';
 
 # Auto-magically determine the appropriate colorization for a branch.
+# TODO: find some way of marking the HEAD branch when $UseColor is false.
+# TODO: also some special marking for remotes when not $UseColor?
 sub colorizeBranch ($) {
     my ($branch) = @_;
     my $colorname;

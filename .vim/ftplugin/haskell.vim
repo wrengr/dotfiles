@@ -1,4 +1,6 @@
 " Haskell specific settings
+" TODO: should prolly move this tothe "after" folder, just to make sure
+" it won't get overwritten by plugins...
 
 setlocal expandtab " always use spaces please!
 

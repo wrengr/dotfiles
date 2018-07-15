@@ -47,6 +47,10 @@ if [[ $OLD_PARENT = '' ]]; then
     exit 1
 fi
 
+# TODO: according to <https://git-scm.com/docs/gitcli> the "--foo=bar"
+# form is preferred over the "--foo bar" form. The manpage doesn't say
+# that "--onto" accepts the equals-form; but if it does, then we should
+# use that here.
 git rebase --onto $NEW_PARENT $OLD_PARENT $THIS_BRANCH
 ERRNO=$?
 if [[ $ERRNO -ne 0 ]]; then
