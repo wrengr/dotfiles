@@ -1,0 +1,5 @@
+Everything in this directory should be removed, since it's out of
+date with the upstream versions of the plugins.  However, I hate
+the way tommorrow-theme (and it's replacement "base16") fail to use
+highlighting links; so I should fork my own copy from the latest
+version of that...
