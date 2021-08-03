@@ -425,14 +425,29 @@ case "${_localhost}" in
                 # the (ancient) version that ships with goobuntu/glinux.
                 _push PATH '~/.cabal/bin'
 
-                # (2018.03.02): Disabling these since I'm no longer
-                # doing chromium stuff, and cuz goma isn't playing nice
-                # with trying to compile GHC.
-                # BUG: This is still getting pulled in somehow!! It happens at the beginning of time: i.e., before we even enter /etc/profile, let alone enter this .bash_profile. It's not set in /etc/environment though. My current suspicion is that it's being set by Xsession or pam or something similar... (Re how to debug these sorts of things, see: <https://unix.stackexchange.com/a/154971>)
-                #_push PATH '~/chromium-srcs/depot_tools'
+                # (2021.07.26): LLVM/MLIR uses GOMA too, so (preparing to) re-enabling this.
+                # WARNING: goma doesn't play nice with GHC, at all.
+                # WARNING: previously we got into a state where: even if
+                #   this line is commented out it was being magically
+                #   pulled in from the beginning of time (i.e.,
+                #   before we even enter /etc/profile, let alone enter
+                #   this .bash_profile); and that despite not being set
+                #   in /etc/environment either.  My previous suspicion
+                #   was that it's being set by Xsession or pam or
+                #   something similar...
+                #   (Re how to debug these sorts of things, see:
+                #   <https://unix.stackexchange.com/a/154971>)
+                #_push PATH '~/src/depot_tools'
                 # WARNING: this will steal "gcc" and "g++" from /usr/bin
                 # And you need to do special things to get goma started.
-                #_push PATH '~/chromium-srcs/goma'
+                #_push PATH '~/src/goma'
+                # TODO: These two should probably be bundled into a
+                #   separate script for general google login cruft,
+                #   rather than being done here.
+                #goma_auth login
+                #goma_ctl ensure_start
+                # TODO: also be sure to add this to .bash_logout or similar
+                #goma_auth logout
             ;;
         esac
     ;;

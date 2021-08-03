@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" wren gayle romano's vim config                    ~ 2018.06.07
+" wren gayle romano's vim config                    ~ 2021.07.20
 "
 " For guidance, see ~/.vim/README
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -9,6 +9,12 @@ set nocompatible " Avoid compatibility with legacy vi. (Must come first)
 set nomodeline   " Avoid insecurity! <http://usevim.com/2012/03/28/modelines/>
 set ttyfast      " Avoid thinking we're still in the 1970s.
 set noinsertmode " Avoid emacs-emulating silliness.
+
+
+" ~~~~~ Use the 'google' package by default <http://go/vim/packages>
+" TODO: (a) make this conditional on that file actually existing.
+"       (b) figure out what all that does, so we can decide whether to opt-in or not.
+"source /usr/share/vim/google/google.vim
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
