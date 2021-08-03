@@ -181,11 +181,17 @@ if [ ! -z "${PS1}" ]; then
     # extend this to handle other version control systems (like we used
     # to have way back in the day).
     _figprompt=""
-    if [ "${_localhost}" = 'google' ]; then
-        # BUG: see the warning note in ~/.hgrc
-        source /google/src/head/depot/google3/experimental/fig_contrib/prompts/fig_status/bash/fig_prompt.sh
-        # BUG: I want to add extra space (to separate get_fig_prompt from the preceding $_w and the following $_s below), but iff get_fig_prompt actually returns something (so that we don't get double spaces when in homedir etc)
-        _figprompt="\[\033[1;35m\]\$(get_fig_prompt)\[\033[00m\]"
+    if [ "${_localhost}" = 'google' ] && [ "${_uname}" = 'Linux' ]; then
+        figprompt_file='/google/src/head/depot/google3/experimental/fig_contrib/prompts/fig_status/bash/fig_prompt.sh'
+        # Even though we added an extra guard above to keep this
+        # from running on my mac laptop, the following additional
+        # guard also seems prudent.
+        if [ -r "$figprompt_file" ]; then
+            # BUG: see the warning note in ~/.hgrc
+            source "$figprompt_file"
+            # BUG: I want to add extra space (to separate get_fig_prompt from the preceding $_w and the following $_s below), but iff get_fig_prompt actually returns something (so that we don't get double spaces when in homedir etc)
+            _figprompt="\[\033[1;35m\]\$(get_fig_prompt)\[\033[00m\]"
+        fi
     fi
 
     # The actual prompt itself
