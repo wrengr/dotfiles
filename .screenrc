@@ -8,6 +8,11 @@
 # <http://aperiodic.net/screen/appearance>
 # <http://aperiodic.net/screen/truncation_padding_escapes>
 # <https://lizdenys.com/journal/articles/understanding-gnu-screens-captions.html>
+#
+# TODO(2021.08.02):
+# * see if there're any fun bits to take from <https://raw.githubusercontent.com/ivan-loh/dotfiles/master/.screenrc>
+# * also check out <https://github.com/hi94740/screen-command>
+# * also <https://liquidat.wordpress.com/2008/10/17/short-tip-gnu-screen-with-proper-scroll-session-management-support/>
 
 
 # ~~~~~ Basic Config
@@ -39,6 +44,9 @@ altscreen on
 # The %t defaults to whatever program you started initially. To
 # change it, either: `-t whatever` or `<C-a>:title "whatever"`
 caption always "  %H:%3n %t%? [%h]%?%=<%l>    %M %d (%D) %0c  "
+# TODO(2021.08.02): compare the above vs:
+# hardstatus alwayslastline '%{= kg}[ %{G}%H %{g}][%= %{= kB}%?%-Lw%?%{+b r}(%{G}%n*%f %t%?(%u)%?%{r})%{-b B}%?%+Lw%?%?%= %{g}%]'
+#
 #activity "Activity on %n"
 #bell_msg "Bell in window %n"
 #vbell_msg "Wuff, Wuff!!

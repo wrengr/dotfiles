@@ -15,10 +15,16 @@ servers = (
     autoconnect = "yes";
   },
   {
-    address = "irc.freenode.net";
-    chatnet = "freenode";
-    port = "8001";
-    # using 8001 to avoid exploit "6667";
+    # Never use freenode again
+    address = "irc.libera.chat";
+    chatnet = "libera";
+    # Libera uses TLS, which also means port 6697
+    # (cf., vs freenode using 8001 to avoid the 6667 exploit)
+    port = "6697";
+    # cf., <https://feeding.cloud.geek.nz/posts/tls_authentication_freenode_and_oftc/>
+    use_tls = "yes";
+    tls_cert = "~/.irssi/user.pem";
+    tls_verify = "yes";
     autoconnect = "yes";
   },
   {
@@ -53,7 +59,7 @@ chatnets = {
   soic = {
     type = "IRC";
   };
-  freenode = {
+  libera = {
     type = "IRC";
     max_kicks = "4";
     max_modes = "4";
@@ -138,25 +144,33 @@ chatnets = {
   SILC = { type = "SILC"; };
 };
 
+# TODO: have http://www.haskellnow.org/, http://www.lambdaladies.com/,
+# and https://www.chromium.org/developers/irc really not migrated yet?
+# Or are their websites (or the communities) just dead?
+# HACK: assuming the following unupdated-website channels have moved:
+#     #lambdanow #lambdaladies #chromium
+# also assuming the following ungoogleable channels have moved:
+#     #epigram ##dependent ##typetheory ##categorytheory
+# The rest have updated their websites to tell that they've moved.
 channels = (
   { name = "#irssi";             chatnet = "ircnet";    autojoin = "No"; },
-  { name = "#irssi";             chatnet = "freenode";  autojoin = "No"; },
-  { name = "#freegeek";          chatnet = "freenode";  autojoin = "No"; },
-  { name = "#haskell";           chatnet = "freenode";  autojoin = "yes"; },
-  { name = "#lambdanow";         chatnet = "freenode";  autojoin = "yes"; },
-  { name = "#haskell-in-depth";  chatnet = "freenode";  autojoin = "yes"; },
-  { name = "#numerical-haskell"; chatnet = "freenode";  autojoin = "yes"; },
-  { name = "#ghc";               chatnet = "freenode";  autojoin = "no"; },
-  { name = "#darcs";             chatnet = "freenode";  autojoin = "no"; },
-  { name = "#hakyll";            chatnet = "freenode";  autojoin = "yes"; },
-  { name = "#coq";               chatnet = "freenode";  autojoin = "yes"; },
-  { name = "#agda";              chatnet = "freenode";  autojoin = "yes"; },
-  { name = "#epigram";           chatnet = "freenode";  autojoin = "yes"; },
-  { name = "##dependent";        chatnet = "freenode";  autojoin = "yes"; },
-  { name = "##typetheory";       chatnet = "freenode";  autojoin = "yes"; },
-  { name = "##categorytheory";   chatnet = "freenode";  autojoin = "yes"; },
-  { name = "#chromium";          chatnet = "freenode";  autojoin = "no"; },
-  { name = "#lambdaladies";      chatnet = "freenode";  autojoin = "yes"; },
+  { name = "#irssi";             chatnet = "libera";    autojoin = "No"; },
+  { name = "#freegeek";          chatnet = "libera";    autojoin = "No"; },
+  { name = "#haskell";           chatnet = "libera";    autojoin = "yes"; },
+  { name = "#lambdanow";         chatnet = "libera";    autojoin = "yes"; },
+  { name = "#haskell-in-depth";  chatnet = "libera";    autojoin = "yes"; },
+  { name = "#numerical-haskell"; chatnet = "libera";    autojoin = "yes"; },
+  { name = "#ghc";               chatnet = "libera";    autojoin = "no"; },
+  { name = "#darcs";             chatnet = "libera";    autojoin = "no"; },
+  { name = "#hakyll";            chatnet = "libera";    autojoin = "yes"; },
+  { name = "#coq";               chatnet = "libera";    autojoin = "yes"; },
+  { name = "#agda";              chatnet = "libera";    autojoin = "yes"; },
+  { name = "#epigram";           chatnet = "libera";    autojoin = "yes"; },
+  { name = "##dependent";        chatnet = "libera";    autojoin = "yes"; },
+  { name = "##typetheory";       chatnet = "libera";    autojoin = "yes"; },
+  { name = "##categorytheory";   chatnet = "libera";    autojoin = "yes"; },
+  { name = "#chromium";          chatnet = "libera";    autojoin = "no"; },
+  { name = "#lambdaladies";      chatnet = "libera";    autojoin = "yes"; },
   { name = "#transgender";       chatnet = "tsukihime"; autojoin = "no"; },
   { name = "#kink";              chatnet = "tsukihime"; autojoin = "no"; },
   { name = "#soic";              chatnet = "soic";      autojoin = "yes"; },
@@ -395,7 +409,7 @@ settings = {
     real_name = "wren gayle romano";
     user_name = "wrengr";
     nick = "wrengr";
-    timestamp_format = "%H:%M:";
+    timestamp_format = "%H:%M";
     log_timestamp = "%Y.%m.%d %H:%M:%S";
     log_close_string = "--- Log closed %a, %Y %b %d %H:%M:%S";
     log_open_string = "--- Log opened %a, %Y %b %d %H:%M:%S";
@@ -472,7 +486,7 @@ windows = {
         type = "CHANNEL";
         chat_type = "IRC";
         name = "#haskell";
-        tag = "freenode";
+        tag = "libera";
       }
     );
     sticky = "yes";
@@ -484,7 +498,7 @@ windows = {
         type = "CHANNEL";
         chat_type = "IRC";
         name = "#lambdanow";
-        tag = "freenode";
+        tag = "libera";
       }
     );
     sticky = "yes";
@@ -496,7 +510,7 @@ windows = {
         type = "CHANNEL";
         chat_type = "IRC";
         name = "#haskell-in-depth";
-        tag = "freenode";
+        tag = "libera";
       }
     );
     sticky = "yes";
@@ -508,7 +522,7 @@ windows = {
         type = "CHANNEL";
         chat_type = "IRC";
         name = "#numerical-haskell";
-        tag = "freenode";
+        tag = "libera";
       }
     );
     sticky = "yes";
@@ -520,7 +534,7 @@ windows = {
         type = "CHANNEL";
         chat_type = "IRC";
         name = "#hakyll";
-        tag = "freenode";
+        tag = "libera";
       }
     );
     sticky = "yes";
@@ -532,7 +546,7 @@ windows = {
         type = "CHANNEL";
         chat_type = "IRC";
         name = "#coq";
-        tag = "freenode";
+        tag = "libera";
       }
     );
     sticky = "yes";
@@ -544,7 +558,7 @@ windows = {
         type = "CHANNEL";
         chat_type = "IRC";
         name = "#agda";
-        tag = "freenode";
+        tag = "libera";
       }
     );
     sticky = "yes";
@@ -556,7 +570,7 @@ windows = {
         type = "CHANNEL";
         chat_type = "IRC";
         name = "#epigram";
-        tag = "freenode";
+        tag = "libera";
       }
     );
     sticky = "yes";
@@ -568,7 +582,7 @@ windows = {
         type = "CHANNEL";
         chat_type = "IRC";
         name = "##dependent";
-        tag = "freenode";
+        tag = "libera";
       }
     );
     sticky = "yes";
@@ -580,7 +594,7 @@ windows = {
         type = "CHANNEL";
         chat_type = "IRC";
         name = "##typetheory";
-        tag = "freenode";
+        tag = "libera";
       }
     );
     sticky = "yes";
@@ -592,7 +606,7 @@ windows = {
         type = "CHANNEL";
         chat_type = "IRC";
         name = "##categorytheory";
-        tag = "freenode";
+        tag = "libera";
       }
     );
     sticky = "yes";
@@ -604,7 +618,7 @@ windows = {
         type = "CHANNEL";
         chat_type = "IRC";
         name = "#lambdaladies";
-        tag = "freenode";
+        tag = "libera";
       }
     );
     sticky = "yes";

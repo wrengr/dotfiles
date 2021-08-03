@@ -177,9 +177,20 @@ if [ ! -z "${PS1}" ]; then
     # BUG: doesn't account for non-color terminals.
     _exit="\$(x=\$?; [ \$x -ne 0 ] && echo -n \"\[\e[01;31m\]\$x${_off} \")"
 
+    # Empty if we're not on a google machine.  Maybe in the future we'll
+    # extend this to handle other version control systems (like we used
+    # to have way back in the day).
+    _figprompt=""
+    if [ "${_localhost}" = 'google' ]; then
+        # BUG: see the warning note in ~/.hgrc
+        source /google/src/head/depot/google3/experimental/fig_contrib/prompts/fig_status/bash/fig_prompt.sh
+        # BUG: I want to add extra space (to separate get_fig_prompt from the preceding $_w and the following $_s below), but iff get_fig_prompt actually returns something (so that we don't get double spaces when in homedir etc)
+        _figprompt="\[\033[1;35m\]\$(get_fig_prompt)\[\033[00m\]"
+    fi
+
     # The actual prompt itself
     # TODO: factor out the [ ] @ :
-    PS1="${_bold}[${_off}${_j}${_bold}]${_off} ${_u}${_bold}@${_off}${_h}${_bold}:${_off}${_w} ${_s} ${_exit}"
+    PS1="${_bold}[${_off}${_j}${_bold}]${_off} ${_u}${_bold}@${_off}${_h}${_bold}:${_off}${_w}${_figprompt} ${_s} ${_exit}"
 
     # Short prompt for elys, but only when logged in directly
     if [ "${_localhost}" = 'elsamelys' ]; then
@@ -189,7 +200,7 @@ if [ ! -z "${PS1}" ]; then
     fi
 
     export PS1
-    unset  _color1 _color2 _bold _off _j _u _h _w _s _exit
+    unset  _color1 _color2 _bold _off _j _u _h _w _s _exit _figprompt
 fi
 
 
@@ -223,6 +234,8 @@ function _pwd_shorten() {
 # Using the `declare` to check for existence, preventing
 # issues about `su` not inheriting functions.
 export PROMPT_COMMAND='declare -F _pwd_shorten >/dev/null && _PWD="`_pwd_shorten`"'
+
+# BUG: Note that google steals our PROMPT_COMMAND: <go/bash-preexec>
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -823,6 +836,21 @@ print "$val\n";'\'
 # ~~~~~ Google-specific functions
 
 if [ "${_localhost}" = 'google' ] && [ "${_uname}" = 'Linux' ]; then
+
+    # Bash Function to call whenever we use `hgd`
+    hgd_postexec() {
+        # Canonicalize the path in `pwd`.
+        # This solves a bug where hg can't find its config files, since
+        # there's a symlink somewhere in the standard path that hgd sends
+        # us to.
+        ccd
+        # An example used by <go/fig-customize>
+        export G3DIR=$(pwd)
+    }
+    # Actually add the function to the list of hooks:
+    hgd_postexec_functions+=(hgd_postexec)
+
+    # TODO: Are the following commands still actually necessary since switching teams?
 
     # This bunch of functions is to work around issues of objfs/srcfs
     # updates breaking long-running processes in the middle of the night

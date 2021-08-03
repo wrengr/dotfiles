@@ -53,11 +53,18 @@ default_color = "-1";
 # print timestamp/servertag at the end of line, not at beginning
 info_eol = "false";
 
-# these characters are automatically replaced with specified color
-# Just for shits 'n giggles
+# When these characters show up in various formatting things (not in
+# messages/maintext!) automatically re-color them as indicated here.
+# N.B., this will override whatever colorization you try to give these
+# characters later on!!! So while it's cute to be able to do, you prolly
+# don't want to do it very much, lest you run into inscrutable issues
+# trying to debug why things aren't colorizing like you tell them to.
+# Really this is just to help abbreviate the fomattings below in the event
+# you really do mean to have a given character always always show up in
+# a given color.
 replaces = {
   "[]=" = "%c$*%n";
-#  ".:;-()" = "%c$*%n";
+  # ".:;-()=" = "%c$*%n";
 };
 
 abstracts = {
@@ -65,36 +72,23 @@ abstracts = {
   ## generic
   ##
 
-  # text to insert at the beginning of each non-message line
+  # text to insert at the beginning of non-message lines
   line_start = "%c-%W!%c-%n ";
-
   # timestamp styling, nothing by default
   timestamp = "%g$*%n";
-
   # any kind of text that needs hilighting, default is to bold
   hilight = "%Y$*%n";
-
   # any kind of error message, default is bright red
   error = "%R$*%n";
-
-  # channel name is printed
   channel = "%_$*%_";
-
-  # nick is printed
   nick = "%_$*%_";
-
-  # nick host is printed
+  # "nickhost" is also used for stylizing chanhosts (see below)
   nickhost = "[$*]";
-
-  # server name is printed
   server = "%_$*%_";
-
-  # some kind of comment is printed
+  # some kind of comment. Mostly just to unify the "reason" and "mode" below
   comment = "[$*]";
-
   # reason for something is printed (part, quit, kick, ..)
   reason = "{comment $*}";
-
   # mode change is printed ([+o nick])
   mode = "{comment $*}";
 
@@ -110,7 +104,7 @@ abstracts = {
   channick = "%g$*%n";
   chanhost = "{nickhost $*}";
 
-  # highlighted channel name is printed
+  # How to indicate activity on other/background channels.
   channelhilight = "%g$*%n";
 
   # ban/ban exception/invite list mask is printed
@@ -121,9 +115,8 @@ abstracts = {
   ##
 
   # The basic styling of how to print message, $0 = nick mode, $1 = nick
-  # This is just called by all the others below
-  msgnick = "%y$0%n$1 %y)%c)%g)%n %|";
-
+  # This is just a macro to be called by varuous things below.
+  msgnick = "%y$0%n$1%n %y)%n %|";
 
   # Ignore these, they're worthless for anything other than colors
   # Look at the formats section at the end instead
@@ -158,15 +151,12 @@ abstracts = {
   ## Actions (/ME stuff)
   ##
 
-  # used internally by this theme
+  # Generic stylization of actions. (this is a theme-intermal macro)
   action_core = "%g::%W $*%n";
-
-  # generic one that's used by most actions
+  # actions sent by others (also used as a generic macro, for consistency)
   action = "{action_core $*} ";
-
   # own action, both private/public
   ownaction = "{action $*}";
-
   # own action with target, both private/public
   ownaction_target = "{action_core $0}%K:%g$1%n ";
 
@@ -253,7 +243,7 @@ abstracts = {
 
   # text at the beginning of statusbars. sb-item already puts
   # space there,so we don't use anything by default.
-  sbstart = "%C>>%n";
+  sbstart = "%C>%n";
   # text at the end of statusbars. Use space so that it's never
   # used for anything.
   sbend = " ";
@@ -261,12 +251,15 @@ abstracts = {
   topicsbstart = "{sbstart}";
   topicsbend = "";
 
+  # The prompt at the very bottom of the page
   prompt = "%g>%C>%Y>%n ";
-  # "%g(%c(%y(%W$*%y)%c)%g)%n ";
   # $0 => nick, $1 => nick_mode, $2 => serv, $3 => serv_tag, $4 => chan, $5 => chan_mode
   sb_user_server_chan = "%W$4%n$5 %g~%n $0$1 %g~%n $2$3";
 
-  sb = " %g(%n$*%g)%n";
+  # The "sb" macro is used separately on sb's timestamp, sb_usercount,
+  # and each statusbar/awl line.
+  #sb = " %g(%n$*%g)%n";
+  sb = " $*";
   sbmode = "%c(%y+%n$*%c)%n";
   sbaway = " %YzZzZ%n";
   sbservertag = "{sbmode $*}";
@@ -275,7 +268,7 @@ abstracts = {
   sbmore = "%c~~ more ~~%n";
 
   # For usercount.pl
-  sb_usercount = "{sb %_$0%_ nicks %c(%n$1-%c)%n}";
+  sb_usercount = "{sb %g(%n%_$0%_ nicks %c(%n$1-%c)%g)%n}";
   sb_uc_ircops = "{sb_uc_general %Y* $*}";
   sb_uc_ops = "{sb_uc_general @ $*}";
   sb_uc_halfops = "{sb_uc_general %% $*}";
