@@ -8,6 +8,7 @@ servers = (
     autoconnect = "yes";
   },
   {
+    # BUG: apparently this is dead now...
     address = "irc.soic.indiana.edu";
     chatnet = "soic";
     port = "6667";
@@ -29,6 +30,7 @@ servers = (
   },
   {
     # Run by @NekoArc
+    # Apparently SSL handshakes are timing out... Is this still alive?
     address = "irc.tsukihi.me";
     chatnet = "tsukihime";
     port = "6697";
@@ -52,6 +54,7 @@ servers = (
 chatnets = {
   # N.B., on the cat network the command is called "regain", rather
   # than "ghost"; and it automatically performs the /nick part
+  # BUG: apparently that's changed since last i logged in...
   cat = {
     type = "IRC";
     autosendcmd = "/^msg NickServ regain wrengr SEEKRIT;wait 700;/^msg NickServ identify SEEKRIT";
@@ -65,6 +68,8 @@ chatnets = {
     max_modes = "4";
     max_msgs = "1";
     max_whois = "1";
+    # BUG: this does warn about not being able to /ghost yourself;
+    # so there must be a better command to use...
     autosendcmd = "/ghost wrengr SEEKRIT 700";
   };
   tsukihime = {
@@ -144,20 +149,22 @@ chatnets = {
   SILC = { type = "SILC"; };
 };
 
-# TODO: have http://www.haskellnow.org/, http://www.lambdaladies.com/,
-# and https://www.chromium.org/developers/irc really not migrated yet?
-# Or are their websites (or the communities) just dead?
-# HACK: assuming the following unupdated-website channels have moved:
-#     #lambdanow #lambdaladies #chromium
-# also assuming the following ungoogleable channels have moved:
-#     #epigram ##dependent ##typetheory ##categorytheory
-# The rest have updated their websites to tell that they've moved.
+# * Neither #lambdanow nor #lambdaladies have moved yet, nor
+#   have they updated their websites <http://www.haskellnow.org/>
+#   <http://www.lambdaladies.com/>
+#   TODO: are these communities dead?
+# * Haven't checked whether #chromium has moved yet, but their website
+#   hasn't been updated <https://www.chromium.org/developers/irc>
+# * The old ##categorytheory has been renamed to just #categorytheory
+# * Both ##dependent and ##typetheory exist and are populated.
+# * While #epigram exists, dolio is the only one there, suggesting it
+#   hasn't really moved.
+# * The rest have updated their websites to tell that they've moved.
 channels = (
   { name = "#irssi";             chatnet = "ircnet";    autojoin = "No"; },
   { name = "#irssi";             chatnet = "libera";    autojoin = "No"; },
   { name = "#freegeek";          chatnet = "libera";    autojoin = "No"; },
   { name = "#haskell";           chatnet = "libera";    autojoin = "yes"; },
-  { name = "#lambdanow";         chatnet = "libera";    autojoin = "yes"; },
   { name = "#haskell-in-depth";  chatnet = "libera";    autojoin = "yes"; },
   { name = "#numerical-haskell"; chatnet = "libera";    autojoin = "yes"; },
   { name = "#ghc";               chatnet = "libera";    autojoin = "no"; },
@@ -165,12 +172,10 @@ channels = (
   { name = "#hakyll";            chatnet = "libera";    autojoin = "yes"; },
   { name = "#coq";               chatnet = "libera";    autojoin = "yes"; },
   { name = "#agda";              chatnet = "libera";    autojoin = "yes"; },
-  { name = "#epigram";           chatnet = "libera";    autojoin = "yes"; },
   { name = "##dependent";        chatnet = "libera";    autojoin = "yes"; },
   { name = "##typetheory";       chatnet = "libera";    autojoin = "yes"; },
-  { name = "##categorytheory";   chatnet = "libera";    autojoin = "yes"; },
+  { name = "#categorytheory";    chatnet = "libera";    autojoin = "yes"; },
   { name = "#chromium";          chatnet = "libera";    autojoin = "no"; },
-  { name = "#lambdaladies";      chatnet = "libera";    autojoin = "yes"; },
   { name = "#transgender";       chatnet = "tsukihime"; autojoin = "no"; },
   { name = "#kink";              chatnet = "tsukihime"; autojoin = "no"; },
   { name = "#soic";              chatnet = "soic";      autojoin = "yes"; },
@@ -433,6 +438,7 @@ settings = {
     awl_block = "-11";
     scrollerText = "This space intentionally left blank";
     scrollerSpeed = "200";
+    # BUG: url_log complains that we're missing DBI.pm
     url_log_file = "~/.irssi/logs/url.log";
     snot_listenchans = "#hack #meow #hotsheet #test";
     snot_morechar = ":";
@@ -457,10 +463,10 @@ hilights = (
 ignores = (
   { level = "JOINS PARTS QUITS KICKS"
   ; channels = (
-    "#meow", "#freegeek", "#haskell", "#haskell-ops", "#lambdanow",
+    "#meow", "#freegeek", "#haskell", "#haskell-ops",
     "#haskell-in-depth", "#numerical-haskell", "#ghc", "#darcs",
-    "#hakyll", "#coq", "#agda", "#epigram", "##dependent", "##typetheory",
-    "##categorytheory", "##dependent", "#lambdaladies", "#transspace",
+    "#hakyll", "#coq", "#agda", "##dependent", "##typetheory",
+    "#categorytheory", "##dependent", "#transspace",
     "#transgender", "#kink", "#star", "#soic", "#nlp" ); },
   { mask = "ghcbot";         level = "ALL"; channels = ( "#ghc" ); },
   { mask = "darcscommitbot"; level = "ALL"; channels = ( "#darcs" ); },
@@ -497,7 +503,7 @@ windows = {
       {
         type = "CHANNEL";
         chat_type = "IRC";
-        name = "#lambdanow";
+        name = "#haskell-in-depth";
         tag = "libera";
       }
     );
@@ -509,7 +515,7 @@ windows = {
       {
         type = "CHANNEL";
         chat_type = "IRC";
-        name = "#haskell-in-depth";
+        name = "#numerical-haskell";
         tag = "libera";
       }
     );
@@ -521,7 +527,7 @@ windows = {
       {
         type = "CHANNEL";
         chat_type = "IRC";
-        name = "#numerical-haskell";
+        name = "#hakyll";
         tag = "libera";
       }
     );
@@ -533,7 +539,7 @@ windows = {
       {
         type = "CHANNEL";
         chat_type = "IRC";
-        name = "#hakyll";
+        name = "#coq";
         tag = "libera";
       }
     );
@@ -545,7 +551,7 @@ windows = {
       {
         type = "CHANNEL";
         chat_type = "IRC";
-        name = "#coq";
+        name = "#agda";
         tag = "libera";
       }
     );
@@ -557,7 +563,7 @@ windows = {
       {
         type = "CHANNEL";
         chat_type = "IRC";
-        name = "#agda";
+        name = "##dependent";
         tag = "libera";
       }
     );
@@ -569,7 +575,7 @@ windows = {
       {
         type = "CHANNEL";
         chat_type = "IRC";
-        name = "#epigram";
+        name = "##typetheory";
         tag = "libera";
       }
     );
@@ -581,7 +587,7 @@ windows = {
       {
         type = "CHANNEL";
         chat_type = "IRC";
-        name = "##dependent";
+        name = "#categorytheory";
         tag = "libera";
       }
     );
@@ -593,42 +599,6 @@ windows = {
       {
         type = "CHANNEL";
         chat_type = "IRC";
-        name = "##typetheory";
-        tag = "libera";
-      }
-    );
-    sticky = "yes";
-    parent = "1";
-  };
-  13 = {
-    items = (
-      {
-        type = "CHANNEL";
-        chat_type = "IRC";
-        name = "##categorytheory";
-        tag = "libera";
-      }
-    );
-    sticky = "yes";
-    parent = "1";
-  };
-  14 = {
-    items = (
-      {
-        type = "CHANNEL";
-        chat_type = "IRC";
-        name = "#lambdaladies";
-        tag = "libera";
-      }
-    );
-    sticky = "yes";
-    parent = "1";
-  };
-  15 = {
-    items = (
-      {
-        type = "CHANNEL";
-        chat_type = "IRC";
         name = "#soic";
         tag = "soic";
       }
@@ -636,7 +606,7 @@ windows = {
     sticky = "yes";
     parent = "1";
   };
-  16 = {
+  13 = {
     items = (
       {
         type = "CHANNEL";

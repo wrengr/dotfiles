@@ -104,9 +104,14 @@ esac
 # TERM quite so much. Of course, we'd need to make sure our ~/.vimrc
 # also reads that file in order to set &t_Co appropriately.
 
+# TODO: When run inside of screen, irssi complains about using
+# xterm-256color and suggests using screen-256color instead.  I'm not
+# sure what glitches they're referring to re using the former...
+
 # Google's `screen` is annoying.
 if [ "${_localhost}" = 'google' ]; then
     # N.B., Goobuntu's `screen` sets TERM='screen-bce' rather than TERM='screen'.
+    # BUG: apparently this no longer catches things on gLinux...
     if [ "${TERM}" = 'screen-bce' ]; then
         # TODO: it used to be the version of `screen` on Goobuntu
         # only supported 8-colors, but that seems to have been
