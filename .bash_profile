@@ -252,7 +252,9 @@ function _pwd_shorten() {
 # issues about `su` not inheriting functions.
 export PROMPT_COMMAND='declare -F _pwd_shorten >/dev/null && _PWD="`_pwd_shorten`"'
 
-# BUG: Note that google steals our PROMPT_COMMAND: <go/bash-preexec>
+# N.B., if you're using <https://github.com/rcaloras/bash-preexec> then
+# that will steal the PROMPT_COMMAND.  While google has this installed
+# automatically, but it doesn't seem to be enabled by default so we're safe.
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
