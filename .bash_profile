@@ -1,4 +1,4 @@
-# wren gayle romano's bash login script             ~ 2021.08.03
+# wren gayle romano's bash login script             ~ 2021.08.05
 #
 # It's fairly generic (with weirder things at the bottom),
 # but it's designed to be usable for all my accounts with no(!)
@@ -42,6 +42,12 @@ _uname="`uname`"
 # guaranteed.) Notably, `uname -n` is just a very thin wrapper that
 # just calls gethostname(2), which is why it doesn't resolve FQDNs.
 _hostname="`uname -n`"
+
+# Get rid of that obnoxious message from Apple telling us to switch to zsh
+if [ "${_uname}" = 'Darwin' ]; then
+    export BASH_SILENCE_DEPRECATION_WARNING=1
+fi
+
 
 # Sites who use relative host names instead of FQDNs suck!
 case "${_hostname}" in
