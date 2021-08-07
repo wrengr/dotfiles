@@ -1,4 +1,4 @@
-# wren gayle romano's bash login script             ~ 2021.08.08
+# wren gayle romano's bash login script             ~ 2021.08.09
 #
 # It's fairly generic (with weirder things at the bottom),
 # but it's designed to be usable for all my accounts with no(!)
@@ -228,10 +228,10 @@ if [ ! -z "${PS1}" ]; then
     # to have way back in the day).
     _figprompt=""
     if [ "${_hostname}" = 'google' ] && [ "${_uname}" = 'Linux' ]; then
-        figprompt_file='/google/src/head/depot/google3/experimental/fig_contrib/prompts/fig_status/bash/fig_prompt.sh'
-        # Even though we added an extra guard above to keep this
-        # from running on my mac laptop, the following additional
-        # guard also seems prudent.
+        figprompt_file="${HOME}/local/lib/prompts/fig_status/bash/fig_prompt.sh"
+        # While the _uname guard will keep this from running on my mac
+        # laptop, we still want to check that the file exists before doing
+        # stuff with it.
         if [ -r "$figprompt_file" ]; then
             # BUG: see the warning note in ~/.hgrc
             source "$figprompt_file"
