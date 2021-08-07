@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" wren gayle romano's vim config                    ~ 2021.08.08
+" wren gayle romano's vim config                    ~ 2021.08.09
 "
 " For guidance, see ~/.vim/README
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -265,6 +265,8 @@ Plug 'jvoorhis/coq.vim', { 'for': 'coq' }
 " color scheme has Statement just show up as boring white.
 " TODO: fix our colorscheme to work with this.  N.B., the haskell syntax highlighter uses Structure (unless you set g:haskell_classic_highlighting in which case it uses Keyword)
 Plug 'vito-c/applescript.vim', { 'for': 'applescript' }
+" Supposedly this is halfway decent, but it looks blegh for me.  What's my syntax highlighter doing wrong?!
+Plug 'bfrg/vim-cpp-modern', { 'for': 'cpp' }
 
 
 " ~~~~~ Etc.
@@ -1211,6 +1213,8 @@ endfun
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ airline configuration
+" For more help on configuration options, see `:h airline`
+"
 " TODO: guard this section with something like:
 "if not(empty(glob('~/.vim/bundle/vim-airline/autoload/airline.vim')))
 
@@ -1255,8 +1259,10 @@ endif
 " Other themes to bear in mind: tomorrow, wombat, luna, jellybeans, zenburn.
 let g:airline_theme='tomorrow'
 " From <https://sheerun.net/2014/03/21/how-to-boost-your-vim-productivity/>
+" Removing left/right separators because we don't have the powerline fonts.
 let g:airline_left_sep=''
 let g:airline_right_sep=''
+" By default section Z shows the current position in file.
 let g:airline_section_z=''
 
 
@@ -1285,6 +1291,8 @@ if has('signs')
     "     xmap ic         <Plug>GitGutterTextObjectInnerVisual
     "     xmap ac         <Plug>GitGutterTextObjectOuterVisual
     " TODO: the readme has all sorts of function suggestions
+    "
+    " BUG: since reimaging my Google corp machines, their colors are all messed up.  In particular, the signcolumn now shows up with a light grey background.  At least part of this is due to TomorrowNightBright changing things; so we'll have to design our own colorscheme afterall.
 endif
 
 
