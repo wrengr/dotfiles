@@ -10,6 +10,17 @@ set nomodeline   " Avoid insecurity! <http://usevim.com/2012/03/28/modelines/>
 set ttyfast      " Avoid thinking we're still in the 1970s.
 set noinsertmode " Avoid emacs-emulating silliness.
 
+" Warning: setting `nocompatible` auto re-enables modelines!
+" BUGFIX: While we made sure to `nomodeline` after `nocompatible`
+" above, it seems likely we may run into other gotchas down the line
+" (e.g., packages which set `nocompatible`).  So we're going to be
+" extra aggressive about turning them off.
+if has('autocmd') && !has('patch-8.1.1365')
+    augroup disable_modeline
+        autocmd BufReadPre * set nomodeline
+    augroup END
+endif
+
 
 " ~~~~~ Use the 'google' package by default <http://go/vim/packages>
 " TODO: (a) make this conditional on that file actually existing.
