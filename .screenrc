@@ -1,5 +1,5 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# wren gayle romano's GNU Screen config             ~ 2017.08.10
+# wren gayle romano's GNU Screen config             ~ 2021.08.06
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # <https://www.gnu.org/software/screen/manual/html_node/String-Escapes.html>
 # N.B., Despite what documentation says, %S does *not* give the session name!
@@ -13,6 +13,7 @@
 # * see if there're any fun bits to take from <https://raw.githubusercontent.com/ivan-loh/dotfiles/master/.screenrc>
 # * also check out <https://github.com/hi94740/screen-command>
 # * also <https://liquidat.wordpress.com/2008/10/17/short-tip-gnu-screen-with-proper-scroll-session-management-support/>
+# * Consider having the main ~/.screenrc include the line `source ~/.screenrc-$STY`.  The STY variable is automatically set to the session name (with some TTY or session-id stuff too), thus we could have specific settings for each of our named sessions.
 
 
 # ~~~~~ Basic Config
@@ -22,7 +23,9 @@ autodetach on          # Detach screen on hangup (saves running programs)
 startup_message off    # Disable copyright & silly warning splash screen
 shell $SHELL           # The shell to use (prepend `-` to make it a login-shell)
 #shelltitle $SHELL     # The default %t when creating new shell windows.
-#term "screen"         # What to initialize TERM to (`-T vt100`)
+term "screen-256color" # What to initialize $TERM to
+# BUG: really we should set term based on whatever the incoming $TERM is,
+# or use some other sort of color autodetection capability.
 
 # ~~~~~ History &c.
 defscrollback 15000    # A~la the -h flag
@@ -68,6 +71,9 @@ defbce "on"            # Turn BCE (background color erase) on by default
 # HT: <https://github.com/cypher/dotfiles/blob/master/screenrc>
 #termcapinfo xterm 'bc@:bs@'
 #termcapinfo xterm-color 'bc@:bs@'
+
+# Support mouse scrolling
+#termcapinfo xterm* ti@:te@
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ fin.
