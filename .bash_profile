@@ -417,6 +417,7 @@ case "${_hostname}" in
         _push PATH '~/local/haskell/bin'
         # Cabal-installed programs
         _push PATH '~/.cabal/bin/'
+        _push MANPATH '~/.cabal/share/man/'
     ;;
     elsamelys)
         # add path to gcc tools, assuming the cramfs is mounted
@@ -460,6 +461,7 @@ case "${_hostname}" in
                 # so we need to make sure its on our path and supercedes
                 # the (ancient) version that ships with goobuntu/glinux.
                 _push PATH '~/.cabal/bin'
+                _push MANPATH '~/.cabal/share/man/'
 
                 # (2021.07.26): LLVM/MLIR uses GOMA too, so (preparing to) re-enabling this.
                 # WARNING: goma doesn't play nice with GHC, at all.
@@ -529,6 +531,12 @@ if [ ! -z "$(which sed)" ] && [ -x "$(which sed)" ]; then
     PATH=$(
         _home=$(echo "${HOME}" | sed 's/\\/\\\\/g; s/\//\\\//g')
         echo "${PATH}" | sed "s/~\//${_home}\//g; s/~:/${_home}:/g"
+    )
+    # Bash does tilde expansion for PATH, MAILPATH, and CDPATH; but
+    # it doesn't for MANPATH.
+    MANPATH=$(
+        _home=$(echo "${HOME}" | sed 's/\\/\\\\/g; s/\//\\\//g')
+        echo "${MANPATH}" | sed "s/~\//${_home}\//g; s/~:/${_home}:/g"
     )
 
     # TODO: maybe also add a filter to remove (and warn about)
