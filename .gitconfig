@@ -240,7 +240,7 @@
     show-files = show --name-only --format=''
     unpushed = log @{u}..
     # Show all untracked files.
-    untracked = ls-files --others
+    untracked = ls-files --others --exclude-standard
     # Most of the time we already know about untracked files, and don't care.
     st    = status --branch --untracked-files=no
     # What we really want most of the time.
