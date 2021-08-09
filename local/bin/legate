@@ -1,0 +1,157 @@
+#!/bin/bash
+# A smarter `ssh-agent` (and other daily login certs)
+# wren gayle romano <wren@cpan.org>                 ~ 2021.08.08
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+# TODO: although not relevant to anyone else, update this to work
+#   with `gcert` / `glogin` on Google corp machines.
+#
+# TODO: update this to also `gpg-agent`, as desired
+#   <https://linux.die.net/man/1/gpg-agent>
+#
+# TODO: support -s and -c flags, for explicitly setting the format
+#   of the agent file to use Bourne-type or csh-type syntax.  (This
+#   just means forwarding those flags to the call to ssh-agent.)
+#
+# TODO: add a flag to kill/stop.  In itself we could just do
+#   `ssh-agent -k` (if $SSH_AGENT_PID is set); but this would become
+#   more helpful once we start adding other things mentioned above.
+
+_usage() {
+cat << __END_USAGE__
+Usage: ${0##*/} [options]
+
+This script helps ensure there is only one ssh-agent running, and
+adds a list of keys when first starting the agent up.  However,
+note that we cannot cause changes to the shell that invokes this
+script, thus you will need to manually eval the shell script this
+prints to stdout.  To avoid needing to do this manually, you can
+set an alias to both call this script and eval the output.  On Bash
+you would do this with the command:
+
+    alias ${0##*/}='eval \$(command ${0##*/})'
+
+However, note that the alias cannot take any arguments.
+
+Options:
+
+    --help | -h | -?    Display this message.
+    --verbose       Print progress information and warnings.
+                    N.B., everything this prints goes to stderr;
+                    so that it doesn't interfere with the suggested
+                    alias above.
+
+__END_USAGE__
+}
+
+VERBOSE=0
+for arg in "$@"; do
+    case "$arg" in
+    --verbose)  VERBOSE=1; shift ;;
+    --help | -h | -?)
+        _usage
+        exit 0
+    ;;
+    *)
+        >&2 echo -e "\033[1;31m${0##*/}:\033[0m \033[1mUnknown option: \033[1;33m$arg\033[0m\n"
+        _usage
+        exit 1
+    ;;
+    esac
+done
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+_info() {
+    if [[ $VERBOSE -ne 0 ]]; then
+        >&2 echo -e "\033[1;32m#\033[0m \033[1m$*\033[0m"
+    fi
+}
+
+_warn() {
+    if [[ $VERBOSE -ne 0 ]]; then
+        >&2 echo -e "\033[1;33m#\033[0m \033[1m$*\033[0m"
+    fi
+}
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# TODO: make this into a global configuration variable
+#
+# N.B., must use $HOME because "~" isn't expanded for the `[ -r`.
+# However, beware that if you do `type agent` it will still use
+# "~" to abbreviate things!
+AGENT_FILE="$HOME/.ssh/agent"
+
+# TODO: for portability we may prefer to do a colon-separated thing like PATH.
+# N.B., this is a bash array!
+# Syntax (cf., <https://www.shell-tips.com/bash/arrays/>)
+# ${AGENT_KEYS[@]}      Return everything, but subject to Bash tokenization.
+# "${AGENT_KEYS[*]}"    Return everything as a single Bash token.
+# "${AGENT_KEYS[@]}"    Return each element as a separate Bash token.
+# "${!AGENT_KEYS[@]}"   Return all the indices into the array.
+AGENT_KEYS=("$HOME/.ssh/id_dsa" "$HOME/.ssh/id_rsa")
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~ Check if an agent is already running.
+IS_RUNNING=0
+if [[ -r "$AGENT_FILE" ]]; then
+    # We don't need the -e if we're passing the PID directly.
+    # N.B., passing -e or -U (or -u?) overrides the -p flag.
+    # TODO: why did I use perl's BEGIN/END, instead of just printing it out when we hit it?
+    if ps -co pid,user,command -p $(
+            cat "$AGENT_FILE" |
+            perl -nle '
+                BEGIN {$pid = 0;}
+                $pid = $1 if m/^SSH_AGENT_PID=(\d+)/;
+                END {print $pid;}') |
+        grep "$USER" |
+        grep 'ssh-agent' >/dev/null 2>&1
+        # N.B., don't use -s or -q, for portability
+    then
+        # TODO: report the pid
+        _info 'Agent is already running'
+        IS_RUNNING=1
+    else
+        _info 'Removing stale agent file'
+        rm "$AGENT_FILE"
+        #IS_RUNNING=0
+    fi
+fi
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~ Start a new agent (as needed).
+if [[ $IS_RUNNING -eq 0 ]]; then
+    _info 'Starting agent'
+    ssh-agent > "$AGENT_FILE"
+    # We source it so we can add keys, but the caller will have to
+    # source it themselves too.
+    source "$AGENT_FILE" >/dev/null 2>&1
+    # BUG: should be checking error codes from the above.
+    IS_RUNNING=1
+
+    # TODO: it'd be nice if we could filter split the list, so we
+    # can call `ssh-add` just once, with all the valid keys together.
+    for key in "${AGENT_KEYS[@]}" ; do
+        if [[ -r "$key" ]]; then
+            _info "Adding key: $key"
+            # BUG: (possibly) If this generates anything on stdout,
+            # then the suggested alias will try to eval it!
+            ssh-add "$key"
+            # BUG: should be checking error codes from the above.
+        elif [[ -e "$key" ]]; then
+            _warn "Key is not readable: $key"
+        else
+            _warn "Key does not exist: $key"
+        fi
+    done
+fi
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~ Print stuff just as if the user called ssh-agent themselves.
+if [[ $IS_RUNNING -eq 1 ]]; then
+    _info 'Be sure to eval the following in your current shell session'
+    cat "$AGENT_FILE"
+fi
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ fin.

@@ -309,43 +309,7 @@ export GPG_TTY=`tty`
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ Smarter ssh-agent
-# TODO: update this stuff to work with `gcert` on google machines
-# TODO: update this to also `gpg-agent`, as desired <https://linux.die.net/man/1/gpg-agent>
-# TODO: make the alias smarter (e.g., check for a previous agent)
-# TODO: break this whole thing out into a script that can live in ~/local/bin
-
-if [ "${_hostname}" = 'mayari' ]; then
-    # N.B., must use $HOME because "~" isn't expanded for the `[ -r`.
-    # However, beware that if you do `type agent` it will still use
-    # "~" to abbreviate things!
-    _agent_file="$HOME/.ssh/agent"
-
-    alias agent="ssh-agent > $_agent_file ; source $_agent_file ; ssh-add ~/.ssh/{id_dsa,id_rsa}"
-
-    # Load the agent, if one is already running.
-    if [ -r "$_agent_file" ]; then
-        # We don't need the -e if we're passing the PID directly.
-        # N.B., passing -e or -U (or -u?) overrides the -p flag.
-        # TODO: why did I use perl's BEGIN/END, instead of just printing it out when we hit it?
-        # BUG: should use $() instead of ``
-        if ps -co pid,user,command -p `
-                cat $_agent_file |
-                perl -nle '
-                    BEGIN {$pid = 0;}
-                    $pid = $1 if m/^SSH_AGENT_PID=(\d+)/;
-                    END {print $pid;}'` |
-            grep "${USER}" |
-            grep 'ssh-agent' >/dev/null 2>&1
-            # N.B., don't use -s or -q, for portability
-        then
-            source "$_agent_file"
-        else
-            rm "$_agent_file"
-        fi
-    fi
-
-    unset _agent_file
-fi
+alias legate='eval $(command legate)'
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
