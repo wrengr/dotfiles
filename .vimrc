@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" wren gayle romano's vim config                    ~ 2021.07.20
+" wren gayle romano's vim config                    ~ 2021.08.08
 "
 " For guidance, see ~/.vim/README
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -92,6 +92,10 @@ call plug#begin('~/.vim/bundle')
 " in spite of the *.asc suffix.
 " BUG: this seems not to be working...
 let g:GPGPreferArmor=1
+" Debugging Note: If you install a new version of gpg and are running
+" into issues with vim-gnupg, then you probably need to re-import
+" your secret keys.  For more info on how to do so (and how to check
+" if that's the issue), see: <https://stackoverflow.com/q/43513817>
 
 
 " ~~~~~ Color schemes & Syntax highlighting
@@ -254,6 +258,13 @@ endif
 "let g:go_fmt_command = "goimports"
 "Plug 'nsf/gocode', { 'rtp': 'vim', 'do': '~/.vim/plugged/gocode/vim/symlink.sh', 'for': 'go' }
 Plug 'jvoorhis/coq.vim', { 'for': 'coq' }
+" This particular fork seems a lot more complete than the original
+" vim-scripts/applescript.vim; however, it's still not the greatest.
+" In part because they use Statement for all the keywords (alebeit
+" Keyword just links to Statement), and for whatever reason my current
+" color scheme has Statement just show up as boring white.
+" TODO: fix our colorscheme to work with this.  N.B., the haskell syntax highlighter uses Structure (unless you set g:haskell_classic_highlighting in which case it uses Keyword)
+Plug 'vito-c/applescript.vim', { 'for': 'applescript' }
 
 
 " ~~~~~ Etc.
@@ -417,13 +428,37 @@ endif
 " ~~~~~ Color-Scheme
 if has('syntax') && (&t_Co > 2 || has('gui_running'))
     syntax on
-    " N.B., even though we want to set this to dark, TomorrowNightBright
-    " is going to reset it to light again. Moreover, if we set
-    " it to dark afterwards, the colors are all terribly messed
-    " up. So, that's prolly why some colors from TNB aren't quite
-    " right (either painfully light and hard to read, or are too dark
-    " against the background)...
+    " N.B., the &background setting is intended to _inform_ Vim of
+    " what the terminal's actual default hue is, not to set/change
+    " the color scheme used by Vim.  This setting is hooked so that
+    " when it's changed it'll cause the colorscheme to be reloaded.
+    " When (re)loaded the colorscheme will read the &background setting
+    " and do one of two things: (1) load appropriate colors,
+    " (2) revert the &background to its previous setting-- which
+    " Vim takes to mean that the colorscheme cannot support the
+    " terminal's &background, and therefore Vim will change the
+    " colorscheme to the default one (which supports all &background
+    " settings, so will do the right thing).  However, N.B., even
+    " though Vim resets to the defailt colorscheme so as to get visible
+    " colors, it seems like Vim doesn't re-revert the &background
+    " setting to whatever you originally set it to; thus reading the
+    " &background setting after falling down this path will give
+    " unreliable answers.  Moreover, N.B., this hooking action will
+    " only adjust the "default color groups", it will _not_ adjust
+    " "colors used for syntax highlighting"!  Thus, first loading a
+    " colorscheme and subsequently changing the &background to something
+    " the colorscheme doesn't support, will result in a bizarre
+    " mishmash of colors.
+    " cf., <https://vi.stackexchange.com/a/13089>
+    " also, <http://peterodding.com/code/vim/colorscheme-switcher/#known_problems>
     set background=dark
+
+    " BUG: TomorrowNightBright doesn't support &background=dark.
+    " We need to create our own colorscheme to deal with all the
+    " problems that causes.  May also want to take a look at the
+    " source code for:
+    " <https://github.com/nanotech/jellybeans.vim/blob/master/colors/jellybeans.vim#L58>
+    " <https://github.com/mhartington/oceanic-next>
     colorscheme Tomorrow-Night-Bright
 endif
 " TODO: &t_Co is often wrong. We need to set up our ~/.bash_profile
@@ -477,7 +512,9 @@ function! s:LineNrStandard()
     set norelativenumber
     set number
     " CursorLineNr is same as TomorrowNightBright
-    highlight CursorLineNr term=bold ctermfg=11 gui=bold guifg=Yellow
+    " NOTE(2021.08.08): on Mayari (OSX 10.14.6; iTerm2 Build 3.4.9beta1)
+    " this needs to use cterm=bold rather than term=bold.
+    highlight CursorLineNr cterm=bold ctermfg=11 gui=bold guifg=Yellow
     " LineNr is different, because TomorrowNightBright's ctermfg=237
     " is a bit too dark on Ereshkigal
     highlight LineNr ctermfg=240 guifg=#424242
@@ -713,6 +750,9 @@ set ignorecase           " Don't care if search for upper or lowercase
 "set magic               " Make regex more easy
 "set smartcase           " Only look for case when uppercases are used
 
+" Search for character under cursor.
+" TODO: really need a better keybinding/name.
+nnoremap <leader>z xu/<C-R>-<CR>
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Wild
@@ -1003,16 +1043,27 @@ nnoremap Y y$
 " Make p in Visual mode replace the selected text with the "" register.
 vnoremap p <Esc>:let current_reg = @"<CR>gvdi<C-R>=current_reg<CR><Esc>
 
-" BUG: the "* register doesn't behave apropriately on the version
+" BUG: neither "* nor "+ registers behave apropriately on the version
 " of vim that ships with newer OSX. Instead must use MacVim
 " <http://www.drbunsen.org/text-triumvirate.html>, or perhaps try
 " something like
 " <https://vim.sourceforge.io/scripts/script.php?script_id=2098>.
+" But if they did...
+" <https://vi.stackexchange.com/a/96>
+" <https://vi.stackexchange.com/q/84#comment19762_96>
+" Or to make use of pbcopy/pbpaste commandline tools, cf:
+" <https://stackoverflow.com/a/20448266>
+" <https://stackoverflow.com/a/20961530>
+" TODO: See also: <https://github.com/christoomey/vim-system-copy>
+
 
 " yank to clipboard
+" BUG: for OSX since has('clipboard') and has('unnamedplus') are both false
 if has('clipboard')
+    " This isn't the best idea... cf., <https://stackoverflow.com/a/16582932>
     set clipboard=unnamed " copy to the system clipboard
     if has('unnamedplus') " X11 support
+        " changes the default Vim register to "+
         set clipboard+=unnamedplus
     endif
 endif

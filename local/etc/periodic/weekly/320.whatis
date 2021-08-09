@@ -43,6 +43,9 @@ cleaned_manpath="`echo "$MANPATH" |
 # lieu of `ba`) in lieu of the paste command? Or maybe use tr in
 # lieu of paste?
 #
+# TODO: looks like makewhatis isn't doing symlink expansion either,
+# so we should add a step to do that.
+#
 # TODO: add this step between the grep and paste (or something like it):
 #   while read line; do [ -d "$line" ] && echo "$line"; done |
 # N.B., we'll need to do ~-expansion first, since [-d] doesn't...

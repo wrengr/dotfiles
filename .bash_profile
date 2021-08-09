@@ -1,4 +1,4 @@
-# wren gayle romano's bash login script             ~ 2021.08.05
+# wren gayle romano's bash login script             ~ 2021.08.08
 #
 # It's fairly generic (with weirder things at the bottom),
 # but it's designed to be usable for all my accounts with no(!)
@@ -9,10 +9,47 @@
 # But bear in mind, you don't want a bunch of this crap when you
 # login via, say, `scp`.
 
+
+# == Style and Portability Notes ==
+# * OSX 10.14.4 (Mojave, 2019) uses Bash-3.2 (>2005, <2009); however,
+#   they have been patched to address the Shellshock vulnerability
+#   (for more standard GNU/BSD *nices, these are fixed in version
+#   Bash-4.2/4.3 (2014)):  <https://mywiki.wooledge.org/BashFAQ/111>
+# * Always prefer $() over ``; it's not just nicer, it's also POSIX:
+#   <https://mywiki.wooledge.org/BashFAQ/082>
+# * All three of [ ! -z ] and [ ! -z "" ] and [ -s "" ] return
+#   false; and [ -s ] returns true!
+# * Using the -a and -o flags with [ has been deprecated since POSIX-2008:
+#   <https://mywiki.wooledge.org/BashPitfalls#pf6>
+# * Using == with [ is a Bashism. Either use = with [ or == with [[
+#   <https://mywiki.wooledge.org/BashPitfalls#pf20>
+# * Using both the function keyword and () is a Bashism:
+#   <https://mywiki.wooledge.org/BashPitfalls#pf25>
+# * It's buggy/nonportable to use echo to print variables, should
+#   use printf instead: <http://www.etalabs.net/sh_tricks.html>
+# * The ${var//pattern/repl} construct was added back in Bash-2.0
+#   (1996), so it should be pretty portable these days.
+#   <https://wiki.bash-hackers.org/scripting/bashchanges>
+#   N.B., the behavior of the # and % characters inside the ${///}
+#   construct changed in Bash-3.1 (2005)
+#   <http://tiswww.case.edu/php/chet/bash/COMPAT> item #29
+
+
+# == TODOs ==
+# * Check that all the places we switched `` to $() are still working
+#   correctly re escapes.
+# * Do a full audit/overhaul of this file, since most of these hosts
+#   no longer exist anymore...
+
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~ BEGIN                                        BEGIN ~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 # ~~~~~ Personalized MOTD so I stop forgetting shit
 #       (Unless the shell is non-interactive)
-if [ ! -z "${PS1}" -a -r '.motd' ]; then
+if [ ! -z "${PS1}" ] && [ -r '.motd' ]; then
     echo
     cat '.motd'
     echo
@@ -31,7 +68,13 @@ umask 0022
 
 # We cache the results of various calls to `uname` so we don't keep
 # spawning off processes.
-_uname="`uname`"
+_uname="$(uname)"
+
+# Get rid of that obnoxious message from Apple telling us to switch to zsh
+if [ "${_uname}" = 'Darwin' ]; then
+    export BASH_SILENCE_DEPRECATION_WARNING=1
+fi
+
 
 # On some systems (e.g., *.haskell.org, and very new versions of
 # OSX) we can use `hostname -f` to get the FQDN; but older OSX, and
@@ -41,53 +84,45 @@ _uname="`uname`"
 # to coincide with `uname -n`, but that's just a coincidence, not
 # guaranteed.) Notably, `uname -n` is just a very thin wrapper that
 # just calls gethostname(2), which is why it doesn't resolve FQDNs.
-_hostname="`uname -n`"
+_hostname="$(uname -n)"
 
-# Get rid of that obnoxious message from Apple telling us to switch to zsh
-if [ "${_uname}" = 'Darwin' ]; then
-    export BASH_SILENCE_DEPRECATION_WARNING=1
-fi
-
-
-# Sites who use relative host names instead of FQDNs suck!
 case "${_hostname}" in
-    # Also assume eresh if we've been renamed by dhcp (Foo on dhcp!)
+    # Assume mayari if we've been renamed by dhcp (Foo on dhcp!)
     # TheWitchsBroom == Hopscotch, when it's broken
-    ereshkigal* | semiramis* | xenobia* | *.pubnet.pdx.edu | *.dhcp.pdx.edu | remote*.cecs.pdx.edu | *.comcast.net | TheWitchsBroom.att.net )
-                                   _localhost='ereshkigal' ;;
-    elsamelys*)                    _localhost='elsamelys' ;;
-
-    cl.indiana.edu)                _localhost='banks' ;;
-    nlp.indiana.edu)               _localhost='miller' ;;
+    mayari* | ereshkigal* | semiramis* | xenobia* | *.pubnet.pdx.edu | *.dhcp.pdx.edu | remote*.cecs.pdx.edu | *.comcast.net | TheWitchsBroom.att.net )
+                                          _hostname='mayari'    ;;
+    elsamelys*)                           _hostname='elsamelys' ;;
+    galena*)                              _hostname='dreamhost' ;;
+    cl.indiana.edu)                       _hostname='banks'     ;;
+    nlp.indiana.edu)                      _hostname='miller'    ;;
     # TODO: *.karst.uits.iu.edu x86_64 GNU/Linux
-
-    *.haskell.org | lun)           _localhost='haskell' ;;
+    *.haskell.org | lun)                  _hostname='haskell'   ;;
     *.corp.google.com | *.c.googlers.com)
         # BUG: doesn't distinguish between maracuya & ciruela
         # (both Goobuntu), vs my laptop (OSX).
-        _localhost='google'
+        _hostname='google'
     ;;
 
     # If all else fails...
     *)
         if [ "${_uname}" = 'Darwin' ]; then
-            # Guess that any other OSX is also Ereshkigal, or else
+            # Guess that any other OSX is also Mayari, or else
             # supports the same sorts of things in general.
-            _localhost='ereshkigal'
+            _hostname='mayari'
             # Debugging. Should usually be left on
-            [ -z "${PS1}" ] || echo "I resorted to guessing I'm on ereshkigal!"
-        elif [ "`uname -m`" = 'armv5tel' ]; then
-            _localhost='elsamelys'
+            [ -z "${PS1}" ] || echo "I resorted to guessing I'm on ${_hostname}!"
+        elif [ "$(uname -m)" = 'armv5tel' ]; then
+            _hostname='elsamelys'
         else
             # Debugging. Should usually be left on
             [ -z "${PS1}" ] || echo "I couldn't figure out where I am!"
-            _localhost='UNKNOWN'
+            _hostname='UNKNOWN'
         fi
     ;;
 esac
 
 # Debugging. Should usually be turned off
-#[ -z "${PS1}" ] && echo "I'm on ${_localhost}"
+#[ -z "${PS1}" ] && echo "I'm on ${_hostname}"
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -115,7 +150,7 @@ esac
 # sure what glitches they're referring to re using the former...
 
 # Google's `screen` is annoying.
-if [ "${_localhost}" = 'google' ]; then
+if [ "${_hostname}" = 'google' ]; then
     # N.B., Goobuntu's `screen` sets TERM='screen-bce' rather than TERM='screen'.
     # BUG: apparently this no longer catches things on gLinux...
     if [ "${TERM}" = 'screen-bce' ]; then
@@ -155,9 +190,8 @@ if [ ! -z "${PS1}" ]; then
     #
     # N.B., `tput` returns answers based on the value of TERM,
     # not based on what the terminal actually supports!!
-    if [ "`tput colors`" -gt 2 ]; then
-        # A better way to check for root is to use [ `id -u` = 0 ]
-        # ...which perhaps might be better phrased as [ "`id -u`" -eq 0 ]
+    if [ "$(tput colors)" -gt 2 ]; then
+        # A better way to check for root is to use [ "$(id -u)" -eq 0 ]
         # ...however, alas, that doesn't find non-root users
         case "${USER}" in
             motoko | ass | root | UNKNOWN )
@@ -186,13 +220,14 @@ if [ ! -z "${PS1}" ]; then
 
     # Get the exit code of last program, iff it failed
     # BUG: doesn't account for non-color terminals.
+    # BUG: should use printf instead
     _exit="\$(x=\$?; [ \$x -ne 0 ] && echo -n \"\[\e[01;31m\]\$x${_off} \")"
 
     # Empty if we're not on a google machine.  Maybe in the future we'll
     # extend this to handle other version control systems (like we used
     # to have way back in the day).
     _figprompt=""
-    if [ "${_localhost}" = 'google' ] && [ "${_uname}" = 'Linux' ]; then
+    if [ "${_hostname}" = 'google' ] && [ "${_uname}" = 'Linux' ]; then
         figprompt_file='/google/src/head/depot/google3/experimental/fig_contrib/prompts/fig_status/bash/fig_prompt.sh'
         # Even though we added an extra guard above to keep this
         # from running on my mac laptop, the following additional
@@ -210,7 +245,7 @@ if [ ! -z "${PS1}" ]; then
     PS1="${_bold}[${_off}${_j}${_bold}]${_off} ${_u}${_bold}@${_off}${_h}${_bold}:${_off}${_w}${_figprompt} ${_s} ${_exit}"
 
     # Short prompt for elys, but only when logged in directly
-    if [ "${_localhost}" = 'elsamelys' ]; then
+    if [ "${_hostname}" = 'elsamelys' ]; then
         if tty | grep ttya >/dev/null ; then
             PS1="[${_j}] ${_w} ${_s} ${_exit}"
         fi
@@ -231,20 +266,29 @@ fi
 # instead of $PWD, as they should.
 #
 # BUG: this spins forever churning cpu if there's unicode in the path!!!
-function _pwd_shorten() {
+# TODO: maybe use `tput cols` or Bash's $COLUMNS to choose the
+# length limit more dynamically? Cf., <https://mywiki.wooledge.org/BashFAQ/091>
+_pwd_shorten() {
     local _length=30
     [ "$1" != '' ] && _length="$1"
 
     # This is to fix munging on marquise since it doesn't auto $HOME -> "~"
     # Only performs the substitution when there's a following slash,
     #     in case your username is a prefix of someone else's. Could be fixed with better regex
+    # BUG: should use printf instead
+    # BUG: should use ${///} instead of echo/printf + sed
     local _home="$(echo "${HOME}" | sed 's/\\/\\\\/g; s/\//\\\//g')"
     _PWD="$(pwd | sed "s/^${_home}\//~\//; s/^${_home}$/~/")"
 
     # ${#_PWD} == $(echo -n "${_PWD}" | wc -c | tr -d ' ')
     if [ ${#_PWD} -gt ${_length} ]; then
+        # BUG: should use printf instead of echo
+        # BUG: should use ${///} instead of echo/printf + sed
+        # BUG: should use $() instead of ``
+        # BUG: should avoid using expr if we can.
         echo "${_PWD}" | sed "s/.*\(.\{`expr ${_length} - 3`\}\)$/...\1/"
     else
+        # BUG: should use printf instead
         echo "${_PWD}"
     fi
 }
@@ -258,12 +302,19 @@ export PROMPT_COMMAND='declare -F _pwd_shorten >/dev/null && _PWD="`_pwd_shorten
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~ Set up GPG
+# From `man 1 gpg-agent`, and <https://github.com/jamessan/vim-gnupg>
+export GPG_TTY=`tty`
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ Smarter ssh-agent
 # TODO: update this stuff to work with `gcert` on google machines
+# TODO: update this to also `gpg-agent`, as desired <https://linux.die.net/man/1/gpg-agent>
 # TODO: make the alias smarter (e.g., check for a previous agent)
 # TODO: break this whole thing out into a script that can live in ~/local/bin
 
-if [ "${_localhost}" = 'ereshkigal' ]; then
+if [ "${_hostname}" = 'mayari' ]; then
     # N.B., must use $HOME because "~" isn't expanded for the `[ -r`.
     # However, beware that if you do `type agent` it will still use
     # "~" to abbreviate things!
@@ -272,10 +323,11 @@ if [ "${_localhost}" = 'ereshkigal' ]; then
     alias agent="ssh-agent > $_agent_file ; source $_agent_file ; ssh-add ~/.ssh/{id_dsa,id_rsa}"
 
     # Load the agent, if one is already running.
-    if [ -r $_agent_file ]; then
+    if [ -r "$_agent_file" ]; then
         # We don't need the -e if we're passing the PID directly.
         # N.B., passing -e or -U (or -u?) overrides the -p flag.
         # TODO: why did I use perl's BEGIN/END, instead of just printing it out when we hit it?
+        # BUG: should use $() instead of ``
         if ps -co pid,user,command -p `
                 cat $_agent_file |
                 perl -nle '
@@ -286,9 +338,9 @@ if [ "${_localhost}" = 'ereshkigal' ]; then
             grep 'ssh-agent' >/dev/null 2>&1
             # N.B., don't use -s or -q, for portability
         then
-            source $_agent_file
+            source "$_agent_file"
         else
-            rm $_agent_file
+            rm "$_agent_file"
         fi
     fi
 
@@ -299,9 +351,9 @@ fi
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ Add a new colon-delimited value to the front of a variable
 #       Usage: `_push varname value`
-function _push() {
+_push() {
     # Get the old value by double evaluation.
-    # N.B. using `` instead of $() breaks the quoting/escaping
+    # BUG: should use printf instead
     local var="$(eval echo $(echo "\$$1"))"
 
     # BUG: the eval is necessary for the $1= to be interpreted
@@ -317,9 +369,9 @@ function _push() {
 
 # ~~~~~ Add a new colon-delimited value to the back of a variable
 #       Usage: `_copush varname value`
-function _copush() {
+_copush() {
     # Get the old value by double evaluation.
-    # N.B. using `` instead of $() breaks the quoting/escaping
+    # BUG: should use printf instead
     local var="$(eval echo $(echo "\$$1"))"
 
     # BUG: the eval is necessary for the $1= to be interpreted
@@ -339,18 +391,25 @@ function _copush() {
 
 # We do this before setting up our carefully designed paths
 #    since it munges them and we want the final dictate on prefixing
-if [ "${_localhost}" = 'ereshkigal' ]; then
-    [ -r '/sw/bin/init.sh' ] && source '/sw/bin/init.sh'
+if [ "${_hostname}" = 'mayari' ]; then
+    # New Fink has pivoted to basically require /opt/sw, in lieu
+    # of the old /sw
+    finkpath='/opt/sw'
+
+    # Let Fink munge our paths etc.
+    [ -r "$finkpath/bin/init.sh" ] && source "$finkpath/bin/init.sh"
 
     # This is needed for some linkers, like Cabal which can't
     # correctly pass -optl-L* to GHC (which would pass -L* to ld)
-    _push  LD_LIBRARY_PATH '/sw/lib'
+    _push  LD_LIBRARY_PATH "$finkpath/lib"
     export LD_LIBRARY_PATH
+
+    unset finkpath
 fi
 
 # N.B., Fink has GNU tar, which doesn't play nicely with the BSD
-# tar that ships with OSX. As written /sw/bin trumps /usr/bin. If
-# we actually care about having access to both of them, we should
+# tar that ships with OSX. As written /opt/sw/bin trumps /usr/bin.
+# If we actually care about having access to both of them, we should
 # do some sort of symlink or alias thing to select the one we mean/want.
 
 
@@ -362,8 +421,8 @@ fi
 #echo "Beginning manpath: $MANPATH"
 
 
-case "${_localhost}" in
-    ereshkigal)
+case "${_hostname}" in
+    mayari)
         # Technically we should no longer need to add this to PATH,
         # since we've added it to /etc/paths.d . However, it looks
         # like there's no analogue for MANPATH
@@ -431,7 +490,7 @@ case "${_localhost}" in
                 # with MANPATH='~/local/man', causing it to fail to load
                 # the default manpath.
                 unset  MANPATH
-                export MANPATH=`manpath`
+                export MANPATH="$(manpath)"
 
                 # This is where cabal-install puts things these days,
                 # so we need to make sure its on our path and supercedes
@@ -480,7 +539,7 @@ _push MANPATH '~/local/man'
 #      But [ -s ] returns true!!!
 # TODO: use the "type" or "command -v" built-in, rather than using `which`:
 # <https://stackoverflow.com/a/677212>
-if [ ! -z "`which sed`" -a -x "`which sed`" ]; then
+if [ ! -z "$(which sed)" ] && [ -x "$(which sed)" ]; then
     # BUG: we don't ~-expand MANPATH (not that anything is there...)
 
     # Debugging, should usually be turned off
@@ -488,6 +547,8 @@ if [ ! -z "`which sed`" -a -x "`which sed`" ]; then
 
     # Do our best to remove '.' from our path in case it managed to sneak in
     # N.B. don't add -n to echo!! don't add ""s around the ``s!!
+    # BUG: should use $() instead of ``
+    # BUG: should use printf instead
     PATH=`echo "${PATH}" | sed '
         s/:\.:/:/g; s/::/:/g;
         s/^\.://;   s/^://;
@@ -499,6 +560,8 @@ if [ ! -z "`which sed`" -a -x "`which sed`" ]; then
     #    The complicated sed for $_home is to safely escape \ and / in $HOME
     #    The different regexes for ~/ and ~: are because there's no | in basic sed
     # N.B. don't add -n to echo!! and don't need ""s around $()s
+    # BUG: should use printf instead
+    # BUG: should use ${///} instead of echo/printf + sed
     PATH=$(
         _home=$(echo "${HOME}" | sed 's/\\/\\\\/g; s/\//\\\//g')
         echo "${PATH}" | sed "s/~\//${_home}\//g; s/~:/${_home}:/g"
@@ -529,6 +592,9 @@ export PATH MANPATH LD_LIBRARY_PATH JAVA_HOME
 # BUG: for some reason, setting LESS breaks git-log (unless we include -r).
 export PAGER="less -isq"
 export MANPAGER="${PAGER}"
+# TODO: set/export MANWIDTH. Or even hook $PROMPT_COMMAND (or
+# SIGWINCH) to re-set it via `tput cols`/$COLUMNS. (BUG: though
+# MANWIDTH doesn't seem to do anything if set to 66 or greater...)
 # BUG: for some reason git is picking up /usr/bin/vim rather than /sw/bin/vim, even though the latter comes first on PATH...
 export EDITOR='vim'
 
@@ -566,7 +632,7 @@ export BIBINPUTS=".:${HOME}/local/texmf/bibtex/bib:"
 # files work as intended (and to avoid issues about having made github
 # email private).
 # TODO: At some future date, after fixing any breakage, actually remove this.
-#case "${_localhost}" in
+#case "${_hostname}" in
 #    google)
 #        export GIT_AUTHOR_EMAIL='wrengr@google.com'
 #        # TODO: How to dynamically set the following on a repo-by-repo basis?
@@ -593,12 +659,17 @@ export BIBINPUTS=".:${HOME}/local/texmf/bibtex/bib:"
 # In general, beware of `find` corrupting your repos
 # BUG: doesn't color like the grep alias
 # BUG: egrep is giving a lot of "Is a directory" errors
+# TODO: should prolly use `sed 's/./\\&/g'` between the find and
+# xargs, to avoid bugginess: <http://www.etalabs.net/sh_tricks.html>
 alias dgrep="find . -path '*/_darcs' -prune -o -print0 | xargs -0 egrep"
 alias svngrep="find . -path '*/.svn' -prune -o -print0 | xargs -0 egrep"
 
 # So `darcs init` doesn't keep prompting me for it
-# HACK: we reuse the git variables for DRY; but that's weird
-export DARCS_EMAIL="wren romano <2998727+wrengr@users.noreply.github.com>"
+export DARCS_EMAIL="wren romano <wren@cpan.org>"
+# TODO: ever since community.haskell.org got retired I've defaulted
+# back to using my cpan email as the public-facing one. But really
+# need to establish a new public-facing email for all my Haskell (etc)
+# coding.
 
 # To fix postfix on OSX:
 # $> echo 'canonical_maps = hash:/etc/postfix/canonical' >> /etc/postfix/main.cf
@@ -643,7 +714,7 @@ case "${_uname}" in
         #
         # TODO: guard against it not working; e.g., dircolors not
         # existing. Can use the _exists function defined below.
-        eval `dircolors -b`
+        eval $(dircolors -b)
         alias ls='ls --color=auto'
     ;;
 esac
@@ -659,13 +730,15 @@ alias lla='ls -Alh'
 # BUG: can't pass extra flags like you can for the aliases
 # BUG: if the directory doesn't exist then `cd` complains instead of `ls`
 # N.B., proper `sh` doesn't like these function names. Only Bash allows them.
+# BUG: the function() combo is a Bashism... But we should rename
+#      these before fixing that...
 function l.() {
-    if [ "$1" == '' ] ; then d='.' ; else d="$1" ; fi
-    ( cd $d && ls -d .[^.]* )
+    if [ "$1" = '' ] ; then d='.' ; else d="$1" ; fi
+    ( cd $d && ls -d .[^.]* ..?* )
 }
 function ll.() {
-    if [ "$1" == '' ] ; then d='.' ; else d="$1" ; fi
-    ( cd $d && ls -dlh .[^.]* )
+    if [ "$1" = '' ] ; then d='.' ; else d="$1" ; fi
+    ( cd $d && ls -dlh .[^.]* ..?* )
 }
 
 
@@ -677,9 +750,10 @@ alias grep='grep --color'
 alias egrep='egrep --color=auto'
 alias fgrep='fgrep --color=auto'
 
-case "${_localhost}" in
-    ereshkigal | miller | banks )
+case "${_hostname}" in
+    mayari | miller | banks )
         # OSX lacks the tool, but it has the functionality
+        # TODO: should actually switch on _uname='Darwin' instead!
         alias ldd='otool -L'
     ;;
     elsamelys | UNKNOWN )
@@ -714,12 +788,12 @@ esac
 # (Since normally it returns success either way)
 # TODO: use the "type" or "command -v" built-in, rather than using `which`:
 # <https://stackoverflow.com/a/677212>
-function _exists() { which "$1" 2>&1 | grep ^/ >/dev/null ; }
+_exists() { which "$1" 2>&1 | grep ^/ >/dev/null ; }
 
-function whoall() { who -u | awk '{if ($6 != "old") print $0}' | sort ; }
+whoall() { who -u | awk '{if ($6 != "old") print $0}' | sort ; }
 
 _exists whoami   || alias whoami='who am i' # These are subtly different
-_exists whereami || alias whereami='echo $HOSTNAME'
+_exists whereami || alias whereami='printf %s\\n "$HOSTNAME"'
 _exists whatis   || alias whatis='man -f'
 _exists apropos  || alias apropos='man -k'
 
@@ -746,7 +820,7 @@ alias md='mkdir'
 # N.B., how to actually clear things is highly terminal-specific.
 # So if this stops working, you may want to try some other approaches
 # like `reset`, `clear && printf '\e[3J'`, etc. <http://askubuntu.com/q/25077>
-if [ "${_localhost}" = 'google' ]; then
+if [ "${_hostname}" = 'google' ]; then
     case "${_uname}" in
         Darwin)
             # `clear` works just fine on OSX/iTerm2. Or rather, it
@@ -780,7 +854,7 @@ alias :q!='exit'
 # ~~~~~ Other helpful functions, aliases, and Perl microprograms
 
 # A variant of `cd` which canonicalizes the path.
-function ccd() {
+ccd() {
     local _dir='.'
     if [ $# -gt 1 ]; then
         echo "Usage: ccd [dir]"
@@ -795,20 +869,20 @@ function ccd() {
 
 # Safely copy directories
 # BUG: dirname doesn't seem to deal with .. right
-function tarcp() {
-    ( cd `dirname "$1"` && tar cf - `basename "$1"` ) |
+tarcp() {
+    ( cd "$(dirname "$1")" && tar cf - "$(basename "$1")" ) |
         ( cd "$2" && tar xpf - )
  }
 
 # Actually, we can use the `seq` program for this; which also allows
 # setting the lower bound. Dunno if that's available on stock Debian,
 # but it is on Darwin/BSD and Goobuntu/gLinux.
-#function enum() { perl -e 'print "$_\n" foreach 1..'"$1" ; }
+#enum() { perl -e 'print "$_\n" foreach 1..'"$1" ; }
 
 # Do `time` some number of times and average the results
 # TODO: it's better to use Criterion for this
 # BUG: Bash has a built-in with this name...
-function times() {
+times() {
     local n=$1 ; shift
     ( for _n in `seq $n` ; do
         time "$@" >>/dev/null
@@ -820,12 +894,15 @@ function times() {
 }
 
 # Things that only work on OS X, or on my setup
-if [ "${_localhost}" = 'ereshkigal' ]; then
+if [ "${_hostname}" = 'mayari' ]; then
     # Actually this opens in reverse order, but that makes it
     # in order front to back for certain programs
-    function open-in-order() {
+    open-in-order() {
         local f
         local line
+        # BUG: should use printf instead
+        # TODO: should prolly use `sed 's/./\\&/g'` between the find and
+        # xargs, to avoid bugginess: <http://www.etalabs.net/sh_tricks.html>
         for f in "$@" ; do echo "$f" ; done | sort -r | xargs open
     }
 
@@ -836,7 +913,7 @@ if [ "${_localhost}" = 'ereshkigal' ]; then
     alias root="su motoko -c 'sudo su'"
 
     # Move something to the trash (rather than unlinking)
-    function del() { mv "$@" ~/.Trash ; }
+    del() { mv "$@" ~/.Trash ; }
 
     alias cpan="echo 'Make sure FTP is not blocked by firewall'; su motoko -c '/sw/bin/perl -MCPAN -e shell'"
 
@@ -845,13 +922,16 @@ if [ "${_localhost}" = 'ereshkigal' ]; then
 
     # (iTerm only) Send a Growl notification
     # <http://aming-blog.blogspot.com/2011/01/growl-notification-from-iterm-2.html>
-    function growl() { echo -e $'\e]9;'"$@"'\007' ; }
+    growl() { echo -e $'\e]9;'"$@"'\007' ; }
 fi
 
 # Remove .DS_Store items in this folder and subfolders
 # Re using -delete vs -exec: <https://unix.stackexchange.com/a/167824>,
 # <https://unix.stackexchange.com/a/194348>
 alias rm-ds-store='find . -name .DS_Store -exec rm {} \;'
+
+alias _find_writable='find . -perm +022'
+alias _ls_writable_dirs='find . -type d -perm +022 ! -name '\''*.app'\'' -exec ls -1d {} \;'
 
 # TODO: just learn to use dc & bc already
 # A simple but powerful commandline calculator (the POSIX is for floor, ceil, log10)
@@ -869,7 +949,7 @@ print "$val\n";'\'
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ Google-specific functions
 
-if [ "${_localhost}" = 'google' ] && [ "${_uname}" = 'Linux' ]; then
+if [ "${_hostname}" = 'google' ] && [ "${_uname}" = 'Linux' ]; then
 
     # Bash Function to call whenever we use `hgd`
     hgd_postexec() {
@@ -992,7 +1072,7 @@ esac
 
 
 # limit namespace polution
-unset _localhost _uname _hostname
+unset _uname _hostname
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ END                                            END ~~~~~

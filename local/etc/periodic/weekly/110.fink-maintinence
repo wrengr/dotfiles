@@ -1,10 +1,12 @@
 #!/bin/sh
 # Perform some regular Fink maintinence
 
+FINK='/opt/sw/bin/fink'
+
 # Since these scripts are part of my dotfiles repo, but not all my
 # machines use fink, we guard against fink not being installed.
 # Since we don't consider this an error, we use rc=0.
-[ ! -x /sw/bin/fink ] && exit 0
+[ ! -x $FINK ] && exit 0
 
 # BUG: sometimes one of the following commands requires entering
 # my password, thus they're no good as actual cron jobs. They didn't
@@ -18,10 +20,10 @@ echo 'Self-updating Fink:'
 
 rc=0
 # TODO: maybe also consider running cleanup with the --deb flag
-/sw/bin/fink cleanup || rc=3
+$FINK cleanup || rc=3
 [ $rc -ne 0 ] && exit $rc
 
-/sw/bin/fink selfupdate || rc=3
+$FINK selfupdate || rc=3
 exit $rc
 
 # TODO: consider also: `fink index -f` and `fink scanpackages`.

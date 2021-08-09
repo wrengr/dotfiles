@@ -72,7 +72,7 @@ abstracts = {
   ## generic
   ##
 
-  # text to insert at the beginning of non-message lines
+  # text to insert at the beginning of each non-message line
   line_start = "%c-%W!%c-%n ";
   # timestamp styling, nothing by default
   timestamp = "%g$*%n";
@@ -159,11 +159,9 @@ abstracts = {
   ownaction = "{action $*}";
   # own action with target, both private/public
   ownaction_target = "{action_core $0}%K:%g$1%n ";
-
   # private action sent by others
   pvtaction = "%W (*) $*%n ";
   pvtaction_query = "{action $*}";
-
   # public action sent by others
   pubaction = "{action $*}";
 

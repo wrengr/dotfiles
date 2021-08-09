@@ -1,6 +1,6 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{cmd-maths}%
-    [2013/09/03 wren's standard environment for mathematics]
+    [2020/04/23 wren's standard environment for mathematics]
 % See also:
 % http://www.math.leidenuniv.nl/~edix/public_html_rennes/sgahtml/typesetting_rules.html
 
@@ -202,7 +202,8 @@
 
 \DeclareMathOperator*{\argmin}{arg\,min}
 
-\newcommand{\leftexp}[2]{\ensuremath{{\vphantom{#2}}^{#1}{#2}}}
+\newcommand{\leftsub}[2]{\ensuremath{{\vphantom{#2}}_{#1}{#2}}}
+\newcommand{\leftsup}[2]{\ensuremath{{\vphantom{#2}}^{#1}{#2}}}
 
 %% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %% ~~~~~ Generalized sequencing operators
