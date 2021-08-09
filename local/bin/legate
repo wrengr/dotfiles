@@ -1,7 +1,10 @@
 #!/bin/bash
 # A smarter `ssh-agent` (and other daily login certs)
-# wren gayle romano <wren@cpan.org>                 ~ 2021.08.08
+# wren gayle romano <wren@cpan.org>                 ~ 2021.08.09
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+# BUG: I suspect this does not work well with ssh forwarding; so
+# we need to fix that asap.
 #
 # TODO: although not relevant to anyone else, update this to work
 #   with `gcert` / `glogin` on Google corp machines.
