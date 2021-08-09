@@ -1,10 +1,10 @@
-# N.B., the [user] values are overridden by the GIT_*_{NAME,EMAIL}
-# variables. Thus, even though we set them here, we can still change
-# them on each individual machine in our ~/.bash_profile.
+# N.B., these [user] values are overridden by the environment variables
+# GIT_{AUTHOR,COMMITTER}_{NAME,EMAIL}.
 [user]
     name = wren romano
-    email = wren@community.haskell.org
-    # Instruct Git to not try guessing name and email, but yource
+    # By default use my anonymous GitHib email.
+    email = 2998727+wrengr@users.noreply.github.com
+    # Instruct Git to not try guessing name and email, but force
     # you to specify them when you set up a new repo:
     #useConfigOnly = true
     # TODO: set up GPG stuff. Not that any project I work on uses
