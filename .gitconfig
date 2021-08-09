@@ -3,7 +3,7 @@
 # them on each individual machine in our ~/.bash_profile.
 [user]
     name = wren romano
-    email = 2998727+wrengr@users.noreply.github.com
+    email = wren@community.haskell.org
     # Instruct Git to not try guessing name and email, but yource
     # you to specify them when you set up a new repo:
     #useConfigOnly = true
@@ -45,6 +45,17 @@
     # detachedHead, amWorkDir, rmHints, addEmbeddedRepo
 [push]
     default = simple
+    # Have `git push` always use the --follow-tags flag.
+    # N.B., --follow-tags causes to push all *annotated* tags which
+    # are reachable from pushed commits.  Annotated-tags are those
+    # created via `git tag -a TAG -m MESSAGE`, which creates a proper
+    # git object (cf., <https://stackoverflow.com/a/25996877>).
+    # Whereas `git tag TAG` creates an unannotated-tag, which is a
+    # mere pointer rather than a proper git object, and thus is a
+    # second-class citizen that should only exist in the local repo.
+    # While there does exist a command `git push --tags` which will
+    # also push unannotated-tags, it's strongly disrecommended.
+    #followTags = True
 #[pull]
 #    ff = only
 [merge]
@@ -228,6 +239,8 @@
     # TODO: use perl/sed/awk to translate repo-absolute paths to relative paths.
     show-files = show --name-only --format=''
     unpushed = log @{u}..
+    # Show all untracked files.
+    untracked = ls-files --others
     # Most of the time we already know about untracked files, and don't care.
     st    = status --branch --untracked-files=no
     # What we really want most of the time.
@@ -253,7 +266,7 @@
     # select all the commits between then (exclusive) and the most recent
     # one (inclusive), commute them to occur after the parent branch,
     # and set the current branch to point to that new end-of-commits. I
-    # say "supposedly" because sometimes it just drops all those commits
+    # say "supposedly" because frequently it just drops all those commits
     # on the floor and sets the current branch to point directly to the
     # parent. I've no idea why that happens; but when it does, just using
     # a vanilla `git rebase` seems to work (because it uses the parent
@@ -262,7 +275,20 @@
     #
     # BUG: Write a heavy-duty script to do the right thing already!
     # TODO: until we do the script, adding --no-ff seems to help...
-    # TODO: according to <https://git-scm.com/docs/gitcli> it's preferred to use the "--foo=bar" form rather than the "--foo bar" form. The manpage doesn't show it as an option, but if --onto supports that sytax, then we should use it here.
+    # TODO: perhaps it'd help to use:
+    #   --keep-base instead of --onto?
+    #   --reapply-cherry-picks (in lieu of default --no-reapply-cherry-picks)?
+    #       *** This seems like it might be the problem, since the
+    #       default causes to preemptively drop things.
+    #   --empty=ask (in lieu of the default --empty=drop)?
+    #   --no-fork-point together with an explicit upstream (e.g.,
+    #       using `git merge-base` without the --fork-point flag)?
+    #       (In case we don't trust `reflog` to actually help picking
+    #       the best common ancestor; e.g., because git-gc cleared reflog out)
+    # TODO: according to <https://git-scm.com/docs/gitcli> it's
+    #   preferred to use the "--foo=bar" form rather than the "--foo bar"
+    #   form. The manpage doesn't show it as an option, but if --onto
+    #   supports that sytax, then we should use it here.
     rop   = "!git rebase --onto $(git-parent)"
     # BUG: this won't tab-complete the branch name, unlike `oo` itself
     oorop = "!f(){ git oo $1 && git rop ; }; f"
@@ -324,8 +350,17 @@
         refs/heads"
     # Show the most recent tag
     lt = describe --tags --abbrev=0
-    # Show all tags
-    tags = for-each-ref --format='%(refname:short)' refs/tags/
+    # Show all tags, along with the objecttype of their referent.
+    # (Annotated-tags have objecttype=tag; whereas unannotated-tags
+    # have objecttype=commit.  It is also possible for "tag" references
+    # to point to other objecttypes like tree or blob; but that
+    # facility doesn't seem to be used anywhere yet.)
+    # HT: <https://stackoverflow.com/a/21032332>
+    # TODO: do prettier formatting of annotated-tags, and/or break
+    # out into a separate script to allow more programmatic things
+    # like filtering out the annotated-tags vs unannotated-tags.
+    # TODO: See also <https://stackoverflow.com/q/6900328> <https://stackoverflow.com/a/6270112>
+    tags = for-each-ref --format='%(refname:short) %(objecttype)' refs/tags/
     # List the modification date of files in the current directory (in order of file name).
     # BUG: there's some kind of typo here re the quoting. What's wrong?
     #lslm = "!git ls-tree -z --name-only HEAD | xargs -0 -n1 -I{} -- git log -1 --format='%aI {}' {} | sed -re 's/^([^T]+)T\S+(.*)/\1\2/'"
@@ -342,10 +377,6 @@
     assumed = "!git ls-files -v | grep ^h | cut -c 3-"
     unassume-all = "!git assumed | xargs git update-index --no-assume-unchanged"
     assume-all = "!git st -s | awk {'print $2'} | xargs git assume"
-    # TODO: <https://stackoverflow.com/a/11768843> though beware
-    # the warning in <https://git-scm.com/docs/git-filter-branch>
-    # so instead maybe try using <https://github.com/newren/git-filter-repo/>
-    #
     # Chromium depot-tools stuff.
     # TODO: how to guard these so they don't break on my other systems?
     # TODO: will this work with Google/Perforce, or need we re-write our own version?
@@ -363,8 +394,8 @@
 # TODO: is there a way to set this http info differently for various
 # hosts, while using the same file (so I don't need to postprocess
 # the stuff in my dotfiles repo)?
-[http]
-    cookiefile = /usr/local/google/home/wrengr/.gitcookies
+#[http]
+#    cookiefile = /usr/local/google/home/wrengr/.gitcookies
 
 # Speed up pulling from repos by pulling from the read-only version
 # (so you don't need to authenticate) but can still push to the
@@ -378,5 +409,5 @@
 
 # For git-on-borg at google. The way the config looks is confusing; what
 # this means is whenever we type "gob:" that'll get rewritten to the url.
-[url "sso://user/wrengr/"]
-    insteadOf = gob:
+#[url "sso://user/wrengr/"]
+#    insteadOf = gob:
