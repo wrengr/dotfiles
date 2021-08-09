@@ -844,7 +844,23 @@ ccd() {
 tarcp() {
     ( cd "$(dirname "$1")" && tar cf - "$(basename "$1")" ) |
         ( cd "$2" && tar xpf - )
- }
+}
+
+# Pretend we have manpages for shell builtins
+# HT: <https://askubuntu.com/a/439411>
+# BUG: OSX's version of `help` doesn't have the -m flag.  Also the
+#   results of `help` seem a bit terse; may have to kludge something
+#   together from `info builtin` too.
+#man() {
+#    case "$(type -t -- "$1")" in
+#    builtin|keyword)
+#        help -m "$1" | $MANPAGER
+#        ;;
+#    *)
+#        command man "$@"
+#        ;;
+#    esac
+#}
 
 # Actually, we can use the `seq` program for this; which also allows
 # setting the lower bound. Dunno if that's available on stock Debian,
