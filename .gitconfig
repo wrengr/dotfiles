@@ -111,7 +111,11 @@
     diff = auto
     interactive = auto
     status = auto
-    #grep, pager, decorate, showbranch
+    # N.B., this also affects the colorization of git-secrets (if no
+    # files passed or if any of the --cached, --untracked, --no-index
+    # options are passed; otherwise they use the non-git version of grep)
+    grep = always
+    # others to set: pager, decorate, showbranch
 [color "branch"]
     # TODO: is there any way to colorize the hash (a la color.diff.commit)?
     current = cyan bold
@@ -143,15 +147,60 @@
     old = red
     new = green
     whitespace = red reverse
-#[color "grep"]
-#    context =
-#    filename =
-#    function =
-#    linenumber =
-#    matchContext =
-#    matchSelected =
-#    selected =
-#    separator =
+[color "grep"]
+    # These current settings are a~la the default GREP_COLORS
+    # 'ms=01;31:mc=01;31:sl=:cx=:fn=35:ln=32:bn=32:se=36'
+    # <https://www.gnu.org/software/grep/manual/html_node/Environment-Variables.html>
+    # See also <https://git-scm.com/docs/git-config> for what the git-grep
+    # specifiers are and how they differ from gnu grep.
+    #
+    # GREP_COLORS mt=01;31
+    #   Same as setting both ms= and mc=
+    #match = red bold
+    #
+    # GREP_COLORS ms=01;31
+    #   When -v omitted, matching non-empty text in a selected line.
+    #   N.B., the effect of sl= also remains in effect for ms=
+    #   (git: dunno if the equivalents of -v and sl= apply in the above)
+    matchSelected = red bold
+    #
+    # GREP_COLORS mc=01;31
+    #   When -v specified, matching non-empty text in a context line.
+    #   N.B., the effect of cx= also remains in effect for mc=
+    #   (git: dunno if the equivalents of -v and cx= apply in the above)
+    matchContext = red bold
+    #
+    # GREP_COLORS ???
+    #   sl= whole selected lines (-v ? non-matching lines : matching lines)
+    # git: non-matching text in selected lines
+    #selected =
+    #
+    # GREP_COLORS ???
+    #   cx= whole context lines (-v ? matching lines : non-matching lines)
+    # git: non-matching text in context lines (when using -A, -B, or -C)
+    #context =
+    #
+    # GREP_COLORS fn=35
+    #   file names prefixing any content line
+    #   (git: when using -H / not using -h).
+    filename = magenta
+    #
+    # GREP_COLORS ???
+    # git: function name lines (when using -p)
+    #function =
+    #
+    # GREP_COLORS ln=32
+    #   line numbers prefixing any content line (git: when using -n)
+    linenumber = green
+    #
+    # GREP_COLORS bn=32
+    #   byte offsets prefixing any content line (git: when using --column)
+    # TODO: I think that's the equivalent, despite the naming difference.
+    column = green
+    #
+    # GREP_COLORS se=36
+    #   separators ':', '-', '--'
+    separator = cyan
 #[color "interactive"]
 #    prompt =
 #    header =
