@@ -80,8 +80,8 @@ _warn() {
 # TODO: make this into a global configuration variable
 #
 # N.B., must use $HOME because "~" isn't expanded for the `[ -r`.
-# However, beware that if you do `type agent` it will still use
-# "~" to abbreviate things!
+# However, beware that if you call the shell builtin `type` on an alias,
+# it will still use "~" to abbreviate things!
 AGENT_FILE="$HOME/.ssh/agent"
 
 # TODO: for portability we may prefer to do a colon-separated thing like PATH.
@@ -124,7 +124,7 @@ fi
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ Start a new agent (as needed).
 if [[ $IS_RUNNING -eq 0 ]]; then
-    _info 'Starting agent'
+    _info 'Starting ssh-agent'
     ssh-agent > "$AGENT_FILE"
     # We source it so we can add keys, but the caller will have to
     # source it themselves too.
