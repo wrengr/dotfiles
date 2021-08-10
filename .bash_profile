@@ -717,10 +717,12 @@ function ll.() {
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ Other basic aliases
 
-# TODO: set and export GREP_OPTIONS instead?
-alias grep='grep --color'
-alias egrep='egrep --color=auto'
-alias fgrep='fgrep --color=auto'
+# TODO: verify that this has the same effect as the following aliases, and that it works on both OSX and Linux/GNU
+# N.B., git-secrets clears this variable before calling grep!
+export GREP_OPTIONS='--color=auto'
+#alias grep='grep --color'
+#alias egrep='egrep --color=auto'
+#alias fgrep='fgrep --color=auto'
 
 case "${_hostname}" in
     mayari | miller | banks )
@@ -730,9 +732,10 @@ case "${_hostname}" in
     ;;
     elsamelys | UNKNOWN )
         # stupid grep, no color
-        unalias grep
-        unalias egrep
-        unalias fgrep
+        export GREP_OPTIONS=''
+        #unalias grep
+        #unalias egrep
+        #unalias fgrep
     ;;
     google )
         case "${_uname}" in
