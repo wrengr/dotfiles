@@ -1,6 +1,6 @@
 #!/bin/bash
 # Try to rebase the current branch onto a new parent.
-# wren gayle romano <wrengr@x.com>                  ~ 2017.10.06
+# wren gayle romano <wrengr@x.com>                  ~ 2021.08.12
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # N.B., by naming this as we have and having it on our path, this
 # script will be automagically run if someone says `git reparent`;
@@ -10,6 +10,7 @@
 # TODO: Add flags for verbose mode & for dryrun mode
 # TODO: allow NEW_PARENT to be a commit-id, rather than forcing it to be a branch-id. And if it's a commit-id, then skip the final `git branch --set-upstream-to=` part. (Perhaps using a different executable name, if we can't automatically distinguish between the two cases.)
 # TODO: cf., <https://github.com/MarkLodato/git-reparent> for doing better about commuting patches rather than the git bs about applying diffs. <http://git.661346.n2.nabble.com/Announcing-git-reparent-tp7574982p7575061.html>
+# TODO: cf., <https://stackoverflow.com/a/5344979> about a safer way to do the rebase--onto without risking damage to the original unrebased branch.  We should prolly refactor that into this script in order to automate recovery in the event of rebase failure.
 if [[ $# -ne 1 ]]; then
     cat << __END_USAGE__
 Usage: ${0##*/} NEW_PARENT
@@ -18,6 +19,11 @@ Change the parent of the current branch to NEW_PARENT. This will not only
 change which branch is _called_ the parent, but also take all the commits
 since this branch diverged from its old/current parent and rebase them
 onto the new parent.
+
+N.B., if you just want to initialize/set the parent pointer and
+don't need any rebasing (e.g., because you just created a new branch
+in detatched-head state), then instead of using this script you can
+simply: \`git branch --set-upstream-to=NEW_PARENT\`
 __END_USAGE__
     exit 1
 fi
