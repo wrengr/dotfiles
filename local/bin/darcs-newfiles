@@ -1,8 +1,10 @@
 #!/bin/sh
 # Determine which files aren't in Darcs control.
-# wren gayle romano <wren@cpan.org>                 ~ 2008.04.05
+# wren gayle romano <wren@cpan.org>                 ~ 2021.08.11
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # This is like `darcs w -ls` but can be much faster
+
+# BUG(github#10): darcs-2.14.1 no longer has the `query` command.
 
 # Try to discern watched directories
 darcs query manifest |
