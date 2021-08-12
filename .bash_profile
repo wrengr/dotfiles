@@ -946,7 +946,7 @@ if [ "${_hostname}" = 'google' ] && [ "${_uname}" = 'Linux' ]; then
         # there's a symlink somewhere in the standard path that hgd sends
         # us to.
         ccd
-        # An example used by <go/fig-customize>
+        # Set the G3 Workspace root directory.
         export G3DIR=$(pwd)
     }
     # Actually add the function to the list of hooks:

@@ -1,15 +1,9 @@
-# TODO: cf <go/fig-customize>
-# Also <https://source.corp.google.com/piper///depot/google3/experimental/fig_contrib/g3doc/aliases.md>
-
 [ui]
 username = wren romano <wrengr@google.com>
 
 [alias]
 unmerge = update -C -r.
 
-# From <https://source.corp.google.com/piper///depot/google3/experimental/fig_contrib/g3doc/fig_status.md>
-# BUG: we'll need to make a local copy since doing it this way gives us the following warning:
-# Your configuration option extensions.figstatus points to a file at /google/src/head/depot/google3/experimental/fig_contrib/prompts/fig_status/fig_status.py. This path may have poor performance since it may lead to a server roundtrip for every access/every hg invocation.
-# (to disable this warning, set `warn-head-paths=False` in the [trainingwheels] section of your ~/.hgrc)
 [extensions]
-figstatus = /google/src/head/depot/google3/experimental/fig_contrib/prompts/fig_status/fig_status.py
+# Yes, ~/.hgrc does understand tilde expansion
+figstatus = ~/local/lib/prompts/fig_status/fig_status.py
