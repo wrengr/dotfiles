@@ -1,3 +1,7 @@
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+" wren romano's ~/.vim/after/ftplugin/haskell.vim   ~ 2021.08.19
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 " N.B., much of this file is defending against the truly vile builtin
 " ftplugin for Haskell. Now that we've switched to using something else,
 " not all of it is relevant anymore.
