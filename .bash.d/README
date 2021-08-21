@@ -1,0 +1,27 @@
+== prompts ==
+
+We might should move the ~/local/lib/prompts stuff into ~/.bash.d instead
+
+Also check out the section of
+SEEKRIT
+which has a different take on what to put in the prompt.  In particular
+they have stuff about doing things asynchronously and caching the results,
+to speed everything up.  Albeit, they're using fish rather than bash or
+even zsh...
+
+== ssh ==
+
+May want to add something like this to our ~/.bash_profile (or factored
+out as a function in ~/.bash.d)
+
+    if [ -x /usr/local/scripts/ssx-agents ] ; then
+      [ "$PS1" ] && eval `/usr/local/scripts/ssx-agents $SHELL`
+    fi
+
+similarly we may want to update ~/local/bin/legate to use:
+
+    ssh-add -l | grep ${USER} > /dev/null 2>&1
+
+To check for running agents before sourcing the file, rather than our
+current hackery with `ps`
+
