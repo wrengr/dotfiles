@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" wren gayle romano's vim config                    ~ 2021.08.09
+" wren gayle romano's vim config                    ~ 2021.08.20
 "
 " For guidance, see ~/.vim/README
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -266,6 +266,7 @@ Plug 'jvoorhis/coq.vim', { 'for': 'coq' }
 " TODO: fix our colorscheme to work with this.  N.B., the haskell syntax highlighter uses Structure (unless you set g:haskell_classic_highlighting in which case it uses Keyword)
 Plug 'vito-c/applescript.vim', { 'for': 'applescript' }
 " Supposedly this is halfway decent, but it looks blegh for me.  What's my syntax highlighter doing wrong?!
+" BUG: beware of things like <https://githubmemory.com/repo/bfrg/vim-cpp-modern/issues/4>
 Plug 'bfrg/vim-cpp-modern', { 'for': 'cpp' }
 
 
@@ -491,7 +492,8 @@ endif
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Cursor
 " N.B., apparently &cursorline causes slowness over ssh. So maybe
-" consider disabling it when working remotely.
+" consider disabling it when working remotely.  Cf.,
+" <https://eduncan911.com/software/fix-slow-scrolling-in-vim-and-neovim.html>
 set cursorline           " highlight the whole line the cursor is on
 "set cursorcolumn        " highlight the whole column the cursor is on
 
