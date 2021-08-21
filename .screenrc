@@ -1,9 +1,6 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# wren gayle romano's GNU Screen config             ~ 2021.08.06
+# wren gayle romano's GNU Screen config             ~ 2021.08.19
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# <https://www.gnu.org/software/screen/manual/html_node/String-Escapes.html>
-# N.B., Despite what documentation says, %S does *not* give the session name!
-# cf., <https://stackoverflow.com/q/2479683>, <https://superuser.com/a/212520>
 #
 # <http://aperiodic.net/screen/appearance>
 # <http://aperiodic.net/screen/truncation_padding_escapes>
@@ -23,7 +20,7 @@ autodetach on          # Detach screen on hangup (saves running programs)
 startup_message off    # Disable copyright & silly warning splash screen
 shell $SHELL           # The shell to use (prepend `-` to make it a login-shell)
 #shelltitle $SHELL     # The default %t when creating new shell windows.
-term "screen-256color" # What to initialize $TERM to
+term "screen-256color" # The $TERM used inside screen.
 # BUG: really we should set term based on whatever the incoming $TERM is,
 # or use some other sort of color autodetection capability.
 
@@ -43,24 +40,99 @@ defscrollback 15000    # A~la the -h flag
 # you can configure those as desired <https://vi.stackexchange.com/a/436>)
 altscreen on
 
-# ~~~~~ Caption, Messages, &c.
-# The %t defaults to whatever program you started initially. To
-# change it, either: `-t whatever` or `<C-a>:title "whatever"`
-caption always "  %H:%3n %t%? [%h]%?%=<%l>    %M %d (%D) %0c  "
-# TODO(2021.08.02): compare the above vs:
-# hardstatus alwayslastline '%{= kg}[ %{G}%H %{g}][%= %{= kB}%?%-Lw%?%{+b r}(%{G}%n*%f %t%?(%u)%?%{r})%{-b B}%?%+Lw%?%?%= %{g}%]'
-#
+# ~~~~~ Message formatting options.
 #activity "Activity on %n"
 #bell_msg "Bell in window %n"
 #vbell_msg "Wuff, Wuff!!
 nethack on
 
+
+# ~~~~~ Caption line, Hardstatus line, Message line.
+# Cf., <https://www.gnu.org/software/screen/manual/html_node/String-Escapes.html>
+#   %H  hostname
+#   %S  s.session name.  (N.B., this string-escape was only added in
+#           version 4.1.0 <http://savannah.gnu.org/bugs/index.php?23738>.
+#           For older versions of screen you'll need to fake it by one
+#           of several tricks: <https://stackoverflow.com/q/2479683>,
+#           <https://superuser.com/a/212520>.)
+#   %n  current s.window's number/ID
+#   %f  current s.window's flags
+#           <https://www.gnu.org/software/screen/manual/html_node/Windows.html>
+#   %t  current s.window's :title (defaults to the initial program;
+#           change it via `<C-a>:title "whatever"`. Or see:
+#           <https://lizdenys.com/journal/articles/understanding-gnu-screens-captions.html>)
+#   %h  current s.window's terminal title-bar.  N.B., the documentation
+#           calls this "hardstatus" but only in the sense of:
+#           <https://www.gnu.org/software/screen/manual/html_node/Hardstatus.html>
+#           Which is completely different from the command
+#           `<C-a>:hardstatus {when} {fmt}` as described here:
+#           <https://www.gnu.org/software/screen/manual/html_node/Hardware-Status-Line.html>
+#           Afaict the only connection between these two things is that
+#           the latter command defaults to {fmt}="%h".
+#   %[+-][L]w      show all s.window numbers & names:
+#           - only show s.windows up to the current one
+#           + only show s.windows after the current one
+#           L show the s.window's flags too (appended to the number)
+#               N.B., this will alter the coloration of the caption.
+#               FIXME: so we'll need to use color codes to repair the changes.
+#   %u      all other users on this window
+#           <https://www.gnu.org/software/screen/manual/html_node/Multiuser-Session.html>
+#   %=  a~la latex \hfill
+#   %l  loadaverages
+#   %?...%? only display this if some %-escape inside expands to nonempty string
+#
+# N.B., even with defutf8 on, the caption really doesn't like having unicode!
+# Alas, I'm not sure where that default grey background came from, so I can't recover it vs the changes %w makes; but we can embrace the black background and color in general.
+caption always "%{= kw}  %{+b c}%H%{-}:%{+b g}%S%{-}:%{+b M}%2n*%f %t%{-}%{y}%?(%u)%?%{-}  [%?%-Lw%?...%?%+Lw%?]%=<%{r}%l%{-}>  %{c}%M %d (%D) %0c%{-}  "
+
+# Aha! That's how we change it:
+# <https://www.gnu.org/software/screen/manual/html_node/Sorendition.html>
+# hrm, not quite. That sets the color of the activity announcement
+# ("message line") and the repl when doing `<C-a>:` but it doesn't change
+# what "%w" looks like.  However, it does seem to indicate that it's the
+# bright-black "K" which gave us the old default grey (or maybe it's the
+# bold-black given our :attrcolor)
+rendition so "=b" "KW"
+
+# Attrcolor stuff, i.e. what goes inside %{...}:
+#   =   completely override/replace the attribute set
+#   +a  add attribute 'a'
+#   -a  remove attribute 'a'
+#   !   invert current attribute set
+###
+#   d   dim
+#   u   underline
+#   b   bold
+#   r   reverse/inverse
+#   s   standout
+#   B   blinking
+###
+#   k r g y b m c w     Ansi colors (3-bit/standard)
+#   K R G Y B M C W     Ansi colors (4-bit/bright/intense)
+#   d   default color
+#   .   leave color unchanged (for use with i/I pseudo-colors)
+#   i   pseudo-color to set standard
+#   I   pseudo-color to set bright/intense
+#   %{-} reset the most recent attr/color change (there's a stack of them kept)
+#   xy  set bg=x fg=y
+
+# TODO: set the backtick thing to use <https://github.com/spook/sshping>
+# and put some parsed version of the results into the caption.  Or if we
+# can't get that to work, see also <https://serverfault.com/q/807910>.
+# And if that still doesn't help, check out the more general options:
+# <https://low-orbit.net/linux-how-to-measure-network-latency>
+# <https://www.cyberciti.biz/faq/linux-unix-test-internet-connection-download-upload-speed/>
+
+
 # ~~~~~ Enable 256-colors (HT: <http://robotsrule.us/vim/>)
 # TODO: see also <http://taint.org/wk/RemoteLoginAutoScreen>
 #       and <http://www4.informatik.uni-erlangen.de/~jnweiger/screen-faq.html>
 attrcolor b ".I"       # Remap 'bold' to use "high-intensity background color"
-termcapinfo xterm 'Co#256:AB=\E[48;5;%dm:AF=\E38;5;%dm'
+termcapinfo xterm*|screen* 'Co#256:AB=\E[48;5;%dm:AF=\E[38;5;%dm'
 defbce "on"            # Turn BCE (background color erase) on by default
+# If you're not sure what screen thinks about your terminal, try `<C-a>:dinfo`
+# For more on the termcap stuff:
+# <https://www.gnu.org/software/screen/manual/html_node/Special-Capabilities.html>
 
 # ~~~~~ Keybindings
 # Copy screen clipboard to mac clipboard.
