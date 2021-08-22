@@ -1,4 +1,4 @@
-# wren gayle romano's bash login script             ~ 2021.08.26
+# wren gayle romano's bash login script             ~ 2021.09.01
 #
 # It's fairly generic (with weirder things at the bottom),
 # but it's designed to be usable for all my accounts with no(!)
@@ -570,9 +570,59 @@ export MANPAGER="${PAGER}"
 # TODO: set/export MANWIDTH. Or even hook $PROMPT_COMMAND (or
 # SIGWINCH) to re-set it via `tput cols`/$COLUMNS. (BUG: though
 # MANWIDTH doesn't seem to do anything if set to 66 or greater...)
-# BUG: for some reason git is picking up /usr/bin/vim rather than /sw/bin/vim, even though the latter comes first on PATH...
-export EDITOR='vim'
 
+
+# What's the difference between EDITOR and VISUAL?
+#   <https://unix.stackexchange.com/a/4861>
+#   <https://unix.stackexchange.com/a/334022>
+#   So supposedly these days we should either leave EDITOR unset,
+#   or set it to 'vim -E' (or 'vim -e' if you're brave).  Though
+#   afaict most every program looks at EDITOR regardless of the
+#   originally intended distinction.  So I think I'll keep ignoring
+#   the distinction until I run into trouble.
+#   ...Also, one of the commentors noted that while most programs
+#   treat VISUAL like a shell snippet, but others will treat it as
+#   the name of an executable to look up in the PATH.
+#
+# Okay, so what's the difference between '-E' vs '-e'?
+#   <https://vi.stackexchange.com/a/2695>
+#
+# TODO: does giving the full path like this fix the bug where git
+#   was picking up /usr/bin/vim rather than the one that comes first
+#   in the PATH?  (2021-08-21: I'm no longer experiencing this
+#   problem on git 2.27.0 on my personal machine.  So after checking
+#   the work machines to verify, consider this resolved either way.)
+# TODO: for more robust scripting of this, see:
+#   <https://unix.stackexchange.com/a/302391>
+_vim="$(which vim)"
+export EDITOR="$_vim"
+export VISUAL="$_vim"
+export SUDO_EDITOR="$_vim"
+# For OSes that use systemctl (e.g., archlinux) we may also want
+#   to set SYSTEMD_EDITOR; though again, only if it needs to be
+#   different from EDITOR/VISUAL.
+# For Debian-alikes (including Fink) you may prefer to use:
+#   `sudo update-alternatives --config editor`
+#
+# TIL about the shell builtin `fc`, which is awesome:
+#   <https://unix.stackexchange.com/a/286514>
+#   So we should export FCEDIT if for some reason we need to pass
+#   extra flags or otherwise choose something different from EDITOR.
+# TIL about the Bash magic <C-x><C-e> which opens VISUAL (fails
+#   back to EDITOR) and then executes whatever you write there!
+#   <https://www.gnu.org/software/bash/manual/html_node/Miscellaneous-Commands.html>
+#   (To see what all keybindings Bash has set up, run `bind -p` or `bind -P`)
+#   ...For Zsh you can enable/add <C-x><C-e> via:
+#   `autoload -z edit-command-line`
+#   `zle -N edit-command-line`
+#   `bindkey "^X^E" edit-command-line`
+#   <https://unix.stackexchange.com/a/34251>
+#   or:
+#   `autoload edit-command-line`
+#   `zle -N edit-command-line`
+#   `bindkey -M vicmd v edit-command-line`
+#   <https://unix.stackexchange.com/a/90529>
+unset _vim
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ Set up Perl
