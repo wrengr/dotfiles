@@ -1,0 +1,51 @@
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# wren gayle romano's ~/.colordiffrc                ~ 2021.08.21
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# Don't show authorship info at top of output.
+banner=no
+
+# Still use color when output is redirected to a file?:
+color_patches=no
+
+# If we need to specify which underlying diff command to use:
+diff_cmd=diff
+# N.B., must use the long-form flag --unified=N in order for it to
+# get passed through to `diff` correctly; otherwise `diff` will
+# complain about using the `-u`/`-U` flags for some reason.  There
+# isn't really a decent way to specify things like that in this file;
+# instead the manpage suggests using shell function wrappers.
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# N.B., the naming of color options is a bit odd...
+# The basic set of color names looks the same as ANSI:
+#   black, red, green, yellow, blue, magenta, cyan, white.
+# And then we can modify any of those by saying (no space!):
+#   dark${color}
+# And finally, we can return to default colors with any of:
+#   none, normal, off
+#
+# That all seems normal, but!  It's the "dark" colors which are the
+# ANSI 3-bit standard colors!  Whereas, the unannotated color names
+# mean the 4-bit bright/intense colors and also bold font!
+#
+#
+# These colors are as close to my ~/.gitconfig as we can get.
+# Notes:
+# * these settings assume a dark-background terminal.
+# * colordiff has no way to distinguish bold font vs bright/intense color.
+# * git's "meta" seems to have no equivalent; the file info header
+#   for --unified diffs just reuses newtext/oldtext.
+# * git's "frag" == colordiff's "diffstuff"
+# * I'm not sure what "cvsstuff" is for exactly.  (I'd thought it
+#   was like git's "meta", but no.)
+#
+plain=off
+newtext=darkgreen
+oldtext=darkred
+diffstuff=magenta
+cvsstuff=yellow
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ fin.
