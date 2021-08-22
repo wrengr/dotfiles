@@ -7,13 +7,15 @@
 "
 " Force things to be Chromium style, rather than PEP8 style.
 "
-" N.B., in order to use the leading backslash notation with
-" multiple commands, you need to also use a trailing pipe,
-" or you need to avoid any space after the backslash.
+" N.B., when giving multiple commands to :au and using continuation
+" lines, you need to either separate the commands with <bar>, or avoid
+" any space after the line-leading backslash.  (It's also preferred
+" to use a single :set command and pass all the options at once; but
+" that just seems to be for stylistic/performance concerns.)
 " <http://stackoverflow.com/a/36742908>
 " TODO: do we still need this?
 autocmd BufNewFile,BufRead *.py
-	\setlocal smartindent
+	\setlocal smartindent |
 	\setlocal cinwords=if,elif,else,for,while,try,except,finally,def,class
 
 set tabstop=2
