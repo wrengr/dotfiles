@@ -1,5 +1,5 @@
 #!/bin/sh
-# This script attempts tp kill DHCP leases on OSX 10.5 in order to
+# This script attempts to kill DHCP leases on OSX 10.5 in order to
 # address the bug discussed at:
 # <http://www.net.princeton.edu/mac/macos-10-5-x-releases-lease-keeps-using-ip.html>
 #
