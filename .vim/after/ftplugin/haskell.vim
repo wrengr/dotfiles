@@ -7,17 +7,26 @@
 " not all of it is relevant anymore.
 
 
-" ~~~~~ Step 1: get &formatoptions back into a sane state.
-" Disabling the "c" feature of &formatoptions used to be enough to
-" keep from adding extra indentation every time we add a new comment
-" line (whether by <Enter> in input mode, or by <o>/<O> in normal mode);
-" but at some point removing "c" no longer helped fix that...
-"
-" Apparently, this particular bug is well-known and affects other folks
-" too: <https://stackoverflow.com/q/10663888>. I should really just rip
-" the old Haskell indentation file out and use something more modern. (Or
-" if worst comes to worst, try and write my own.)
+" ~~~~~ Step 1a: get &formatoptions back into a sane state.
 DisableHardWrapping
+
+" TODO: as mentined in <https://stackoverflow.com/q/10663888>
+" there're also issues about indentation being messed up whenever
+" leaving 'cro' enabled.  So we should try to find a newer one that
+" fixes these problems (or if worst comes to worst, try and write my
+" own).
+
+" ~~~~~ Step 1b: configure other local options.
+" It's probably safe to leave these in ~/.vim/ftplugin/haskell.vim,
+" but I'm moving them here just to be sure they don't get overwritten.
+" (and besides, we already have so much in this file already...)
+
+setlocal expandtab
+
+" Actually balance parentheses correctly when using <%> to jump
+" between open and closed:
+" <https://www.reddit.com/r/haskell/comments/4k8iy5/til_when_using_vim_to_edit_haskell_setlocal/>
+setlocal cpoptions+=M
 
 
 " ~~~~~ Step 2: Disable the builtin ftplugin's style for three-part comments.
