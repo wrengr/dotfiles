@@ -8,25 +8,47 @@ darcs repo for sharing this stuff, I've removed a bunch of the
 stuff; both of them because I no longer use them and so they're
 probably bitrotten.
 
-## Shell scripting
+## Quick summary of scripts in `~/local/bin`
 
-Here's a quick synopsis of the scripts in `~/local/bin`:
+### Quality-of-life for Bash
 
-* `_abspath` — make a path absolute and canonical
-* `_normalize_space` — remove leading/trailing spaces and collapse duplicate space
-* `_shell_quote` — single-quote a string, escaping characters as necessary
-* `byte-sort` — sort lines beginning with human-readable bytesizes
-* `cal` — like the built-in cal, but highlights today
-* `darcs-newfiles` — determine which files aren't under darcs control. (like `darcs w -ls` but can be much faster)
-* `dotsort` — sort hostnames in the correct way
-* `hilight` — highlight matches; à la color grep, but without filtering out non-matching lines
-* `http-head`
-* `link_scrape`
-* `literacy`
-* `ls_all` — recursively `ls` every directory along a path
-* `propagate` — push a bunch of files to a bunch of hosts, recursively as needed
-* `psed` — run a program's output through several sed filters, returning the same exit code as the child program
-* `w3ctime` — print the current time in [W3C date/time format](http://www.w3.org/TR/NOTE-datetime)
+* `_abspath` — Make a path absolute and canonical.
+* `_normalize_space` — Remove leading/trailing spaces and collapse duplicate space.
+* `_shell_quote` — Single-quote a string, escaping characters as necessary.
+* `cal` — Like the built-in cal, but highlights today.
+* `legate` — Wrapper/enhancement of `ssh-agent`.
+* `ls_all` — Recursively `ls` every directory along a path.
+* `psed` — Run a program's output through several sed filters, returning the same exit code as the child program.
+    * TODO: rename this not to shadow the Perl Stream Editor (which ships with XCode)
+
+### File munging
+
+* `accumulate` — Combine (key,value) lines into (key, list of values) lines.  \[[Forked](http://blog.plover.com/prog/accumulate.html)\]
+* `byte-sort` — Sort lines beginning with human-readable bytesizes.
+* `cloc-1.53.pl` — Count lines of code.  \[[Copied](http://cloc.sourceforge.net)\]
+* `compressibility` — Show how much space gzip/bz2 can save.  \[[Copied](https://github.com/garybernhardt/dotfiles)\]
+* `dotsort` — Sort hostnames in the correct way.
+* `find-duplicates` — A wrapper around `accumulate` to use `md5sum`.
+* `hilight` — Highlight matches; à la color grep, but without removing non-matching lines.
+* `literacy` — Grep for literate-programming content.
+
+### Git subcommands
+
+* `git-bb` — Enhanced version of `git branch -vv`.
+* `git-parent` — Figure out the parent of a git branch.
+* `git-reparent` — Try to rebase the current branch onto a new parent.
+
+### Misc utilities (actively used)
+
+* `darcs-newfiles` — Determine which files aren't under darcs control. (like `darcs w -ls` but can be much faster)
+* `w3ctime` — Print the current time in [W3C date/time format](http://www.w3.org/TR/NOTE-datetime).
+
+### Misc utilities (maybe bitrotten)
+
+* `http-head` — Get the HTTP header for a URL.
+* `kill_dhcp` — kill DHCP leases on OSX 10.5
+* `link_scrape` — Get all same-domain URLs from a webpage.
+* `propagate` — Push a bunch of files to a bunch of hosts, recursively as needed.
 
 ## Email
 
