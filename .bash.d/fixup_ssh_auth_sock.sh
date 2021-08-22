@@ -1,9 +1,21 @@
-# This file is designed to be sourced not run.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Modified from SEEKRIT
-# wren gayle romano <wrengr@google.com>             ~ 2021.08.10
+# wren gayle romano <wrengr@google.com>             ~ 2021.09.01
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Cf., style notes in my ~/.bash_profile for why I've made certain changes.
+
+# This file is designed to be sourced not run.
+#
+# N.B., re trying to detect if this file has been sourced vs executed;
+# that's ...hard: <https://stackoverflow.com/a/28776166>
+# In particular, see the footnote that says this test can return
+# false negatives if this script is located in $PATH.  However,
+# they do give a more reliable test (for Bash):
+# (return 0 2>/dev/null) && sourced=1 || sourced=0
+if [ "${BASH_SOURCE-}" = "$0" ]; then
+    echo "You must source this script: \$ source $0" >&2
+    exit 33
+fi
 
 fixup_ssh_auth_sock() {
   # TODO: I've had issues with -n not working corectly before, so can
