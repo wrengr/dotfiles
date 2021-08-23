@@ -23,5 +23,4 @@ similarly we may want to update ~/local/bin/legate to use:
     ssh-add -l | grep ${USER} > /dev/null 2>&1
 
 To check for running agents before sourcing the file, rather than our
-current hackery with `ps`
-
+current hackery with `ps`. ====> NOPE. The above only works when SSH_AGENT_PID is already set.
