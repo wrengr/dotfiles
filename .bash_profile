@@ -239,7 +239,17 @@ if [ ! -z "${PS1}" ]; then
             # BUG: see the warning note in ~/.hgrc
             source "$figprompt_file"
             # BUG: I want to add extra space (to separate get_fig_prompt from the preceding $_w and the following $_s below), but iff get_fig_prompt actually returns something (so that we don't get double spaces when in homedir etc)
+            # TODO: get_fig_prompt() will return the empty string
+            # whenever not in a fig directory, so we can update
+            # get_fig_prompt_template() as discussed below.
             _figprompt="\[\033[1;35m\]\$(get_fig_prompt)\[\033[00m\]"
+            # TODO: we can also override the get_fig_prompt_template()
+            # function, if we want the output of get_fig_prompt() to look
+            # different.  N.B., after substituting into the template,
+            # the result is printed via `echo`; so if we want to put
+            # color codes into the template itself (to color different
+            # parts separately), then we'll need to be sure to use echo's
+            # spelling of the escape character.
         fi
     fi
 
@@ -992,6 +1002,8 @@ print "$val\n";'\'
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ Google-specific functions
+# TODO: move these off into ~/.bash.d/google to keep them separate from
+# our own code.
 
 if [ "${_hostname}" = 'google' ] && [ "${_uname}" = 'Linux' ]; then
 
