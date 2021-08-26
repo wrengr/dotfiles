@@ -300,6 +300,10 @@
     # to selectively choose changes.
     # TODO: do we want to add the --no-edit flag?
     amend = commit --amend --patch
+    # Since I can never remember the flag that allows us to avoid
+    # spelling the new email out on the commandline, and it's impossible
+    # to google for.
+    amend-author = commit --amend --no-edit --reset-author
     # We use "oo" rather than the standard "co" to avoid typo issues vs "ci".
     oo    = checkout
     pr    = pull --rebase
