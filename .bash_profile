@@ -1,4 +1,4 @@
-# wren gayle romano's bash login script             ~ 2021.08.09
+# wren gayle romano's bash login script             ~ 2021.08.26
 #
 # It's fairly generic (with weirder things at the bottom),
 # but it's designed to be usable for all my accounts with no(!)
@@ -27,12 +27,15 @@
 #   <https://mywiki.wooledge.org/BashPitfalls#pf25>
 # * It's buggy/nonportable to use echo to print variables, should
 #   use printf instead: <http://www.etalabs.net/sh_tricks.html>
-# * The ${var//pattern/repl} construct was added back in Bash-2.0
-#   (1996), so it should be pretty portable these days.
+# * The ${var//pattern/replacement} construct (yes, with double-slash
+#   for the leading separator!) was added back in Bash-2.0 (1996),
+#   so it should be pretty portable these days.
 #   <https://wiki.bash-hackers.org/scripting/bashchanges>
-#   N.B., the behavior of the # and % characters inside the ${///}
-#   construct changed in Bash-3.1 (2005)
+#   N.B., the behavior of the # and % characters inside that double-slash
+#   construct changed in Bash-3.1 (2005):
 #   <http://tiswww.case.edu/php/chet/bash/COMPAT> item #29
+#   (Whereas # and % do still have their special meaning for the
+#   single-slash search and replace.)
 
 
 # == TODOs ==
