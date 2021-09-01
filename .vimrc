@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" wren gayle romano's vim config                    ~ 2021.08.20
+" wren gayle romano's vim config                    ~ 2021.09.01
 "
 " For guidance, see ~/.vim/README
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -67,8 +67,8 @@ endif
 "      <https://github.com/junegunn/vim-plug/wiki/faq>
 " TODO: should we add the <SID> stuff?
 function! PlugCond(cond, ...)
-    let opts = get(a:000, 0, {})
-    return a:cond ? opts : extend(opts, { 'on': [], 'for': [] })
+    let l:opts = get(a:000, 0, {})
+    return a:cond ? l:opts : extend(l:opts, { 'on': [], 'for': [] })
 endfun
 
 
@@ -87,7 +87,7 @@ call plug#begin('~/.vim/bundle')
 "     <http://www.vim.org/scripts/script.php?script_id=3645>
 " But is it actually organized correctly for use as a plugin?
 "Plug 'jamessan/vim-gnupg'
-" Default to using ascii-armor. Hopefuly this'll help deal with the
+" Default to using ascii-armor.  Hopefully this'll help deal with the
 " bug where saving modified files causes them to be saved as binary
 " in spite of the *.asc suffix.
 " BUG: this seems not to be working...
@@ -208,7 +208,7 @@ Plug 'airblade/vim-gitgutter', PlugCond(has('signs'))
 "" For more reliable indenting and performance (&fdm=syntax is notoriously slow)
 " TODO: consider using <https://github.com/Konfekt/FastFold>
 "set foldmethod=indent
-"set fillchars="fold: "
+"set fillchars='fold: '
 
 
 " ~~~~~ Language Support: Haskell
@@ -255,12 +255,12 @@ endif
 "Plug 'jmcantrell/vim-virtualenv' " for Python virtualenvs
 "Plug 'tmhedberg/SimpylFold', { 'for': 'python' } " Fancy folding so you can still see docstrings
 "Plug 'fatih/vim-go', { 'for': 'go' }
-"let g:go_fmt_command = "goimports"
+"let g:go_fmt_command = 'goimports'
 "Plug 'nsf/gocode', { 'rtp': 'vim', 'do': '~/.vim/plugged/gocode/vim/symlink.sh', 'for': 'go' }
 Plug 'jvoorhis/coq.vim', { 'for': 'coq' }
 " This particular fork seems a lot more complete than the original
 " vim-scripts/applescript.vim; however, it's still not the greatest.
-" In part because they use Statement for all the keywords (alebeit
+" In part because they use Statement for all the keywords (albeit
 " Keyword just links to Statement), and for whatever reason my current
 " color scheme has Statement just show up as boring white.
 " TODO: fix our colorscheme to work with this.  N.B., the haskell syntax highlighter uses Structure (unless you set g:haskell_classic_highlighting in which case it uses Keyword)
@@ -302,13 +302,14 @@ Plug 'bfrg/vim-cpp-modern', { 'for': 'cpp' }
 "Plug 'tpope/vim-sleuth'
 "Plug 'tpope/vim-unimpaired'
 "Plug 'tpope/vim-commentary'
+"Plug 'tpope/vim-scriptease'           " Metatooling for writing plugins
 "Plug 'danro/rename.vim'               " Allow to :Rename files
 "Plug 'flowtype/vim-flow'
 "Plug 'airblade/vim-rooter'            " Automatically find project's root dir
 "let g:rooter_disable_map = 1
 "let g:rooter_silent_chdir = 1
 "Plug 'AndrewRadev/splitjoin.vim'      " Expand / wrap hashes etc.
-"Plug 'christoomey/vim-tmux-navigator' " Navitate freely between tmux and vim
+"Plug 'christoomey/vim-tmux-navigator' " Navigate freely between tmux and vim
 "Plug 'ashisha/image.vim'              " View images as ASCII art
 "Plug 'majutsushi/tagbar'
 " Some other stuff from <http://www.stephendiehl.com/posts/vim_2016.html>
@@ -317,13 +318,14 @@ Plug 'bfrg/vim-cpp-modern', { 'for': 'cpp' }
 "Plug 'garbas/vim-snipmate'            " TextMate-like snippet features
 "Plug 'scrooloose/nerdcommenter'
 "Plug 'Shougo/vimproc.vim', { 'do': 'make' }
+"Plug 'sk1418/Join'                     " A hopefully better :Join command
 call plug#end()
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Unicode support
-" N.B., if the occurence of the utf8 characters below glitches out
+" N.B., if the occurrence of the utf8 characters below glitches out
 " the cursor, then you probably need to adjust your terminal; since
 " the terminal and vim are disagreeing about where the cursor
 " actually is after printing the characters. (I.e., your terminal
@@ -351,7 +353,7 @@ if has('multi_byte')
 endif
 
 " Enable &list to visualize invisible characters (<Tab>, nbsp, EOL, etc)
-" The vizualisations are defined in &listchars. N.B., &list is incompatible
+" The visualizations are defined in &listchars. N.B., &list is incompatible
 " with &linebreak, and enabling &list will override &linebreak's setting.
 " This highly unexpected behavior has been deemed 'a feature':
 "     <https://groups.google.com/forum/#!topic/comp.editors/blelxLchTPg>
@@ -382,7 +384,7 @@ nnoremap <silent> <C-l> :redraw!<CR>
 if has('title')
     " BUG: many times screen doesn't set TERM to say that; and
     " even when it does, our ~/.bash_profile changes it.
-    if &term == "screen"
+    if &term ==? 'screen'
         set t_ts=^[k
         set t_fs=^[\
     endif
@@ -394,7 +396,7 @@ if has('title')
     " rather than actually giving the path to the file where they're
     " stored?
     " N.B., the list of codes is at `:help statusline` not at the
-    " helppage for titlestring
+    " helpfile for titlestring
     "set titlestring=VIM\ %-25.55F\ %a%r%m
     set titlestring=VIM\ \ %t\ (%{expand(\"%:~:.:h\")})\ %a%r%m
     set titlelen=70
@@ -408,7 +410,7 @@ endif
 " <http://vim.wikia.com/wiki/Using_the_mouse_for_Vim_in_an_xterm>
 " BUG: alas, it seems to break something about using the OSX clipboard...
 " <http://unix.stackexchange.com/q/139578>
-"set mouse=a " Copy/paste in "* register, normal behaviour with shift key pressed
+"set mouse=a " Copy/paste in "* register, normal behavior with shift key pressed
 "set mousehide " Hide mouse while typing
 
 " TODO: If we really want to go the mouse route, see also:
@@ -430,7 +432,10 @@ endif
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Color-Scheme
 if has('syntax') && (&t_Co > 2 || has('gui_running'))
-    syntax on
+    " N.B., must enable syntax before loading the colorscheme.
+    " Also, see the helpfiles for :syn-enable vs :syn-on and how
+    " they relate to colorschemes.
+    syntax enable
     " N.B., the &background setting is intended to _inform_ Vim of
     " what the terminal's actual default hue is, not to set/change
     " the color scheme used by Vim.  This setting is hooked so that
@@ -442,13 +447,13 @@ if has('syntax') && (&t_Co > 2 || has('gui_running'))
     " terminal's &background, and therefore Vim will change the
     " colorscheme to the default one (which supports all &background
     " settings, so will do the right thing).  However, N.B., even
-    " though Vim resets to the defailt colorscheme so as to get visible
+    " though Vim resets to the default colorscheme so as to get visible
     " colors, it seems like Vim doesn't re-revert the &background
     " setting to whatever you originally set it to; thus reading the
     " &background setting after falling down this path will give
     " unreliable answers.  Moreover, N.B., this hooking action will
-    " only adjust the "default color groups", it will _not_ adjust
-    " "colors used for syntax highlighting"!  Thus, first loading a
+    " only adjust the 'default color groups', it will _not_ adjust
+    " 'colors used for syntax highlighting'!  Thus, first loading a
     " colorscheme and subsequently changing the &background to something
     " the colorscheme doesn't support, will result in a bizarre
     " mishmash of colors.
@@ -511,6 +516,7 @@ set cursorline           " highlight the whole line the cursor is on
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Line numbers
 
+" TODO: should we be using :setlocal in lieu of :set ?
 " Factored out so we can toggle highlight colors easily.
 function! s:LineNrStandard()
     set norelativenumber
@@ -523,16 +529,16 @@ function! s:LineNrStandard()
     " is a bit too dark on Ereshkigal
     highlight LineNr ctermfg=240 guifg=#424242
 endfun
-call <SID>LineNrStandard()
+call s:LineNrStandard()
 
 
 " BUG: when editing git commit messages, <C-n> gets overridden by
-" some sort of autocomplete thing...
+"   some sort of autocomplete thing...
 " HT: <https://github.com/alialliallie/vimfiles/blob/master/vimrc>
 nnoremap <silent> <C-n> :call <SID>LineNrToggle()<CR>
 function! s:LineNrToggle()
     if &relativenumber == 1
-        call <SID>LineNrStandard()
+        call s:LineNrStandard()
     else
         set relativenumber
         " Use the new hybrid-mode, if available
@@ -555,11 +561,11 @@ endfun
 " disagreeing about where the cursor actually is.
 if exists('+colorcolumn')
     " N.B., this is the column we highlight, hence should be one
-    " more than where we want to wrap. You can also use "+n" to set
+    " more than where we want to wrap. You can also use '+n' to set
     " it automatically based on &textwidth.
     set colorcolumn=81
     " Or, to shade everything beyond 81 instead of only 81 itself:
-    "execute "set colorcolumn=" . join(range(81,335), ',')
+    "execute 'set colorcolumn=' . join(range(81,335), ',')
 
     " Override TomorrowNightBright to use a pleasant but high-contrast color.
     highlight ColorColumn
@@ -582,7 +588,7 @@ endif
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Basic usability
-" TODO: combine this section with the "etc" one.
+" TODO: combine this section with the 'etc' one.
 set backspace=indent,eol,start " Allow backspacing anything (input mode).
 "set whichwrap=b,s,<,>,~,[,]   " backspace and cursor keys wrap too.
 
@@ -617,19 +623,38 @@ set history=100                  " size of command and search history
 "set undolevels=1000             " depth of undo tree
 
 " HT: <https://superuser.com/a/433998>, <https://superuser.com/a/264067>
-command -nargs=0 ClearUndoHistory call <SID>ClearUndoHistory()
+command -nargs=0 ClearUndoHistory call s:ClearUndoHistory()
 function! s:ClearUndoHistory()
-    let my_ul = &ul
-    set ul=-1
-    " Dunno how this exe line is supposed to work, but it ends up marking
-    " the buffer as dirty...
-    "exe "normal a \<BS>\<Esc>"
-    " So for now we prefer `:edit!`, though that has the effect of doing <z><z>
-    edit!
-    " Must use `let` here so the change is global/exported; whereas
-    " `set` would only change it locally to this script/function.
-    let &ul=my_ul
-    unlet my_ul
+    let l:saved_ul = &ul
+    try
+        set ul=-1
+        " Dunno how the one post's `:exe "normal a \<BS>\<Esc>"`
+        " was actually supposed to work (I know what it literally
+        " does, just not why that was considered an appropriate
+        " solution), but it ends up marking the buffer as dirty which
+        " we don't want.
+        "
+        " So for now we prefer `:edit!`, however beware of side effects:
+        " (1) it does <z><z> or equivalent (i.e., recenters the viewport).
+        " (2) it reloads the buffer from disk, discarding any unsaved changes.
+        " TODO: we should probably fix the second point by either:
+        "   (a) automatically saving before the `:edit!` (not the best idea)
+        "   (b) detect dirty buffer and bail out (annoying to deal with)
+        "   (c) have bang and non-bang variants of the command, to
+        "       pick between those two behaviors.
+        " TODO: a newer answer <https://superuser.com/a/688962>
+        "   suggests using the command `m-1` as a sideeffect-free way
+        "   to get the history to drop.  Maybe we should do that instead?
+        edit!
+    finally
+        " Must use `:let` here so the change is global/exported; whereas
+        " `:set` would only change it locally to this script/function.
+        let &ul=l:saved_ul
+        " TODO: I don't know why the original code had this unlet;
+        " was that for backwards compatibility to the days before the
+        " l: namespace?
+        unlet l:saved_ul
+    endtry
 endfun
 
 " An analogue of :delmarks but for registers.
@@ -637,9 +662,11 @@ endfun
 " TODO: see also <https://stackoverflow.com/a/26043227>
 " BUG: this doesn't seem to remove them from ~/.viminfo thus the clearing
 " of the registers doesn't persist across sessions!
-command -nargs=0 ClearRegisters call <SID>ClearRegisters()
+command -nargs=0 ClearRegisters call s:ClearRegisters()
 function! s:ClearRegisters()
-    for i in range(34,122) | silent! call setreg(nr2char(i), []) | endfor
+    for i in range(34,122)
+        silent! call setreg(nr2char(i), [])
+    endfor
 endfun
 
 " The following line has some sort of typo about '<' for vim-6.2
@@ -698,7 +725,7 @@ endif
 "     <http://vimdoc.sourceforge.net/htmldoc/visual.html#visual-operators>
 " so why even bother?
 " TODO: see, <http://usevim.com/2012/05/11/visual/>
-" Also, looks like in inser mode we can use <C-d> and <C-t> to un/indent...
+" Also, looks like in insert mode we can use <C-d> and <C-t> to un/indent...
 "     <http://vim.wikia.com/wiki/Avoid_the_escape_key>
 "vmap <Tab> <C-T>
 "vmap <S-Tab> <C-D>
@@ -715,15 +742,16 @@ set wrap               " Enable to soft-wrap overly long lines.
 set linebreak          " (lbr) Only break lines at characters in &breakat;
                        " i.e., not in the middle of words.
                        " N.B., the default &breakat contains a space.
-"set breakat=" ^I!@*-+;:,./?"
+"set breakat=' ^I!@*-+;:,./?'
 "set breakindent       " Visually indent when soft wrapping lines.
 set nolist             " Disable &list because it invalidates &linebreak
     " This behavior is deemed to be 'a feature':
     " <https://groups.google.com/forum/#!topic/comp.editors/blelxLchTPg>
 
-" Try really hard to turn off hard-wrapping.
+" Try really hard to turn off hard-wrapping.  Also get rid of &fo
+" stuff I hate.
 "
-" We break this out as a function, in case we need to invoke it
+" We break this out as a function, because we need to invoke it
 " manually or in a bunch of different .vim/after/ftplugin/*.vim
 " files. Some sources for what we're doing are:
 "     <http://vim.wikia.com/wiki/Word_wrap_without_line_breaks>
@@ -731,14 +759,16 @@ set nolist             " Disable &list because it invalidates &linebreak
 "     <http://vi.stackexchange.com/a/1985>
 "     <http://stackoverflow.com/a/2312888/358069>
 "     <http://stackoverflow.com/a/23326474/358069>
-command -nargs=0 DisableHardWrapping call <SID>DisableHardWrapping()
+" TODO: we probably don't really need the :command part, since this
+" is more for calling from scripts rather than typing in while editing.
+command -nargs=0 DisableHardWrapping call s:DisableHardWrapping()
 function! s:DisableHardWrapping()
     set textwidth=0 wrapmargin=0 " can't hard-wrap at column zero, ha!
     " Must remove each one individually, because -= is string-based.
     set formatoptions-=t " Don't autowrap text using &textwidth
     set formatoptions-=c " Don't autowrap comments using &textwidth
-    "set formatoptions-=r " Don't autoinsert the comment leader on <Enter>
-    "set formatoptions-=o " Don't autoinsert the comment leader on <o> or <O>
+    set formatoptions-=r " Don't autoinsert the comment leader on <Enter>
+    set formatoptions-=o " Don't autoinsert the comment leader on <o> or <O>
     set formatoptions-=a " Disable 'auto-format' of paragraphs.
     set formatoptions+=l " Don't break long lines when in insert mode.
     set formatoptions+=1 " Break before one-letter words, not after.
@@ -755,6 +785,8 @@ set ignorecase           " Don't care if search for upper or lowercase
 "set smartcase           " Only look for case when uppercases are used
 
 " Search for character under cursor.
+" (This is mainly for use with CJK unicode, probably not so helpful
+" otherwise.)
 " TODO: really need a better keybinding/name.
 nnoremap <leader>z xu/<C-R>-<CR>
 
@@ -791,7 +823,7 @@ let Grep_Skip_Dirs = 'RCS CVS SCCS .svn .hg _darcs .git'
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Spelling
-if (v:version > 700) && has('spell')
+if v:version > 700 && has('spell')
     setlocal spelllang=en_us " Set a local value of the global &spellang
     set spellsuggest=10      " Show top N spell suggestions
     " Change to make spellfile.vim ask you again for downloading file
@@ -800,7 +832,7 @@ if (v:version > 700) && has('spell')
     " TODO: use <leader> instead of <C>?
     " Toggle highlighting spelling errors (for local buffer only).
     " (N.B., this is how you spell <ctrl-space>. Also, we can't
-    " use <C-s> because the terminal steals that to mean "stop output")
+    " use <C-s> because the terminal steals that to mean 'stop output')
     nnoremap <silent> <C-@> :setlocal spell!<CR>
     " BUG: we need to have spell enabled in order to use `[s`, `]s`,
     " etc. Is there a way to enable it and instead just toggle whether
@@ -843,8 +875,8 @@ endif
 " ~~~~~ Highlight whitespace errors
 " TODO: actually make this toggle!
 " BUG: these patterns don't seem to work everywhere (e.g., inside
-" `function!` itself; though it works just fine inside `if`)
-command -nargs=0 HighlightSpaces call <SID>HighlightSpaces()
+"   `function!` itself; though it works just fine inside `if`)
+command -nargs=0 HighlightSpaces call s:HighlightSpaces()
 function! s:HighlightSpaces()
     " TODO: should prolly guard this one based on how &expandtab is set.
     syntax match hardTab display "\t"
@@ -861,7 +893,7 @@ endfun
 " I forget where I got this cursor resetting stuff from, but a
 " different variant is at <https://dougblack.io/words/a-good-vimrc.html>
 "function! RmTrailingSpace()
-"    let save_cursor = getpos(".")
+"    let save_cursor = getpos('.')
 "    let old_query = getreg('/')
 "    silent! %s/[[:space:]]\+$//e
 "    call setpos('.', save_cursor)
@@ -871,12 +903,12 @@ endfun
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Folding (:help usr_28)
-" By default <z><a> is used for un/folding. but that can be annoying
+" By default <z><a> is used for un/folding.  But that can be annoying
 " if you accidentally mistype the <z> and so enter append mode. Should
 " use nnoremap to choose some other key combo for un/folding.
 if has('folding')
     "set foldenable          " Turn on folding
-    " This shows the first line of the fold, with "/*", "*/" and "{{{" removed.
+    " This shows the first line of the fold, with '/*', '*/' and '{{{' removed.
     "set foldtext=v:folddashes.substitute(getline(v:foldstart),'/\\*\\\|\\*/\\\|{{{\\d\\=','','g')
     "set foldmethod=syntax   " Make folding by: syntax, indent,...
     "set foldlevel=0         " Autofold (0)just this level, (99)all levels
@@ -892,7 +924,7 @@ if has('folding')
     "set foldopen+=insert    " Open folds when action happens
     "set foldopen+=jump      " Open folds when action happens
     "set foldopen=all        " Open folds when action happens
-    "set foldclose=all       " Automatically close folds when leving
+    "set foldclose=all       " Automatically close folds when leaving
 
     " To automatically save manual folds and reload them:
     " (I'm not sure if I actually want this, but it's good to remember)
@@ -932,7 +964,7 @@ set lazyredraw
 "set debug=msg,throw     " msg, throw, beep --- combinable
 "set report=0            " Always report the number of lines changed
 "set display=lastline    " Show as much of the last line as possible
-"set nofsync             " Less power consumption *DANGEROUS* doesnt sync IO
+"set nofsync             " Less power consumption *DANGEROUS* doesn't sync IO
 "set swapsync=           "     this could result in data loss, so beware!
 
 "set fileformat=unix
@@ -1047,7 +1079,7 @@ nnoremap Y y$
 " Make p in Visual mode replace the selected text with the "" register.
 vnoremap p <Esc>:let current_reg = @"<CR>gvdi<C-R>=current_reg<CR><Esc>
 
-" BUG: neither "* nor "+ registers behave apropriately on the version
+" BUG: neither "* nor "+ registers behave appropriately on the version
 " of vim that ships with newer OSX. Instead must use MacVim
 " <http://www.drbunsen.org/text-triumvirate.html>, or perhaps try
 " something like
@@ -1111,11 +1143,11 @@ noremap <Leader>p :set paste<CR>:put  *<CR>:set nopaste<CR>
 " to do things directly are ':wincmd h/j/k/l'
 
 " Enable OSX-like command for saving
-" BUG: this doesn't seem to be working either :(
+" N.B., can't use <C-s> because the terminal steals that to mean 'stop output'.
 "nnoremap <C-s> :w<CR>
 "inoremap <C-s> <ESC>:w<CR>
 " TODO: try using <D-...> which is the OSX command/apple key. (Alas,
-" that doesn't seem to work either...)
+"   that doesn't seem to work either...)
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1155,12 +1187,16 @@ endif
 " TODO: consider setting &scrolljump
 
 " Gentler scrolling with Shift-up/down
-map  <S-Up>   10k10<C-Y>zz
-imap <S-Up>   <ESC>10k10<C-Y>zzi
-map  <S-Down> 10j10<C-E>zz
-imap <S-Down> <ESC>10j10<C-E>zzi
-map  <C-Up>   <C-u>M
-map  <C-Down> <C-d>M
+" FIXME(2021.08.16): why did these use to be defined as recursive
+"   maps?!  I've changed them to non-recursive for security/correctness,
+"   but don't know if there's something I'm missing or not.
+noremap  <S-Up>   10k10<C-y>zz
+inoremap <S-Up>   <ESC>10k10<C-y>zzi
+noremap  <S-Down> 10j10<C-e>zz
+inoremap <S-Down> <ESC>10j10<C-e>zzi
+noremap  <C-Up>   <C-u>M
+noremap  <C-Down> <C-d>M
+" TODO: imaps for <C-Up> and <C-Down>?
 
 " Move by display-lines rather than by file-lines
 noremap <Up>   gk
@@ -1188,18 +1224,18 @@ noremap j      gj
 nnoremap Q :call <SID>BufferDelete()<CR>
 function! s:BufferDelete()
     if &modified
-        " Not using `echoerr` because that causes a double error
+        " Not using `:echoerr` because that causes a double error
         " message (the error itself, and the function exiting in
         " error).
         echohl ErrorMsg
-        echomsg "E37: No write since last change. Not closing buffer."
+        echomsg 'E37: No write since last change. Not closing buffer.'
         echohl NONE
     elseif winnr('$') == 1 " Only one window, so there are no splits to lose.
         bdelete
-        echo "Buffer deleted."
+        echo 'Buffer deleted.'
     elseif len(filter(range(1, bufnr('$')), 'buflisted(v:val)')) == 1
         bdelete
-        echo "Buffer deleted. Created new buffer."
+        echo 'Buffer deleted. Created new buffer.'
     else
         " BUG: if the current buffer is open in multiple windows,
         " still destroys the split. Supposedly we should be able to
@@ -1207,7 +1243,7 @@ function! s:BufferDelete()
         " work for me... TODO: see <https://stackoverflow.com/a/44950143/358069> or <https://github.com/qpkorr/vim-bufkill> or <https://stackoverflow.com/a/29236158/358069> or <http://vim.wikia.com/wiki/Deleting_a_buffer_without_closing_the_window>
         bprevious
         bdelete #
-        echo "Buffer deleted."
+        echo 'Buffer deleted.'
     endif
 endfun
 
@@ -1293,17 +1329,19 @@ if has('signs')
     "     xmap ic         <Plug>GitGutterTextObjectInnerVisual
     "     xmap ac         <Plug>GitGutterTextObjectOuterVisual
     " TODO: the readme has all sorts of function suggestions
-    "
-    " BUG: since reimaging my Google corp machines, their colors are all messed up.  In particular, the signcolumn now shows up with a light grey background.  At least part of this is due to TomorrowNightBright changing things; so we'll have to design our own colorscheme afterall.
+    " TODO: It looks like I've fixed the SignColumn stuff, but maybe
+    "   check out the documentation for g:gitgutter_set_sign_backgrounds.
+    " TODO: maybe also check out `:h gitgutter-statusline` for
+    "   something to put into airline's section Z.
 endif
 
 
 " ~~~~~ nerdtree configuration
-"if exists(":NERDTree")
+"if exists(':NERDTree')
     "map <C-t> :NERDTreeToggle<CR>
 
     " Allow vim to close if the only open window is nerdtree
-    "autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
+    "autocmd bufenter * if (winnr('$') == 1 && exists('b:NERDTree') && b:NERDTree.isTabTree()) | q | endif
 
     " <http://stackoverflow.com/a/26161088>
 
@@ -1313,7 +1351,7 @@ endif
 
 
 " ~~~~~ syntastic configuration
-"if exists(":SyntasticCheck")
+"if exists(':SyntasticCheck')
 "endif
 
 
@@ -1332,6 +1370,7 @@ endif
 "    Limelight!
 "endfun
 "
+" TODO: does autocmd actually require the "<SID>" spelling, or can we use "s:"?
 "autocmd! User GoyoEnter nested call <SID>goyo_enter()
 "autocmd! User GoyoLeave nested call <SID>goyo_leave()
 

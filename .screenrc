@@ -129,6 +129,7 @@ rendition so "=b" "KW"
 #       and <http://www4.informatik.uni-erlangen.de/~jnweiger/screen-faq.html>
 attrcolor b ".I"       # Remap 'bold' to use "high-intensity background color"
 termcapinfo xterm*|screen* 'Co#256:AB=\E[48;5;%dm:AF=\E[38;5;%dm'
+# BUG: do we really want this?  Cf., <http://snk.tuxfamily.org/log/vim-256color-bce.html>
 defbce "on"            # Turn BCE (background color erase) on by default
 # If you're not sure what screen thinks about your terminal, try `<C-a>:dinfo`
 # For more on the termcap stuff:
