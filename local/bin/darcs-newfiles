@@ -1,26 +1,30 @@
 #!/bin/sh
 # Determine which files aren't in Darcs control.
-# wren gayle romano <wren@cpan.org>                 ~ 2021.08.11
+# wren gayle romano <wren@cpan.org>                 ~ 2021.09.01
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # This is like `darcs w -ls` but can be much faster
 
 # BUG(github#10): darcs-2.14.1 no longer has the `query` command.
+#
+# This is a hack to workaround things for a little while:
+MANIFEST='darcs-2.10.0 query manifest'
+#MANIFEST='darcs-2.14.1 show files'
 
 # Try to discern watched directories
-darcs query manifest |
-	perl -ne' print "$1\n" if m/(.*)\//' |
-	sort |
-	uniq |
-	while read dir ; do
-		for file in $dir/* ; do
-			if [ "X$file" = "X$dir/*" ]; then
-				:
-			else
-				# Check for files in the directory which are unwatched
-				l=`darcs query manifest | grep "$file$" | wc -l`
-				if [ $l -eq 0 ] && [ ! -d "$file" ]; then
-					echo "$file"
-				fi
-			fi
-		done
-	done
+$MANIFEST |
+  perl -ne' print "$1\n" if m/(.*)\//' |
+  sort |
+  uniq |
+  while read dir ; do
+    for file in $dir/* ; do
+      if [ "X$file" = "X$dir/*" ]; then
+        :
+      else
+        # Check for files in the directory which are unwatched
+        l=$($MANIFEST | grep "$file$" | wc -l)
+        if [ $l -eq 0 ] && [ ! -d "$file" ]; then
+          echo "$file"
+        fi
+      fi
+    done
+  done
