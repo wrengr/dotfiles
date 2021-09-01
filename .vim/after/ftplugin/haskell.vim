@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" wren romano's ~/.vim/after/ftplugin/haskell.vim   ~ 2021.08.19
+" wren romano's ~/.vim/after/ftplugin/haskell.vim   ~ 2021.09.01
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 " N.B., much of this file is defending against the truly vile builtin
