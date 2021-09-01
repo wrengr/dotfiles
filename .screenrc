@@ -1,5 +1,5 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# wren gayle romano's GNU Screen config             ~ 2021.08.19
+# wren gayle romano's GNU Screen config             ~ 2021.09.01
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # <http://aperiodic.net/screen/appearance>
@@ -127,10 +127,21 @@ rendition so "=b" "KW"
 # ~~~~~ Enable 256-colors (HT: <http://robotsrule.us/vim/>)
 # TODO: see also <http://taint.org/wk/RemoteLoginAutoScreen>
 #       and <http://www4.informatik.uni-erlangen.de/~jnweiger/screen-faq.html>
-attrcolor b ".I"       # Remap 'bold' to use "high-intensity background color"
+#       and <http://web.archive.org/web/20130125000058/http://www.frexx.de/xterm-256-notes/>
+#
+# Remap 'bold' to use "high-intensity background color".
+attrcolor b ".I"
+# Tell screen:
+#   (Co) we have 256 colors
+#   (AB) how to set background colors
+#   (AF) how to set foreground colors
+#       Alas we're forced to use the semicolon notation for ANSI
+#       escape codes (in lieu of the more correct colon notation),
+#       since this string is colon delimited.
 termcapinfo xterm*|screen* 'Co#256:AB=\E[48;5;%dm:AF=\E[38;5;%dm'
+# Turn on BCE (background color erase) by default.
 # BUG: do we really want this?  Cf., <http://snk.tuxfamily.org/log/vim-256color-bce.html>
-defbce "on"            # Turn BCE (background color erase) on by default
+defbce "on"
 # If you're not sure what screen thinks about your terminal, try `<C-a>:dinfo`
 # For more on the termcap stuff:
 # <https://www.gnu.org/software/screen/manual/html_node/Special-Capabilities.html>
