@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" wren romano's ~/.vim/after/ftplugin/python.vim    ~ 2021.08.19
+" wren romano's ~/.vim/after/ftplugin/python.vim    ~ 2021.09.02
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 " TODO: install <https://github.com/hynek/vim-python-pep8-indent/> ?
@@ -15,13 +15,14 @@
 " <http://stackoverflow.com/a/36742908>
 " TODO: do we still need this?
 autocmd BufNewFile,BufRead *.py
-	\setlocal smartindent |
-	\setlocal cinwords=if,elif,else,for,while,try,except,finally,def,class
+    \setlocal smartindent |
+    \setlocal cinwords=if,elif,else,for,while,try,except,finally,def,class
 
-set tabstop=2
-set softtabstop=0
-set shiftwidth=2
-set textwidth=79
-set expandtab
-set autoindent
-set fileformat=unix
+setlocal
+    \ tabstop=2
+    \ softtabstop=0
+    \ shiftwidth=2
+    \ textwidth=79
+    \ expandtab
+    \ autoindent
+    \ fileformat=unix
