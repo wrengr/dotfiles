@@ -362,9 +362,10 @@ Plug 'junegunn/goyo.vim',       { 'on': 'Goyo' }
 "  Plug 'prabirshrestha/asyncomplete-necosyntax.vim' | Plug 'Shougo/neco-syntax'
 
 
-" ~~~~~ Ctags                                                    {{{3
-" TODO: see `:h usr_29` and <http://www.oualline.com/vim/10/top_10.html>
-"   for what these so-called 'tags' are all about.
+" ~~~~~ Ctags (:help usr_29)                                     {{{3
+" For additional help on ctags, see also:
+"   <http://www.oualline.com/vim/10/top_10.html>
+"   <https://andrew.stwrt.ca/posts/vim-ctags/>
 "
 " Browse ctags of current file, organized by scope.
 " (N.B., despite the name, it is not a "line")
