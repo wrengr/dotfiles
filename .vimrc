@@ -510,6 +510,38 @@ if has('autocmd')
 endif
 
 
+" ~~~~~ LLVM/MLIR ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {{{3
+" The LLVM project itself provides the following plugin for syntax
+" highlighting MLIR files:
+"   <https://github.com/llvm/llvm-project/blob/main/mlir/utils/vim/>
+" However, they don't have one for LLVM nor for TableGen ('.td'); at
+" least nowhere in the history of the github monorepo, however they did
+" used to have some.  One version is archived at:
+"   <https://github.com/llvm-mirror/llvm/blob/master/utils/vim/syntax/tablegen.vim>
+" and there are a few forks out there, like 'antiagainst/vim-tablegen'
+" and more recently
+"   <https://courchinoux.org/gaspard/chiara64-llvm/-/blob/master/utils/vim/syntax/tablegen.vim>
+" But we'll use a newer version below.
+"
+" Since we already have a copy of the whole 'llvm/llvm-project' repo,
+" we could always tell vim-plug to use the appropriate directory as an
+" "unmanaged plugin" (i.e., one that we manually update, rather than
+" one vim-plug is allowed to update).  The incantation for that is to
+" use a path specifically beginning with the '~' character:
+"Plug '~/src/llvm-project/mlir/utils/vim'
+"
+" This repo has all three of: syntax/{llvm.vim, mlir.vim, tablegen.vim}
+" It also has ftdetect/llvm-lit.vim; as well as some ./scripts.vim thing
+" that says to see `:help new-filetype-scripts`
+" Bugginess:
+" * They don't do #includes and other PreProc
+" * Also they seem to be standardly bad about not parsing any identifiers,
+"   but worse than usual b/c not doing types either!
+" So, definitely need to fork it and make improvements; but at least
+" it's a place to start.
+Plug 'rhysd/vim-llvm'
+
+
 " ~~~~~ {for: markdown} ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {{{3
 " TODO: given the 'markdown' vs 'markdown.pandoc' distinction, it's
 "   unclear whether I can reliably leave out the 'for' for these...
