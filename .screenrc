@@ -1,5 +1,5 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# wren gayle romano's GNU Screen config             ~ 2021.09.01
+# wren gayle romano's GNU Screen config             ~ 2021.09.02
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # <http://aperiodic.net/screen/appearance>
@@ -20,9 +20,19 @@ autodetach on          # Detach screen on hangup (saves running programs)
 startup_message off    # Disable copyright & silly warning splash screen
 shell $SHELL           # The shell to use (prepend `-` to make it a login-shell)
 #shelltitle $SHELL     # The default %t when creating new shell windows.
-term "screen-256color" # The $TERM used inside screen.
+term "screen-256color-bce" # The $TERM used inside screen.
 # BUG: really we should set term based on whatever the incoming $TERM is,
 # or use some other sort of color autodetection capability.
+# N.B., if you want to support BCE then you should use
+# "screen-256color-bce" instead.  And if you want to additionally
+# support dsl/fsl/tsl then use "screen-256color-bce-s" (use
+# `man 5 terminfo` to see what the heck those mean).  Also see
+# <https://superuser.com/a/906505> re things like "xterm+256color"
+# as an alternative to the older `man 7 term` naming strategy.  And
+# finally, you can use `infocmp` to compare different $TERM settings,
+# and `toe` to list all the available terminfos on your system.
+# For tmux, cf <https://stackoverflow.com/q/10158508> and especially
+# <https://rhnh.net/2011/08/20/vim-and-tmux-on-osx/>
 
 # ~~~~~ History &c.
 defscrollback 15000    # A~la the -h flag
@@ -39,6 +49,9 @@ defscrollback 15000    # A~la the -h flag
 # terminal when on startup, and sends the &t_te string on shutdown; so
 # you can configure those as desired <https://vi.stackexchange.com/a/436>)
 altscreen on
+# N.B., if you still get gibberish that even <C-l> won't clear, then
+# try using: `reset`, `<C-j>reset<C-j>`, `tput reset`, or `stty sane`.
+# <https://www.cyberciti.biz/tips/bash-fix-the-display.html>
 
 # ~~~~~ Message formatting options.
 #activity "Activity on %n"
@@ -141,6 +154,7 @@ attrcolor b ".I"
 termcapinfo xterm*|screen* 'Co#256:AB=\E[48;5;%dm:AF=\E[38;5;%dm'
 # Turn on BCE (background color erase) by default.
 # BUG: do we really want this?  Cf., <http://snk.tuxfamily.org/log/vim-256color-bce.html>
+# N.B., whether we want BCE or not, make sure to set $TERM above appropriately.
 defbce "on"
 # If you're not sure what screen thinks about your terminal, try `<C-a>:dinfo`
 # For more on the termcap stuff:
