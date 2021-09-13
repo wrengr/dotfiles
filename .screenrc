@@ -48,6 +48,9 @@ defscrollback 15000    # A~la the -h flag
 # have issues outside of GNU Screen: vim sends the &t_ti string to the
 # terminal when on startup, and sends the &t_te string on shutdown; so
 # you can configure those as desired <https://vi.stackexchange.com/a/436>)
+# See <https://shallowsky.com/linux/noaltscreen.html> and
+# <https://stackoverflow.com/a/17869443> for more info about the general
+# situation regarding altscreen.
 altscreen on
 # N.B., if you still get gibberish that even <C-l> won't clear, then
 # try using: `reset`, `<C-j>reset<C-j>`, `tput reset`, or `stty sane`.
@@ -96,7 +99,7 @@ nethack on
 #
 # N.B., even with defutf8 on, the caption really doesn't like having unicode!
 # Alas, I'm not sure where that default grey background came from, so I can't recover it vs the changes %w makes; but we can embrace the black background and color in general.
-caption always "%{= kw}  %{+b c}%H%{-}:%{+b g}%S%{-}:%{+b M}%2n*%f %t%{-}%{y}%?(%u)%?%{-}  [%?%-Lw%?...%?%+Lw%?]%=<%{r}%l%{-}>  %{c}%M %d (%D) %0c%{-}  "
+caption always "%{= kw}  %{+b c}%H%{-}:%{+b g}%S%{-}:%{+b M}%2n*%f %t%{-}%{y}%?(%u)%?%{-}  [%?%-Lw%?||%?%+Lw%?]%=<%{r}%l%{-}>  %{c}%M %d (%D) %0c%{-}  "
 
 # Aha! That's how we change it:
 # <https://www.gnu.org/software/screen/manual/html_node/Sorendition.html>
@@ -170,7 +173,10 @@ defbce "on"
 #termcapinfo xterm 'bc@:bs@'
 #termcapinfo xterm-color 'bc@:bs@'
 
-# Support mouse scrolling
+# Support mouse scrolling; however, also disables altscreen.
+# See <https://shallowsky.com/linux/noaltscreen.html> and
+# <https://stackoverflow.com/a/17869443> for more info about the general
+# situation regarding altscreen.
 #termcapinfo xterm* ti@:te@
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
