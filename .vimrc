@@ -233,6 +233,8 @@ Plug 'airblade/vim-gitgutter', wrengr#plug#Cond(has('signs'))
 "   Like gitgutter, but for several VCSes
 "Plug 'mhinz/vim-signify',
 "   \ (has('nvim') || has('patch-8.0.902')) ? {} : { 'tag': 'legacy' }
+" HACK: Signify's README.md is wrong, 'legacy' is a 'tag' not a 'branch'.
+" TODO: should we add {'tag':'stable'} for the async case?
 "   let g:signify_vcs_list = ['git', 'hg', 'darcs']
 "   let g:signify_difftool = 'gnudiff'      " for darcs to use -U0 flag
 " HACK: to get Signify to work at google,
@@ -243,7 +245,7 @@ Plug 'airblade/vim-gitgutter', wrengr#plug#Cond(has('signs'))
 "   etc, so as to use <go/citcdiff> in lieu of p4's diff for better
 "   performance.
 "
-" <https://bitbucket.org/ludovicchabant/vim-lawrencium> " for Mercurial
+"Plug 'ludovicchabant/vim-lawrencium' " like vim-fugitive, but for Mercurial
 "Plug 'junegunn/vim-github-dashboard'
 "   let g:github_dashboard = { 'username': 'wrengr' }
 "Plug 'tpope/vim-fugitive'
