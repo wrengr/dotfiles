@@ -591,10 +591,33 @@ Plug 'vito-c/applescript.vim'
 
 " ~~~~~ {for: [c, cpp]} ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {{{3
 " [#syntax]
-" Supposedly this is halfway decent, but it looks blegh for me.
+" Supposedly this is halfway decent, but it barely does anything (even
+" with the various globals enabled).
+" BUG: beware of things like <https://githubmemory.com/repo/bfrg/vim-cpp-modern/issues/4>
+" BUG: also, this *only* does after/syntax (so does the octol version)
+" Looking at the file, they do define a bunch of :syntax, so I'm guessing
+" the complete lack of highlighting is just because none of those groups
+" are ever linked to the appropriate highlight groups.  They do have some
+" `:hi def link` but not very many.
 Plug 'bfrg/vim-cpp-modern'
-" Apparently junegunn still uses the older version:
+  " Trying some of the flags they mention for actually highlighting things:
+  " Contradicting the documentation, this is *only* checked for C, not C++!
+  "let g:cpp_function_highlight=1
+  let g:cpp_member_highlight=1
+  " These are checked for both:
+  let g:cpp_simple_highlight=1
+  " These are only checked for C++
+  let g:cpp_attributes_highlight=1
+  " They also check a bunch of options 'cpp_no_cppXX' where XX is the
+  " various cpp years; However, if those do exist there's nothing that
+  " highlights the given constructs as being errors.
+  " TODO: see also <https://idie.ru/posts/vim-modern-cpp>
+
+" This version is the upsteam of 'bfrg/vim-cpp-modern' but it does a lot
+" more despite not having been touched in years.  Also, junegunn still uses
+" this one.  It still needs a lot of improvement, but it's better at least.
 "Plug 'octol/vim-cpp-enhanced-highlight'
+
 " [#complete]
 "Plug 'keremc/asyncomplete-clang.vim'
 "   " N.B., the original 'keremc' proclaims it's not ready for
