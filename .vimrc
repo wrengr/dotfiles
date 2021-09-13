@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" wren gayle romano's vim config                    ~ 2021.09.12
+" wren gayle romano's vim config                    ~ 2021.09.13
 "
 " This file uses &foldmethod=marker, but I refuse to add a modeline
 " to say that; because modelines are evil.
@@ -259,10 +259,14 @@ Plug 'airblade/vim-gitgutter', wrengr#plug#Cond(has('signs'))
 " ~~~~~ File-tree browsing ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {{{2
 "Plug 'scrooloose/nerdtree',         { 'on': 'NERDTreeToggle' }
 "Plug 'Xuyuanp/nerdtree-git-plugin', { 'on': 'NERDTreeToggle' }
-"Plug 'justinmk/vim-dirvish'            " An alternative to nerdtree.
-"Plug 'Shougo/vimfiler.vim'             " An alternative to netrw.
-"Plug 'tpope/vim-vinegar'               " Enhancing netrw to obviate nerdtree.
-"Plug 'eiginn/netrw'                    " Newer than the built-in version.
+"Plug 'justinmk/vim-dirvish'  " Alternative to nerdtree.
+"Plug 'Shougo/vimfiler.vim'   " Alternative to netrw (end-of-life => defx.nvim)
+"Plug 'Shougo/defx.nvim'      " Alternative to netrw (Vim 8.2 | Nvim 0.4.0)
+"Plug 'tpope/vim-vinegar'     " Enhancing netrw to obviate nerdtree.
+"Plug 'eiginn/netrw'          " In case we want newer than the built-in version.
+    " netrw versions:       Comes with:
+    " 165  (2019 Jul 16)    Debian vim 8.1.2269    (2018 May 18)
+    " 171e (2020 Dec 15)    'eiginn/netrw' f665b0d (2020 Dec 27)
 
 
 " ~~~~~ Searching ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {{{2
@@ -1769,11 +1773,16 @@ endif
 let g:netrw_altfile      = 1  " 1= Make <C-^> return to the last-edited file.
 let g:netrw_alto         = 0  " 1= make :Sex &splitbelow (default: &sb)
 let g:netrw_altv         = 1  " 1= make :Vex &splitright (default: &spr)
-let g:netrw_banner       = 0  " 0= hide the banner. (Toggle with <I>)
-let g:netrw_liststyle    = 2  " 2= `ls -CF` style.  (Toggle with <i>)
-let g:netrw_browse_split = 0  " Which window/split to open files into.
+let g:netrw_banner       = 0  " 0= hide the banner.    (Toggle with <I>)
+let g:netrw_liststyle    = 2  " 2= `ls -CF`; 3= tree.  (Toggle with <i>)
+let g:netrw_browse_split = 0  " Open files into window: 0= netrw; 4= previous.
 let g:netrw_winsize      = 25 " What percent of the available extent to use.
 let g:netrw_list_hide    = '\(^\|\s\s\)\zs\.[^\.]\+' " Toggle hiddenness with <gh>
+"let g:netrw_keepdir=0          " 0= keep vim's :pwd in sync with b:netrw_curdir
+"let g:netrw_fastbrowse=2       " TODO: look it up and consider
+"let g:netrw_retmap=1           " TODO: look it up and consider
+"let g:netrw_silent=1           " TODO: look it up and consider
+"let g:netrw_special_syntax=1   " TODO: look it up and consider
 
 " TODO: if we don't use vinegar, then should copy-paste the stuff
 " for using 'suffixes' in lieu of the default strange C-oriented
