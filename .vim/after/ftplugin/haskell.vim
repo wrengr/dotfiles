@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" wren romano's ~/.vim/after/ftplugin/haskell.vim   ~ 2021.09.01
+" wren romano's ~/.vim/after/ftplugin/haskell.vim   ~ 2021.09.11
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 " N.B., much of this file is defending against the truly vile builtin
@@ -8,7 +8,7 @@
 
 
 " ~~~~~ Step 1a: get &formatoptions back into a sane state.
-DisableHardWrapping
+call wrengr#utils#DisableHardWrapping()
 
 " TODO: as mentined in <https://stackoverflow.com/q/10663888>
 " there're also issues about indentation being messed up whenever

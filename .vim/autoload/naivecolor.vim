@@ -133,7 +133,6 @@
 
 " ~~~~~ Load only once.
 " Cf., the untagged section just after `:h use-cpo-save`.
-" (Though I think that's more for ~/.vim/plugin than ~/.vim/autoload per se)
 if exists('g:loaded_naivecolor') | finish | endif
 let g:loaded_naivecolor='1'
 
