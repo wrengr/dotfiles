@@ -41,6 +41,7 @@ probably bitrotten.
 ### Misc utilities (actively used)
 
 * `darcs-newfiles` — Determine which files aren't under darcs control. (like `darcs w -ls` but can be much faster)
+* `showrgb-color.pl` — Colorized version of `showrgb`.
 * `w3ctime` — Print the current time in [W3C date/time format](http://www.w3.org/TR/NOTE-datetime).
 
 ### Misc utilities (maybe bitrotten)
