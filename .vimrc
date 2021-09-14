@@ -1282,6 +1282,7 @@ endfun
 "   sure whether iTerm2 uses <D-s> for anything.  (Of course, if
 "   <D-s> isn't used by iTerm2, then we could always use that for
 "   the normal-mode mapping too!)
+"   However, see <https://github.com/macvim-dev/macvim/issues/676>
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1755,18 +1756,11 @@ endif
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ OSX nonsense                                             {{{1
 
-" Switch between buffers ala tabs in Safari (and other OSX)
-" This is based off <http://vim.wikia.com/wiki/Easier_buffer_switching>
-" BUG: alas this won't work because apparently terminals can't
-" distinguish <Tab> and <C-Tab> since terminals think <Tab> is
-" identical to <C-i> for legacy reasons. It can only work in gVim...
+" Old links re the fact that terminals can't distinguish <Tab> vs <C-Tab>
+" (since <Tab> is <C-i> for legacy reasons, thus we can't have <C-C-i>):
 "     <http://stackoverflow.com/q/1646819/358069>
 " And apparently using multiple control keys is unreliable as well :(
 "     <http://stackoverflow.com/a/26589192/358069>
-" We may consider trying something like <D-{> and <D-}>
-"nnoremap <silent> <C-Tab>   :bn<CR>
-"nnoremap <silent> <C-S-Tab> :bp<CR>
-" To switch between vim-tabpages, use :tabp and :tabn instead
 
 " TODO(2021.09.11): I just noticed that someone is setting the following:
 "vnoremap <BS>  "-d
