@@ -329,11 +329,13 @@ Plug 'junegunn/goyo.vim',       { 'on': 'Goyo' }
 " ~~~~~ Language-Generic Programming Support ~~~~~~~~~~~~~~~~~~~ {{{2
 
 " ~~~~~ LSP (and asynchronicity)                                 {{{3
-"   Normalize async job control api for vim and neovim.
-"Plug 'prabirshrestha/async.vim'
-"   A well weathered LSP implementation for vim.
-"Plug 'prabirshrestha/vim-lsp'
+" Normalize async job control api for vim and neovim.
+Plug 'prabirshrestha/async.vim'
+" A well weathered LSP implementation for vim.
+Plug 'prabirshrestha/vim-lsp'
 "Plug 'mattn/vim-lsp-settings'
+" TODO: may also consider 'natebosch/vim-lsc'
+" (doesn't conflict to have both vim-lsp and vim-lsc enabled at once)
 
 " Some other/older things in a similar vein:
 " (from: <https://github.com/vim-syntastic/syntastic/issues/699>)
@@ -2045,6 +2047,110 @@ autocmd! User GoyoLeave nested call s:on_GoyoLeave()
 "nnoremap <Leader>l <Plug>(Limelight)
 "xnoremap <Leader>l <Plug>(Limelight)
 "nnoremap <Leader>ll :Limelight!<cr>
+
+
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+" ~~~~~ 'prabirshrestha/vim-lsp' configuration (:help vim-lsp)   {{{2
+" Also see <https://github.com/prabirshrestha/vim-lsp/blob/master/README.md>
+"
+" TODO: if we run into certain issues with asyncomplete doing too much,
+" then take a look at: <https://github.com/prabirshrestha/vim-lsp/issues/328>
+
+
+" ~~~~~ Setup Kythe for Google-specific code searching
+" Kythe is almost entirely open source (just not the stubby wrapping);
+" cf., <https://github.com/kythe/kythe/tree/master/kythe/go/languageserver>
+
+" Alas, prabirshrestha doesn't follow the `g:loaded_{plugin}` convention.
+" TODO: should we also guard for exists('g:async_vim') ?
+if exists('g:lsp_loaded')
+  fun! s:lsp_register_Kythe()
+    let l:kythe_exe = '/google/bin/releases/grok/tools/kythe_languageserver'
+    if executable(l:kythe_exe)
+      call lsp#register_server({
+        \ 'name': 'Kythe Language Server',
+        \ 'cmd': {server_info->[l:kythe_exe, '--google3']},
+        \ 'allowlist': ['cpp', 'go', 'java', 'proto', 'python'],
+        \ })
+    endif
+  endfun
+  autocmd User lsp_setup call s:lsp_register_Kythe()
+
+  " TODO: the next three were suggested by CiderLSP; do we actually want them?
+  " [asyncomplete-lsp]: Send async completion requests.
+  " WARNING: Might interfere with other completion plugins.
+  "let g:lsp_async_completion = 1
+  " Enable diagnostics signs in the gutter.
+  " TODO: how different from g:lsp_diagnostics_signs_enabled?
+  "let g:lsp_signs_enabled = 1
+  " Enable echo under cursor when in normal mode.
+  "let g:lsp_diagnostics_echo_cursor = 1
+
+  " Not sure exactly how 'sign_define' differs from the usual 'signs' but...
+  " Also, whenever the guard passes, it may already be enabled by default...
+  if has('patch-8.1.0772') && has('sign_define')
+    let g:lsp_diagnostics_signs_enabled = 1
+  endif
+
+  fun! s:on_lsp_buffer_enabled() abort
+    " TODO: Do we actually want these two? (see `:h vim-lsp-omnifunc`)
+    "setlocal omnifunc=lsp#complete
+    " Specifies the function to be used to perform tag searches.
+    " also see `:h vim-lsp-tagfunc` and g:lsp_tagfunc_source_methods
+    "if has('patch-8.1.1228') && exists('+tagfunc')
+    "  setlocal tagfunc=lsp#tagfunc
+    "endif
+    "
+    " TODO: how exactly does the :LspDefinition<CR> version differ from
+    "   the <plug>(lsp-definition) version?  See `:h vim-lsp-mappings`
+    "   vs `:h vim-lsp-commands`; though that stull doesn't explain really.
+    "   Though for us at least, the <plug> versions aren't working (i.e.,
+    "   they don't do anything afaict)
+    " BUG: all too often we get "No definition found" even when it's
+    "   defined in the same file!  Does it need to be fully-qualified
+    "   at the use site or not type-dependant or something?
+    " TODO: consider also/instead :LspPeekDefinition
+    nnoremap <buffer> gd :LspDefinition<CR>
+    " BUG: "Retrieving declaration not supported for filetype 'cpp'";
+    "   despite this command existing precisely for languages like C/C++
+    "   which distinguish declarations from definitons.
+    " TODO: consider also/instead :LspPeekDeclaration
+    nnoremap <buffer> gD :LspDeclaration<CR>
+    nnoremap <buffer> gr :LspReferences<CR>
+    " Other mappings suggested in the readme
+    " TODO: decide which of these I'd like
+    "noremap  <buffer> gs <plug>(lsp-document-symbol-search)    " :LspDocumentSymbol (shows not searches)
+    "nnoremap <buffer> gS <plug>(lsp-workspace-symbol-search)   " :LspWorkspaceSymbol, :LspWorkspaceSymbolSearch
+    "nnoremap <buffer> gi <plug>(lsp-implementation)            " :LspImplementation, :LspPeekImplementation; this is for 'implementations of interfaces' whatever that means...
+    "nnoremap <buffer> gt <plug>(lsp-type-definition)           " :LspTypeDefinition, :LspPeekTypeDefinition
+    "nnoremap <buffer> <leader>rn <plug>(lsp-rename)            " :LspRename
+    "nnoremap <buffer> [g <plug>(lsp-previous-diagnostic)       " :LspPreviousDiagnostic
+    "nnoremap <buffer> ]g <plug>(lsp-next-diagnostic)           " :LspNextDiagnostic
+    "nnoremap <buffer> K <plug>(lsp-hover)                      " :LspHover
+    "
+    " Scrolls the current displayed floating/popup window.
+    "inoremap <buffer><expr> <C-f> lsp#scroll(+4)
+    "inoremap <buffer><expr> <C-d> lsp#scroll(-4)
+    "
+    "let g:lsp_format_sync_timeout = 1000
+    "autocmd! BufWritePre *.rs,*.go call execute('LspDocumentFormatSync')
+    "
+    " See `:h vim-lsp-folding` also may want to wrap this in `augroup
+    " lsp_folding` and only apply it to certain filetypes.
+    set foldmethod=expr
+      \ foldexpr=lsp#ui#vim#folding#foldexpr()
+      \ foldtext=lsp#ui#vim#folding#foldtext()
+    " TODO: also see `:h vim-lsp-semantic`
+  endfun
+  augroup lsp_install
+    autocmd!
+    " Only called for languages that has the server registered.
+    autocmd User lsp_buffer_enabled call s:on_lsp_buffer_enabled()
+  augroup END
+  " TODO: if we ever end up usng EasyMotion, then see
+  "   `:h lsp#disable_diagnostics_for_buffer()` re autocommands to toggle
+  "   lsp's diagnostics so as not to interfere with EasyMotion.
+endif " exists('g:lsp_loaded')
 
 
 " ~~~~~ 'prabirshrestha/asyncomplete.vim' configuration          {{{2
