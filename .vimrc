@@ -272,6 +272,11 @@ Plug 'airblade/vim-gitgutter', wrengr#plug#Cond(has('signs'))
 
 
 " ~~~~~ Searching ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {{{2
+" Of the main three: Ctrl-P is the oldest and requires the least
+" configuration; command-t uses a custom C implementation tightly bound
+" to vim; and fzf is the newest, with a custom Go implementation that
+" works for any text stream.
+
 "Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 "  Plug 'junegunn/fzf.vim'              " Better default wrappers for fzf.
 "Plug 'Shougo/unite.vim'
