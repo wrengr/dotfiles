@@ -373,7 +373,7 @@ Plug 'prabirshrestha/vim-lsp'
 "
 " Browse ctags of current file, organized by scope.
 " (N.B., despite the name, it is not a "line")
-"Plug 'majutsushi/tagbar', wrengr#plug#Cond(has('patch-7.3.1058-), { 'on': 'TagbarToggle' }) " [#jg]
+"Plug 'majutsushi/tagbar', wrengr#plug#Cond(has('patch-7.3.1058'), { 'on': 'TagbarToggle' }) " [#jg]
 "   let g:tagbar_sort = 0
 "Plug 'prabirshrestha/asyncomplete-tags.vim', wrengr#plug#Cond(executable('ctags'))
 "  Plug 'ludovicchabant/vim-gutentags',       wrengr#plug#Cond(executable('ctags'))
