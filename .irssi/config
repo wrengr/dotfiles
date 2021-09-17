@@ -68,6 +68,10 @@ chatnets = {
     max_modes = "4";
     max_msgs = "1";
     max_whois = "1";
+    # Must configure SASL <https://libera.chat/guides/irssi>
+    sasl_username = "wrengr";
+    sasl_password = "SEEKRIT";
+    sasl_mechanism = "PLAIN";
     # BUG: this does warn about not being able to /ghost yourself;
     # so there must be a better command to use...
     autosendcmd = "/ghost wrengr SEEKRIT 700";
