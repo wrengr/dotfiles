@@ -2,7 +2,33 @@
 username = wren romano <wrengr@google.com>
 
 [alias]
-amend = commit --amend
+# BUG: hg normally has `ci` mean the equivalent of `git commit -a`;
+#   not sure if this alias will override that or no.
+ci = commit --interactive
+ca = commit
+# This is the most common meaning for which I use the `git oo` alias.
+# (N.B., mercurial does have `co` as an alias for update; and `oo`
+# originated as a simplification of typing `co` anyways.)
+oo = update
+ra = rebase --abort
+rc = rebase --continue
+# TODO: `hg rebase --stop`
+# BUG: supposedly mercurial already has an 'amend' command; but it's
+#   not showing up for me... (is it just fig not hg?) also it's equivalent
+#   of `git commit --amend -a`; which I dislike.
+amend = commit --amend --interactive
+# Warning: for some reason this seems to take a long time to finish
+# after it's printed that one commit.
+top = log --stat --limit 1
+# TODO: There's also `hg diff -c .` which is like `git show` with no
+#   arguments, or technically closer to `git diff --cached HEAD^`.
+#   I often use the no-argument `git show` for this purpose, but I
+#   use arguments often enough that I'm not sure if `hg show` would be
+#   a good alias.  N.B., for `.`=`tip` specifically there's also
+#   `hg tip -p` which runs a bit faster and doesn't use $PAGER.
+#   For more on this topic, see: <https://stackoverflow.com/a/3547662>
+#   and <https://stackoverflow.com/a/39867096> plus others on this page.
+# TODO: how does the builtin `hg blame` compare to `hg annotate --user --number`?  Also, what's a good alias for `blame -u -c -l`?
 unmerge = update -C -r.
 
 [extensions]
