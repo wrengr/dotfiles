@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" wren gayle romano's vim config                    ~ 2021.09.13
+" wren gayle romano's vim config                    ~ 2021.09.16
 "
 " This file uses &foldmethod=marker, but I refuse to add a modeline
 " to say that; because modelines are evil.
@@ -33,16 +33,20 @@ if v:version < 800
   finish
 endif
 
+" One augroup to rule them all!
+if has('autocmd')
+  augroup wrengr_vimrc
+    au!
+  augroup END
+endif
+
 " Warning: setting `nocompatible` auto re-enables modelines!
 " BUGFIX: While we made sure to `nomodeline` after `nocompatible`
 " above, it seems likely we may run into other gotchas down the line
 " (e.g., packages which set `nocompatible`).  So we're going to be
 " extra aggressive about turning them off.
 if has('autocmd') && (!has('patch-8.1.1365') || !has('patch-8.0.0056'))
-  augroup disable_modeline
-    autocmd!
-    autocmd BufReadPre * set nomodeline
-  augroup END
+  autocmd wrengr_vimrc BufReadPre * set nomodeline
 endif
 
 " Warning: The output of `:version` is a not entirely reliable indicator
@@ -304,7 +308,7 @@ Plug 'airblade/vim-gitgutter', wrengr#plug#Cond(has('signs'))
 "Plug 'vim-scripts/Align'
 "Plug 'Yggdroot/indentLine', { 'on': 'IndentLinesEnable' } " [#jg]
     " junegunn uses:
-    "autocmd! User indentLine doautocmd indentLine Syntax
+    "autocmd wrengr_vimrc User indentLine doautocmd indentLine Syntax
     "let g:indentLine_color_term = 239
     "let g:indentLine_color_gui = '#616161'
     " Though we'll want to adapt that to our colorscheme.
@@ -513,9 +517,9 @@ Plug 'nachumk/systemverilog.vim',      { 'for': 'systemverilog' }
 Plug 'vhda/verilog_systemverilog.vim', { 'for': 'verilog_systemverilog' }
 " A hack for Classic BlueSpec. Would be nice to have a real thing here...
 if has('autocmd')
-  " BUG: move this to an augroup (either the 'vimrc_ftdetect' one
-  " below, or its own) or move to the correct ftdetect file.
-  autocmd BufRead,BufNewFile *.bs set ft=haskell
+  " TODO: Like the other &ft setting autocmds below, we really should
+  " move this off to a more appropriate place in ~/.vim/ftdetect
+  autocmd wrengr_vimrc BufRead,BufNewFile *.bs set ft=haskell
 endif
 
 
@@ -571,7 +575,7 @@ Plug 'rhysd/vim-llvm'
     " recommendation to use 'iamcco/markdown-preview.nvim' instead
     " (even though junegunn still uses vim-xmark)
 "Plug 'ferrine/md-img-paste.vim'
-"  autocmd FileType markdown
+"  autocmd wrengr_vimrc FileType markdown
 "    \ nnoremap <buffer> <silent> <leader>v
 "    \ :call mdip#MarkdownClipboardImage()<CR>
 "  let g:mdip_imgdir = 'images'
@@ -1788,10 +1792,8 @@ if has('autocmd')
   filetype plugin on
   filetype indent on
 
-  " Group these so they only ever fire once.
   " TODO: move these off to ~/.vim/ftdetect/ where they belong.
-  augroup vimrc_ftdetect
-    autocmd!
+  augroup wrengr_vimrc
     " Yes, all my *.pro files ARE prolog files
     autocmd BufNewFile,BufRead *.pro,*.ecl set ft=prolog
 
@@ -1961,8 +1963,7 @@ endif
 "  noremap <C-t> :NERDTreeToggle<CR>
 "
 "  " Allow vim to close if the only open window is nerdtree
-"  " TODO: properly use augroup here.
-"  autocmd BufEnter * if (winnr('$') == 1 && exists('b:NERDTree') && b:NERDTree.isTabTree()) | q | endif
+"  autocmd wrengr_vimrc BufEnter * if (winnr('$') == 1 && exists('b:NERDTree') && b:NERDTree.isTabTree()) | q | endif
 "
 "  " TODO: see also junegunn's `augroup nerd_loader`
 "
@@ -2031,16 +2032,14 @@ fun! s:on_GoyoLeave()
   Limelight!
 endfun
 " Note: The 'User' event means these are not truly auto-commands,
-" but rather must be manually invoked via `:doautocmd`.  And the Goyo
-" patterns are surely unusual enough that these should be the only
-" autocmds for them.  Thus we can combine the `:au!` needed for making
-" this file reentrant, with the `:au` that actually registers the
-" callback.  The `nested` was recommended by Goyo's README, but I
-" don't think it's really needed, since our functions shouldn't trigger
-" any new auto events (unless Limelight uses a similar autocmd-as-callback
-" trick).
-autocmd! User GoyoEnter nested call s:on_GoyoEnter()
-autocmd! User GoyoLeave nested call s:on_GoyoLeave()
+" but rather must be manually invoked via `:doautocmd`.  The `nested`
+" was recommended by Goyo's README, but I don't think it's really
+" needed, since our functions shouldn't trigger any new auto events
+" (unless Limelight uses a similar autocmd-as-callback trick).
+augroup wrengr_vimrc
+  autocmd User GoyoEnter nested call s:on_GoyoEnter()
+  autocmd User GoyoLeave nested call s:on_GoyoLeave()
+augroup END
 
 " TODO: consider using something like this (or similar for Goyo):
 "nnoremap <Leader>l <Plug>(Limelight)
@@ -2073,7 +2072,7 @@ if exists('g:lsp_loaded')
         \ })
     endif
   endfun
-  autocmd User lsp_setup call s:lsp_register_Kythe()
+  autocmd wrengr_vimrc User lsp_setup call s:lsp_register_Kythe()
 
   " TODO: the next three were suggested by CiderLSP; do we actually want them?
   " [asyncomplete-lsp]: Send async completion requests.
@@ -2141,11 +2140,8 @@ if exists('g:lsp_loaded')
       \ foldtext=lsp#ui#vim#folding#foldtext()
     " TODO: also see `:h vim-lsp-semantic`
   endfun
-  augroup lsp_install
-    autocmd!
-    " Only called for languages that has the server registered.
-    autocmd User lsp_buffer_enabled call s:on_lsp_buffer_enabled()
-  augroup END
+  " Only called for languages that have a server registered.
+  autocmd wrengr_vimrc User lsp_buffer_enabled call s:on_lsp_buffer_enabled()
   " TODO: if we ever end up usng EasyMotion, then see
   "   `:h lsp#disable_diagnostics_for_buffer()` re autocommands to toggle
   "   lsp's diagnostics so as not to interfere with EasyMotion.
@@ -2182,10 +2178,7 @@ endif " exists('g:lsp_loaded')
 "    \ 'config': { 'racer_path': 'must fill in this path', },
 "    \ }))
 "endfun
-"" See the note above about `:au! User`.  Asyncomplete's README
-"" didn't mention using the bang, but I don't expect anything else
-"" to be registered for the asyncomplete_setup pattern.
-"autocmd! User asyncomplete_setup call s:asyncomplete_setup()
+"autocmd wrengr_vimrc User asyncomplete_setup call s:asyncomplete_setup()
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
