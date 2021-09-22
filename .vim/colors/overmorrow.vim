@@ -1,7 +1,7 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " Name:     colors/overmorrow.vim
-" Modified: 2021-09-13T11:56:16-07:00
-" Version:  1
+" Modified: 2021-09-17T13:54:36-07:00
+" Version:  1a
 " Author:   wren romano
 " Summary:  My own personal colorscheme.
 " License:  This program is free software; you can redistribute it and/or
@@ -608,7 +608,9 @@ endfun
 call s:Hi('Normal',        s:fg,       s:bg,       s:fg, {})
 call s:Hi('NonText',       s:selection,{},         {}, {}) " for &showbreak etc
 call s:Hi('SpecialKey',    s:selection,{},         {}, {}) " for &listchars
-" Conceal        xxx cleared
+call s:HiLink('Conceal', 'NONE')
+" BUG: on ciruela, someone is setting Conceal to ctermfg=7 ctermbg=242 guifg=LightGrey guibg=DarkGrey, but :verbose blames us!! So we're re-clearing it.  Also, n.b., while it'd make sense to the idea of conceal to make all the colors s:bg, a bunch of plugins use the conceal feature to display unicode characters while leaving ASCII in the file; and for that usage, we need to have the Conceal highlight group do nothing (cf., <https://vi.stackexchange.com/q/25956>).  Of course, we may need to try explicitly using 'none' for the fg and bg colors, as per the accepted answer there.
+" TODO: see also <https://vi.stackexchange.com/q/5533>
 " ~~~~~ Searching, Selecting, Matching.
 call s:Hi('Search',        s:bg,       s:yellow,   {}, {}) " for &hlsearch
 call s:HiLink('IncSearch', 'Search')                       " for &incsearch
