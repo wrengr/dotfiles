@@ -1,5 +1,8 @@
+# Important notes re leading and trailing slashes vs not:
+# <https://stackoverflow.com/a/38559600>
+
 # Repo-specific stuff to ignore.
-.gitblacklist
+# (Everything in .git/ should already be ignored, but just in case.)
 .git/secrets-provider.sh
 .irssi/user.pem*
 .ssh/id_*
