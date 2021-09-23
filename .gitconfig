@@ -69,6 +69,9 @@
 #    tool = vimdiffnice
 #[mergetool "vimdiffnice"]
 #    cmd = vimdiff -c \"wincmd J\" -c \"0\" -c \"/<<<<<<< \" $MERGED $LOCAL $BASE $REMOTE
+[rebase]
+    # Have interactive rebase require explicitly saying when to "drop" commits.
+    missingCommitsCheck = error
 [diff]
     # TODO: consider installing and using JaneStreet's implementation
     # instead: <https://github.com/janestreet/patdiff>. It's a lot
@@ -311,6 +314,10 @@
     rc    = rebase --continue
     # For getting rebases to work when they cherry picked you, or similar.
     rs    = rebase --skip
+    ka    = cherry-pick --abort
+    kc    = cherry-pick --continue
+    ks    = cherry-pick --skip
+    ss    = secrets --scan
     # A paltry attempt to commute a child's patches over new patches in
     # the parent.
     #
