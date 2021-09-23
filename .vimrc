@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" wren gayle romano's vim config                    ~ 2021.09.16
+" wren gayle romano's vim config                    ~ 2021.09.22
 "
 " This file uses &foldmethod=marker, but I refuse to add a modeline
 " to say that; because modelines are evil.
@@ -241,13 +241,9 @@ Plug 'airblade/vim-gitgutter', wrengr#plug#Cond(has('signs'))
 " TODO: should we add {'tag':'stable'} for the async case?
 "   let g:signify_vcs_list = ['git', 'hg', 'darcs']
 "   let g:signify_difftool = 'gnudiff'      " for darcs to use -U0 flag
-" HACK: to get Signify to work at google,
-" (1) `let g:signify_disable_by_default=1` to circumvent <b/26261118>
-"     (see #comment32 #comment41)
-" (2) don't use 'perforce' in g:signify_vcs_list; instead add our
-"   own entries to g:signify_vcs_cmds, g:signify_vcs_cmds_diffmode,
-"   etc, so as to use <go/citcdiff> in lieu of p4's diff for better
-"   performance.
+" Note: using signify at google is tricksy; so ~/.vimrc_google will add
+"   some additional configuration.
+" BUG: Signify wants to bind `[c ]c` too; so it's gonna fight with gitgutter.
 "
 "Plug 'ludovicchabant/vim-lawrencium' " like vim-fugitive, but for Mercurial
 "Plug 'junegunn/vim-github-dashboard'
