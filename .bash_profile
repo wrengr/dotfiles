@@ -1,4 +1,4 @@
-# wren gayle romano's bash login script             ~ 2021.09.01
+# wren gayle romano's bash login script             ~ 2021.09.23
 #
 # It's fairly generic (with weirder things at the bottom),
 # but it's designed to be usable for all my accounts with no(!)
@@ -8,6 +8,47 @@
 # Remember .bash_profile == login shells, .bashrc == non-login.
 # But bear in mind, you don't want a bunch of this crap when you
 # login via, say, `scp`.
+#
+# To shorten urls, pretend we've set
+# BASH_MANUAL='https://www.gnu.org/software/bash/manual/html_node/'
+#
+# Re startup files, there are two orthogonal properties leading to
+# three possible modes (and one fake mode):
+# (cf., <$BASH_MANUAL/Bash-Startup-Files.html> for sticky details.
+# see <https://unix.stackexchange.com/a/324391> for better explanation.)
+#
+# * Interactive -- ``case "$-" in *i*)`` or [ ! -z "$PS1" ]
+#   -- i.e., an actual terminal session, though the precise details
+#   -- are a bit sticky: <$BASH_MANUAL/What-is-an-Interactive-Shell_003f.html>
+#
+#   * Login     -- [ $SHLVL -eq 0 ]
+#   -- The first process after you provide the machine username and password.
+#   -- (i.e., typical gui machine startup, interactive ssh, or `su -`)
+#
+#       on startup: /etc/profile && (--noprofile || ~/.bash_profile
+#                                   || ~/.bash_login || ~/.profile)
+#       on exiting: ~/.bash_logout
+#
+#   * Non-login
+#       on startup: (--norc || --rcfile $FILE || ~/.bashrc)
+#       on exiting: nothing
+#
+# * Non-interactive
+#   -- e.g., running a Bash script or using `scp`, `rsync`, etc
+#   * is always actually non-login
+#       on startup: $BASH_ENV (without using $PATH to search for that file)
+#           Though N.B., `scp` and `rsync` actually run ~/.bashrc
+#           for some reason.  Moreover, if ~/.bashrc emits any
+#           output in this case, then it's considered an error and
+#           will kill the `scp`/`rsync`.  This probably occurs
+#           because (a) `scp` needs to authenticate and therefore
+#           login, and (b) yet the logged-in process is not a shell
+#           but rather a script which runs a different `scp` command
+#           and parses the output.
+#       on exiting: nothing
+#   * if passed the --login flag
+#       on startup:                        same as interactive login
+#       iff terminated via `exit` builtin: same as interactive login
 
 
 # == Style and Portability Notes ==
@@ -43,6 +84,11 @@
 #   correctly re escapes.
 # * Do a full audit/overhaul of this file, since most of these hosts
 #   no longer exist anymore...
+# * Replace as much stuff with <https://www.gnu.org/software/bash/manual/html_node/Shell-Parameter-Expansion.html>
+#   as we can without sacrificing portability.  Cf.,
+#   <https://unix.stackexchange.com/q/253870> re the performance
+#   improvements of doing so.  And see <https://unix.stackexchange.com/q/412952>
+#   for some more examples.
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -130,6 +176,11 @@ esac
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ Configure TERM to be (more) correct
+#
+# N.B., some people like <https://blog.sanctum.geek.nz/term-strings/>
+# think that this whole approach is totally wrongheaded.  In principle
+# I agree, however in practice it's terribly convoluted to do the
+# right thing.  See also <https://gist.github.com/KevinGoodsell/744284/717b220f7c168725748781d58609dce5d7cf8603>
 
 # N.B., using 'xterm-color' results in vim setting t_Co=8. Thus,
 # to get termcap to say the right thing so that vim does the right
@@ -151,6 +202,10 @@ esac
 # TODO: When run inside of screen, irssi complains about using
 # xterm-256color and suggests using screen-256color instead.  I'm not
 # sure what glitches they're referring to re using the former...
+
+# TODO: see also the `toe` and `infocmp` commands.
+# TODO: also <https://lists.gnu.org/archive/html/bug-ncurses/2017-04/msg00032.html>
+# though we don't actually have any "iterm" entry.
 
 # Google's `screen` is annoying.
 if [ "${_hostname}" = 'google' ]; then
@@ -193,20 +248,23 @@ if [ ! -z "${PS1}" ]; then
     #
     # N.B., `tput` returns answers based on the value of TERM,
     # not based on what the terminal actually supports!!
+    #
+    # TODO: we may also consider trying to use the escape codes for
+    # 256-color palette or for truecolor.
     if [ "$(tput colors)" -gt 2 ]; then
         # A better way to check for root is to use [ "$(id -u)" -eq 0 ]
         # ...however, alas, that doesn't find non-root users
         case "${USER}" in
             motoko | ass | root | UNKNOWN )
-                _color1='\[\e[01;31m\]' ;; # bold red
-            *)  _color1='\[\e[01;34m\]' ;; # bold blue
+                _color1='\[\e[1;91m\]' ;; # bold bright-red
+            *)  _color1='\[\e[1;94m\]' ;; # bold bright-blue
         esac
 
-        _color2='\[\e[01;36m\]' # bold teal
+        _color2='\[\e[1;96m\]' # bold bright-teal
     fi
 
-    _bold='\[\e[01;00m\]'
-    _off='\[\e[00m\]'
+    _bold='\[\e[1;0m\]'
+    _off='\[\e[0m\]'
 
     # If we ever find non-color terminals may want to adjust this
     _j="${_color1}\j${_off}"  # \j was added in Bash version 2+
@@ -224,7 +282,7 @@ if [ ! -z "${PS1}" ]; then
     # Get the exit code of last program, iff it failed
     # BUG: doesn't account for non-color terminals.
     # BUG: should use printf instead
-    _exit="\$(x=\$?; [ \$x -ne 0 ] && echo -n \"\[\e[01;31m\]\$x${_off} \")"
+    _exit="\$(x=\$?; [ \$x -ne 0 ] && echo -n \"\[\e[1;91m\]\$x${_off} \")"
 
     # Empty if we're not on a google machine.  Maybe in the future we'll
     # extend this to handle other version control systems (like we used
@@ -252,6 +310,10 @@ if [ ! -z "${PS1}" ]; then
             # spelling of the escape character.
         fi
     fi
+
+    # TODO: add some code to check for VIRTUAL_ENV (for python2's
+    #   virtualenv; or whatever variable python3's venv uses) being
+    #   set and then giving some indicator if so.
 
     # The actual prompt itself
     # TODO: factor out the [ ] @ :
@@ -597,14 +659,15 @@ export MANPAGER="${PAGER}"
 # Okay, so what's the difference between '-E' vs '-e'?
 #   <https://vi.stackexchange.com/a/2695>
 #
-# TODO: does giving the full path like this fix the bug where git
-#   was picking up /usr/bin/vim rather than the one that comes first
-#   in the PATH?  (2021-08-21: I'm no longer experiencing this
-#   problem on git 2.27.0 on my personal machine.  So after checking
-#   the work machines to verify, consider this resolved either way.)
 # TODO: for more robust scripting of this, see:
 #   <https://unix.stackexchange.com/a/302391>
 _vim="$(which vim)"
+# Warning: OSX has a /usr/bin/vi which symlinks to /usr/bin/vim,
+# whereas Fink does not install an analogous symlink for /opt/sw/bin/vim.
+# I've added my own ~/local/bin/vi symlink to work around this great
+# evil; but that's a very fragile workaround.  So I add this alias
+# as well, even though it's an even more fragile workaround.
+alias vi="$_vim"
 export EDITOR="$_vim"
 export VISUAL="$_vim"
 export SUDO_EDITOR="$_vim"
@@ -633,6 +696,7 @@ export SUDO_EDITOR="$_vim"
 #   `bindkey -M vicmd v edit-command-line`
 #   <https://unix.stackexchange.com/a/90529>
 unset _vim
+
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ Set up Perl
@@ -780,7 +844,8 @@ function ll.() {
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ Other basic aliases
 
-# TODO: verify that this has the same effect as the following aliases, and that it works on both OSX and Linux/GNU
+# TODO: verify that this has the same effect as the following
+#   aliases, and that it works on both OSX and Linux/GNU.
 # N.B., git-secrets clears this variable before calling grep!
 export GREP_OPTIONS='--color=auto'
 #alias grep='grep --color'
@@ -857,14 +922,18 @@ alias md='mkdir'
 #
 # N.B., how to actually clear things is highly terminal-specific.
 # So if this stops working, you may want to try some other approaches
-# like `reset`, `clear && printf '\e[3J'`, etc. <http://askubuntu.com/q/25077>
+# like `reset`, `tput reset`, `stty sane`, `clear && printf '\e[3J'`,
+# etc. <http://askubuntu.com/q/25077>
+# <https://www.cyberciti.biz/tips/bash-fix-the-display.html>
 if [ "${_hostname}" = 'google' ]; then
     case "${_uname}" in
         Darwin)
             # `clear` works just fine on OSX/iTerm2. Or rather, it
             # looks like the same problem occurs here too, but I
             # always use <Apple-k> to clear the scrollback so I never
-            # actually notice it.
+            # actually notice it.  (<C-l> will clear the screen itself,
+            # but not scrollback; it also clears to EOL for the one
+            # remaining line, unlike <D-k>.)
             alias cl='clear'
         ;;
         Linux)
