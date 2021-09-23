@@ -1,7 +1,7 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " Name:     autoload/wrengr/plug.vim
-" Modified: 2021-09-13T11:56:16-07:00
-" Version:  1
+" Modified: 2021-09-22T22:15:51-07:00
+" Version:  2
 " Author:   wren romano
 " Summary:  vim-plug functions extracted from my ~/.vimrc
 " License:  [0BSD] Permission to use, copy, modify, and/or distribute
@@ -18,15 +18,14 @@
 "
 " To abbreviate the very long urls below, pretend we have:
 "   let $VIMPLUG_URL='https://github.com/junegunn/vim-plug'
+"
+" Version 2: added UseGitUrls(), UseHttpsUrls(), and WIP: OpenURL().
+"
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 " ~~~~~ Preamble (See `:h use-cpo-save` and `:h :set-&vim`)
-if exists('g:loaded_wrengr_plug')
-  finish
-endif
+if exists('g:loaded_wrengr_plug') | finish | endif
 let g:loaded_wrengr_plug = 1
-" Note: it appears `:set cpo&vim` doesn't buggily re-enable modelines,
-" the way `:set nocompatible` does.
 let s:saved_cpo = &cpo
 set cpo&vim
 
@@ -45,10 +44,12 @@ set cpo&vim
 " is more appropriate.  For comparison, see:
 "   <https://vi.stackexchange.com/q/23160#comment42036_23160>
 "   <https://neovim.io/doc/user/eval.html#stdpath()>
+" And finally, we use expand() just to be safe; though plug#begin()
+" is smart enough to expand the tilde too.
 let s:MYVIMDIR =
   \   has('nvim')                  ? stdpath('data')
-  \ : has('win32') || has('win64') ? '~/vimfiles'
-  \ :                                '~/.vim'
+  \ : has('win32') || has('win64') ? expand('~/vimfiles')
+  \ :                                expand('~/.vim')
 
 
 " The default is just cuz that's what vim-plug's documentation uses.
@@ -229,6 +230,71 @@ endfun
 "   <$VIMPLUG_URL/wiki/faq#when-should-i-use-on-or-for-option>
 "   <$VIMPLUG_URL/wiki/tips#loading-plugins-manually>
 
+
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+" <$VIMPLUG_URL/wiki/faq#whats-the-deal-with-git-in-the-url>
+" N.B., we can mess with g:plug_url_format all we want along the
+" way through the vim-plug section; each call to the `:Plug` command
+" will just use whatever value g:plug_url_format has at that time.
+"
+" Note: since git-1.6.6 (2010) plain ssh is equivalent to https:
+"   <https://stackoverflow.com/a/3248848>.
+" For other reasons to prefer one over the other:
+"   <https://stackoverflow.com/a/11041782>.
+" For more on what the heck the plain git-protocol even is/does:
+"   <https://stackoverflow.com/a/33846897>.
+
+" ~~~~~ Set `:Plug` to use ssh+git_protocol urls.
+" Necessary if you want to push from the repos stored in
+" wrengr#plug#DataDir()
+fun! wrengr#plug#UseGitUrls()
+  let g:plug_url_format = 'git@github.com:%s.git'
+endfun
+
+" ~~~~~ Set `:Plug` to use the default (https) urls.
+" Allows to avoid authenticating just for pulling.
+fun! wrengr#plug#UseHttpsUrls()
+  unlet! g:plug_url_format
+endfun
+
+
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+" TODO: see the various vim-plug functions at
+"   <https://github.com/junegunn/dotfiles/blob/master/vimrc#L1283>
+"   namely s:plug_gx(), s:plug_doc(), and their mappings
+
+" WIP:
+fun! wrengr#plug#OpenURL()
+  let l:winview  = winsaveview()
+  let l:contents = getreg('a')
+  let l:type = getregtype('a')
+  try
+    " TODO: should be able to use the textobject i' rather than T't'
+    " (N.B., the textobject is listed as for n_ and v_ modes; it's
+    " not phrased as being o_ mode)
+    normal! T'"ayt'
+    " TODO: validate that that selection is well-formed before continuing!!
+    let l:url = 'https://github.com/' . @a
+    " BUG: has('mac') is *false* for the Vim 8.0 that ships with OSX 10.14.6!!
+    "   (2016 Sep 12; patches: 1-503, 505-680, 682-1283, 1365)
+    "   For now we'll just buggily assume `open` does what we mean.
+    " BUG: For Safari, this sometimes chooses a random window other
+    "   than the one it chose the previous few calls!
+    if executable('open')
+      " TODO: escape the l:url as needed
+      " TODO: see also `:h *netrw-gx*` in case that's easier or more portable.
+      silent execute '!open ' . l:url
+      " HACK: the above leaves the screen blank afterwards and
+      " requires a manual <C-l>
+      redraw!
+    else
+      echo l:url
+    endif
+  finally
+    call winrestview(l:winview)
+    call setreg('a', l:contents, l:type)
+  endtry
+endfun
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Clean Up ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
