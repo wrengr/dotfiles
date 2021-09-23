@@ -274,6 +274,27 @@ Plug 'airblade/vim-gitgutter', wrengr#plug#Cond(has('signs'))
     " 171e (2020 Dec 15)    'eiginn/netrw' f665b0d (2020 Dec 27)
 
 
+" ~~~~~ Startify ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {{{2
+" Note: there are a few latent interaction bugs with other plugins:
+" * vim-plug    -- Uncommon, but see `:h startify-faq-12`
+" * Goyo        -- Specifically when using `:h startify-faq-17`; bugfix is:
+" <https://github.com/mhinz/vim-startify/wiki/Known-issues-with-other-plugins>
+" * NERDTree    -- Common. `:h startify-faq-17`, `:h startify-faq-14`
+Plug 'mhinz/vim-startify'
+  " BUG: Startify seems to change our :pwd for some reason...
+  let g:startify_files_number=5
+  " TODO: (`:h startify-faq-18`) files on nfs mounts can cause a lot of slowdown.  That faq suggests adding nfs mounts to g:startify_skiplist, but that'll completely filter them out (defeating my purpose for using startify) rather than just disabling the IO checks.
+  " TODO: can we somehow add a custom directory to g:startify_lists?  Or I guess we can always just use g:startify_bookmarks
+  let g:startify_padding_left=7
+  "let g:startify_fortune_use_unicode=1     " For headers; iff it doesn't offend
+  let g:startify_custom_header=[]           " Remove header.
+  " TODO: actually we want a couple blank lines or something; just, that cow was way too big is all.
+  "
+  " TODO: update our colorscheme to handle `:h startify-colors`
+  " TODO: (unrelated to startify per se, but: update our colorscheme to
+  "   handle helpExample better; because Comment isn't the best thing...)
+
+
 " ~~~~~ Searching ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {{{2
 " Of the main three: Ctrl-P is the oldest and requires the least
 " configuration; command-t uses a custom C implementation tightly bound
@@ -747,10 +768,6 @@ Plug 'jvoorhis/coq.vim'
 "Plug 'MarcWeber/vim-addon-mw-utils'
 "Plug 'scrooloose/nerdcommenter'
 "Plug 'sk1418/Join'                     " A hopefully better :Join command
-"Plug 'mhinz/vim-startify'
-    " N.B., if you follow `:h startify-faq-17` then you'll get
-    " interaction problems with Goyo:
-    " <https://github.com/mhinz/vim-startify/wiki/Known-issues-with-other-plugins>
 "Plug 'kana/vim-fakeclip'               " Emulate '+clipboard'
 "Plug 'nacitar/terminalkeys.vim'        " Improved support for rxvt
     " See also 'godlygeek/vim-files'
