@@ -1,9 +1,9 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " Name:     autoload/wrengr.vim
-" Modified: 2021-09-13T11:56:16-07:00
-" Version:  1
+" Modified: 2021-09-22T23:10:14-07:00
+" Version:  2a
 " Author:   wren romano
-" Summary:  Assorted functions extracted from my ~/.vimrc
+" Summary:  Assorted common-use functions extracted from my ~/.vimrc
 " License:  [0BSD] Permission to use, copy, modify, and/or distribute
 "           this software for any purpose with or without fee is
 "           hereby granted.  The software is provided "as is" and
@@ -16,15 +16,14 @@
 "           negligence or other tortious action, arising out of or
 "           in connection with the use or performance of this software.
 "
+" Version 2a: updated commentary, silenced ClearUndoHistory(), moved
+"   s:error/s:warn to wrengr#utils, and moved OpenPlugURL() to wrengr#plug,
+"   added WIP: mkdir
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 " ~~~~~ Preamble (See `:h use-cpo-save` and `:h :set-&vim`)
-if exists('g:loaded_wrengr')
-  finish
-endif
+if exists('g:loaded_wrengr') | finish | endif
 let g:loaded_wrengr = 1
-" Note: it appears `:set cpo&vim` doesn't buggily re-enable modelines,
-" the way `:set nocompatible` does.
 let s:saved_cpo = &cpo
 set cpo&vim
 
@@ -41,16 +40,19 @@ set cpo&vim
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Clear out the undo-history.
+" Note: also see `:h clear-undo` regarding what exactly gets cleared
+"   vs retained (marks, manual folds, etc)
 " HT: <https://superuser.com/a/433998>, <https://superuser.com/a/264067>
 " Implementation Notes:
 " (1) 'ul' is both global and buffer-local, so we must be sure to
-"   handle that correctly when it comes to saving/resoring the
-"   users' settings.  Beware that 'ul' uses the unique convention
-"   of setting &l:ul=-123456 to mean we should fallback to &g:ul
-"   (unlike most options where the local version is unset to indicate
-"   fallback (which for numeric options ends up looking like the
-"   local is set to the same value as the global)).
-" (2) However, we only want this command to clear the undo history
+"   handle that correctly when it comes to saving/restoring the
+"   users' settings.  Beware that &l:ul uses the unique convention
+"   of having -123456 mean that &ul should fallback to &g:ul.  If
+"   you use `:set ul<` to clear the local value, it will do the right
+"   thing (and cause &l:ul to appear as if it has that magic value);
+"   and if you explicitly say `:setl ul=-123456` then that has the
+"   same effect (causing &ul to show you &g:ul).
+" (2) However, we only want this function to clear the undo history
 "   of the current buffer, not all buffers!  I'm guessing that if
 "   we do `:setg ul=-1` then that'll clear the undo history for
 "   *all* buffers.  If so, then we really do only ever want to
@@ -69,65 +71,110 @@ set cpo&vim
 "   it ends up marking the buffer as dirty which we don't want.
 "   Apparently it's the variant mentioned at `:h clear-undo`
 " (5) A newer answer <https://superuser.com/a/688962> suggests using
-"   `:move-1` as a sideeffect-free way to get the history to drop.
-"   Alas, that too marks the buffer as dirty for some inscrutable reason.
+"   `:move-1` as another way to get the history to drop.  Alas,
+"   that too marks the buffer as dirty for basically the same reason.
 " (6) So for now we prefer the `:edit!` solution.  However, do
-"   beware of the side effects:
-"   (i)   it does <z><z> (i.e., recenters the viewport); which we
-"         correct by using winsaveview()/winrestview().
-"   (ii)  it reloads the buffer from disk, discarding any unsaved
-"         changes.
-"   (iii) apparently that reloading also means discarding things
-"         like any buffer-local changes to `:syn` etc., and reloading
-"         whatever ftplugins.
-" TODO: we should fix (6ii) by either:
-"   (a) automatically saving before the `:edit!` (not the best idea)
-"   (b) detect dirty buffer and bail out (annoying to deal with)
-"   (c) have bang and non-bang variants of the command, to
-"       pick between those two behaviors.
-"   (d) something smarter?
+"   beware of the side effects that command has:
+"   (a) it does an :echomsg.  Which we fix with :silent
+"   (b) it does `zz` (i.e., recenters the viewport); which we fix
+"       by using winsaveview()/winrestview().
+"   (c) it reloads the buffer from disk, discarding any unsaved
+"       changes.  Which we currently avoid via detecting dirty
+"       buffers and bailing out.
+"       TODO: it'd be nice to find a more graceful solution.
+"   (d) that reloading also means discarding things like any
+"       buffer-local changes to `:syn` etc., and reloading whatever
+"       ftplugins with all the side effects that entails.
+"       BUG: we really need to find a good workaround for this.
 " TODO: is there any point in using `:unlet l:foo`?  I would assume
 "   l: variables are automatically cleared, yet the original sources
 "   for wrengr#ClearUndoHistory() (e.g. `:h clear-undo`) explicitly
 "   used unlet; so, why?  If it actually does something, then we
 "   should have other functions do so too...
-"
-" Note: also see `:h clear-undo` regarding what exactly gets cleared
-" vs retained (marks, manual folds, etc)
+" BUG: when used in an empty-file buffer (e.g., vim started with
+"   no arguments), this gives an error about "no filename".  We should
+"   exit more gracefully for that.
 
 fun! wrengr#ClearUndoHistory()
+  " (6c): Safety first.
+  if &modified
+    " HACK: neither E37/E89 nor E162 is entirely accurate for this use case.
+    call wrengr#utils#error(
+      \ 'E37: No write since last change. Not clearing history.')
+    return 0
+  endif
   " Explicitly save the buffer-local value.
   " (Because `&ul := (&l:ul==-123456 ? &g:ul : &l:ul)` but we want
   " to make sure to restore &l:ul itself, not copy &g:ul into it.)
   let l:saved_ul = &l:ul
-  " Save cursor & window info, to undo the <z><z> of :edit!
+  " (6b): Save cursor+window info.
   let l:winview = winsaveview()
   try
-    " Explicitly set the buffer-local value, so we only clear the
-    " current buffer's undo history.
+    " (2): Explicitly set the buffer-local value, so we only clear
+    " the current buffer's undo history.
     " (Albeit `:set ul=-1` would do the same implicitly.)
     setl ul=-1
-    " See implementation notes above.
-    edit!
+    " (4,5,6,6a): See implementation notes above.
+    silent edit!
   finally
+    " (6b): Restore cursor+window settings.
     call winrestview(l:winview)
-    " Explicitly restore the buffer-local value.
+    " (3): Explicitly restore the buffer-local value.
     " (Because `:let &ul=` would clear &l:ul and set &g:ul, which
     " is never correct.)
     let &l:ul = l:saved_ul
   endtry
+  return 1
 endfun
+
+
+" Remark: I used to have a mapping to write the file and then call
+" the above function to clear out the history.  That wasn't the best
+" idea: the purpose of the macro was to make it easy to return to
+" the most recent state at which the file was written to disk,
+" however that can be far more effectively achieved by the `:earlier 1f`
+" command (with caveats), which leaves the undo history intact in
+" case we want to undo/redo again (e.g., maybe we saved too quickly
+" and want to go back further; or maybe we want to redo things from
+" that saved point).  Nevertheless, there was some trickiness to
+" getting that macro to work as desired, so for future reference the
+" implementation and notes are below.
+"
+" The main implementation issue is that we want to see the 'foo written'
+" message from the write.  That means we (a) must not silence the
+" :write itself, and (b) must prevent the :call command from being
+" echoed and thus clobbering the message.  The only way I found to
+" achieve both was to have a wrapper function, because:
+" (1) using `:silent call` only silences the *output* of the function
+"   it doesn't silence the echoing of the :call command itself.
+" (2) using `:map <silent>` does silence the command echoing, but
+"   it also silences the :write command itself.
+" (*) N.B., those two points were when joining the commands via
+"   <CR>, so there's a chance that joining them with a <Bar> instead
+"   would make things work out easier.
+" (+) Also, that was before I added :silent to the :e!
+" So, with all that in mind, the following works as intended:
+"
+"nnoremap <silent> <leader>w :call <SID>WriteAndClearUndoHistory()<CR>
+"fun! s:WriteAndClearUndoHistory()
+"  write
+"  silent call wrengr#ClearUndoHistory()
+"endfun
+"
+" Warning: Doesn't affect us here but, beware of the Syntastic bugs
+" around typing <C-z> too quickly after `:w`.  If we ever do run into
+" issues like that, then maybe insert a brief pause into this mapping.
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Like `:delmarks` but for registers.
 " HT: <https://vi.stackexchange.com/a/10528>
 " TODO: see also <https://stackoverflow.com/a/26043227>
-" BUG: this doesn't seem to remove them from ~/.viminfo thus the
-"   clearing of the registers doesn't persist across sessions!
-"   Also, from perusing the helppage for viminfo, their phrasing
-"   suggests that only nnon-empty registers can be saved; hence
-"   there's no way to save the fact of emptiness, afaict.
+" BUG: this doesn't remove them from ~/.viminfo, thus the clearing
+"   of the registers doesn't persist across sessions!  Also, from
+"   perusing the helppage for viminfo, their phrasing suggests that
+"   only non-empty registers can be saved; hence there's no way to
+"   save the fact of emptiness, afaict.
 fun! wrengr#ClearRegisters()
   for i in range(34,122)
     silent! call setreg(nr2char(i), [])
@@ -138,7 +185,7 @@ endfun
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " Note: re saving the cursor, be sure to bear in mind the difference
 " between buffer-positions, cursor-positions, and screen-positions.
-" See ~/.vim/NOTES-cursor-etc.txt for greater detail.
+" See ~/.vim/NOTES/cursor-etc.txt for greater detail.
 " TODO: regarding the register, is the reg-type actually relevant
 "   for @/ though?  And if not, then is there any benefit to using
 "   getreg()/setreg() over just using :let and the usual @/ spelling?
@@ -156,6 +203,9 @@ fun! wrengr#RemoveTrailingSpace()
     "   since :s depends quite a lot on user settings.  See `:h
     "   :s_flags` for what exactly the 'e' flag does, to get an idea
     "   of how to emulate it when using substitute() instead.
+    " TODO: also, use histnr()/histdel()/histget() to clean this
+    "   out of the search history; or use :keeppatterns to avoid
+    "   adding it in the first place.
     silent! %s/[[:space:]]\+$//e
   finally
     let &foldenable = l:fen
@@ -169,20 +219,6 @@ endfun
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" Using `:echoerr` prints a stack-trace, which causes double error
-" messages: one for the error itself, and another for the function
-" exiting in error.  While stack-traces are nice for debugging,
-" they're not so good when the error message is more for diagnostic
-" reasons.  This function handles that more common diagnostic situation.
-"
-" HT: Re saving the v:errmsg, <https://github.com/moll/vim-bbye/>
-fun! s:error(msg)
-  echohl ErrorMsg
-  echomsg a:msg
-  echohl NONE
-  let v:errmsg = a:msg
-endfun
-
 " I hate that {:bun,:bd,:bw} also kill any windows the buffer was in.
 " So here's how to close out buffers more nicely.
 " TODO: see 'moll/vim-bbye' for a more robust version.
@@ -206,7 +242,8 @@ fun! wrengr#BufferDelete()
     " TODO: Or maybe this should be E89, according to 'moll/vim-bbye'.
     "   Both link to the same spot in `:h`, so I'm not sure what the
     "   difference is supposed to be.
-    call s:error('E37: No write since last change. Not closing buffer.')
+    call wrengr#utils#error(
+      \ 'E37: No write since last change. Not closing buffer.')
   elseif winnr('$') == 1
     " There's only one window, so there are no splits to lose.
     bdelete
@@ -238,9 +275,13 @@ endfun
 "
 " This is good for verbose commands that only temporarily show their
 " output, like `:version` and `:messages`.  It should also allow
-" vim-commandline-special characters like `%`.  (I haven't had a
-" chance to check/try that, but I imagine it should work.)
+" vim-cmdline-special characters like `%`.  (I haven't had a chance
+" to check/try that, but I imagine it should work.)
 " HT: <https://gist.github.com/ctechols/c6f7c900b09be5a31dc8>
+"
+" BUG: Currently, this discards any colorization of the command's
+" output (e.g., as done by :version on mayari's vim-8.2).  How can
+" we keep that?
 "
 " Warning: The source claims it also works for `:!` commands (e.g.,
 " `:Page !wc`), however I wasn't able to get that to work.  Instead
@@ -277,7 +318,7 @@ endfun
 " TODO: once we have the :vs version, we should probably open the
 "   split before running a:cmd, just in case the command formats
 "   thing differently depending on what the winwidth() is.  Like,
-"   I'm prety sure :version does that.
+"   I'm pretty sure :version does that.
 
 fun! wrengr#Page(cmd) abort
   " First run the command and capture the output.
@@ -436,6 +477,9 @@ fun! wrengr#CtrlMap()
     "   by `:h map-listing`)  Also, should use built-in functions
     "   rather than Ex-commands, since the latter often have more
     "   side-effects and are more dependent on user settings.
+    " TODO: also, use histnr()/histdel()/histget() to clean this
+    "   out of the search history; or use :keepp to avoid adding
+    " it in the first place (at least, I think :v// adds to the search history)
     v/<C-/d
     %!sort -k1.4,1.4
   finally
@@ -485,32 +529,30 @@ endfun
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-fun! wrengr#OpenPlugURL()
-  let l:winview  = winsaveview()
-  let l:contents = getreg('a')
-  let l:type = getregtype('a')
-  try
-    normal! T'"ayt'
-    " TODO: validate that that selection is well-formed.
-    let l:url = 'https://github.com/' . @a
-    " BUG: has('mac') is *false* for the Vim 8.0 that ships with OSX 10.14.6!!
-    "   (2016 Sep 12; patches: 1-503, 505-680, 682-1283, 1365)
-    "   For now we'll just buggily assume `open` does what we mean.
-    " BUG: For Safari, this sometimes chooses a random window other
-    "   than the one it chose the previous few calls!
-    if executable('open')
-      " TODO: escape the l:url as needed
-      silent execute '!open ' . l:url
-      " HACK: the above leaves the screen blank afterwards and
-      " requires a manual <C-l>
-      redraw!
-    else
-      echo l:url
-    endif
-  finally
-    call winrestview(l:winview)
-    call setreg('a', l:contents, l:type)
-  endtry
+" Note: when isdirectory(a:path), then mkdir() will give no error
+" iff has('patch-8.0.1708') && l:p ==# 'p'.  Alas, for portability
+" we can't rely on that.
+" Note: see also 'tpope/vim-eunuch' if we end up wanting a bunch
+" of these *nix file operations.
+fun! wrengr#mkdir(path,...)
+  if !exists('*mkdir')
+    call wrengr#utils#error('This vim doesn''t have the mkdir() function')
+    return 0
+  endif
+  let l:p   = get(a:, 0, 0) ? 'p' : ''
+  let l:mod = get(a:, 1, 0o755)
+  " Cf., <https://vi.stackexchange.com/a/20213>
+  if empty(glob(a:path)) " no file-or-directory exists there.
+    call mkdir(a:path, l:p, l:mod)
+    return 1
+  elseif isdirectory(a:path) " exists, and is a directory.
+    " We could use setfperm() to ensure the permissions are as
+    " requested; but for now we do nothing.
+    return 2
+  else
+    call wrengr#utils#error('A file already exists at path ' . a:path)
+    return 0
+  endif
 endfun
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
