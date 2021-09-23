@@ -7,16 +7,23 @@
 " See: ~/.vim/NOTES.md  for more guidance, commentary, and style notes.
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 " ~~~~~ Minimal preamble before loading plugins ~~~~~~~~~~~~~~~~ {{{1
+let g:skip_defaults_vim=1 " See: `:help skip_defaults_vim` (since Vim 7.4.2111)
+" BUG: vint says we shouldn't `:set nocompatible` (which I find
+" odd, since doing it used to be explicitly advocated style).  In
+" any case, apparently modern vim will automatically unset &compatible
+" when it detects a user's vimrc file.  So far as I can tell, us
+" unsetting it again just means a slight slowdown from vim resetting
+" everything once again? unclear. The helppages don't say we shouldn't
+" do it...
 set nocompatible " Avoid compatibility with legacy vi. (Must come first)
-set nomodeline   " Avoid insecurity!  (See: ~/.vim/NOTES-modelines.md)
+set nomodeline   " Avoid insecurity!  (See: ~/.vim/NOTES/modelines.md)
 set ttyfast      " Avoid thinking we're still in the 1970s.
 set noinsertmode " Avoid emacs-emulating silliness.
 
-" See: ~/.vim/NOTES-versions.md
+" See: ~/.vim/NOTES/versions.md
 " Nevertheless, I may use `:h has-patch` below for versions older
-" than 8.0 (maybe even anaconistically for older than Vim 7.4.237).
+" than 8.0 (maybe even anachronistically for older than Vim 7.4.237).
 " This is mainly for documentation purposes, for my own interest.
 if v:version < 800
   " N.B., :echo will gladly interpret newlines.  However, :echomsg
@@ -45,6 +52,9 @@ endif
 " above, it seems likely we may run into other gotchas down the line
 " (e.g., packages which set `nocompatible`).  So we're going to be
 " extra aggressive about turning them off.
+" Note: re plugins and `:h use-cpo-save`: it seems that `:set cpo&vim`
+" does not re-enable modelines the way `:set nocp` does. (Or maybe
+" it's just because I have a patched version?)
 if has('autocmd') && (!has('patch-8.1.1365') || !has('patch-8.0.0056'))
   autocmd wrengr_vimrc BufReadPre * set nomodeline
 endif
@@ -72,10 +82,9 @@ endif
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ vim-plug <https://github.com/junegunn/vim-plug> ~~~~~~~~ {{{1
 "
-" To abbreviate the very long urls below, pretend we have:
-"   let $VIMPLUG_URL='https://github.com/junegunn/vim-plug'
+" For abbreviation below, pretend we have $VIMPLUG_URL set to the url above.
 
-" We :finish because an augroup will re-source this file.
+" We :finish because an augroup will re-source this file anyways.
 if wrengr#plug#Bootstrap() | finish | endif
 
 " TODO: It's not really relevant anymore, since we've moved the
@@ -85,21 +94,6 @@ if wrengr#plug#Bootstrap() | finish | endif
 "   info is in `:h <SID>` and <https://vi.stackexchange.com/q/27224>,
 "   but I haven't been able to get the pieces to work together...
 let g:plug_window = 'call wrengr#plug#Window()'
-
-
-" TODO: Use (ssh+)git-protocol in lieu of https:
-"   <$VIMPLUG_URL/wiki/faq#whats-the-deal-with-git-in-the-url>
-"let g:plug_url_format = 'git@github.com:%s.git'
-"   N.B., this can be turned on and off throughout the plugin
-"   listing; it only applies if currently defined at a given :Plug
-"   call-site.
-"
-" Note: since git-1.6.6 (2010) plain ssh is equivalent to https:
-"   <https://stackoverflow.com/a/3248848>.
-" For other reasons to prefer one over the other:
-"   <https://stackoverflow.com/a/11041782>.
-" For more on what the heck the plain git-protocol even is/does:
-"   <https://stackoverflow.com/a/33846897>.
 
 
 " We use ~/.vim/bundle just cuz most other plugin managers do too.
@@ -115,21 +109,21 @@ call plug#begin(s:vimplug_dir)
 " only dependency *auto-detection* that got removed, and the manual
 " dependency annotations still do something? unclear.)
 "
-" Note: as discussed in the file where it's defined: outside of the
-" usage in wrengr#plug#Cond(), one should rarely need to specify
-" 'on'/'for'.  Below I'll use the tag [#jg] whenever I've added
-" a 'for'/'on' to a plugin because I've seen that Junegunn does so
-" in their own dotfiles repo; namely for plugins that are still
-" commented out because I haven't had a chance to try them out yet.
+" Note: one should rarely need to specify 'on'/'for'.  Below I'll
+" use the tag [#jg] whenever I've added a 'for'/'on' to a plugin
+" because I've seen that Junegunn does so in their own dotfiles repo;
+" namely for plugins that are still commented out because I haven't
+" had a chance to try them out yet.
 
 " TODO: actually go through all these to see which plugins I actually want...
+" TODO: should any of these have wrengr#plug#UseGitUrls() ?
 
 
-" ~~~~~ GNU PGP ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {{{2
+" ~~~~~ GNU PGP  ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{2
 " For security reasons, we manually manage this one and keep a copy
 " in our dotfiles repo.
 " TODO: maybe still list it but using the leading '~' notation to
-"   inform vim-plug that it's manually managed.
+"   inform vim-plug that it's manually managed?
 "Plug 'jamessan/vim-gnupg'
   " Default to using ascii-armor. Hopefully this'll help deal with the
   " bug where saving modified files causes them to be saved as binary
@@ -141,16 +135,25 @@ call plug#begin(s:vimplug_dir)
   " if that's the issue), see: <https://stackoverflow.com/q/43513817>
 
 
-" ~~~~~ Unicode ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {{{2
+" ~~~~~ Unicode  ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{2
 " See also <https://vi.stackexchange.com/a/560>
 " <https://x-team.com/blog/inserting-unicode-characters-in-vim/>
 " <https://jdhao.github.io/2020/10/07/nvim_insert_unicode_char/>
 "Plug 'chrisbra/unicode.vim'
+    " Don't define mappings for me.
+    "let g:Unicode_no_default_mappings=1
+    "   nmap <F4>       <Plug>(MakeDigraph)         " Meh.
+    "   vmap <F4>       <Plug>(MakeDigraph)         " Meh.
+    "   imap <C-x><C-g> <Plug>(DigraphComplete)
+    "   imap <C-x><C-z> <Plug>(UnicodeComplete)     " BUG: normally that's reserved for cancelling *ins-completion*
+    "   imap <C-x><C-b> <Plug>(HTMLEntityComplete)
+    "   imap <C-g><C-f> <Plug>(UnicodeFuzzy)        " requires 'junegunn/fzf'
+    "   nmap <leader>un <Plug>(UnicodeSwapCompleteName)
 "Plug 'tpope/vim-characterize'
 "Plug 'arp242/uni'
 
 
-" ~~~~~ Colorschemes ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {{{2
+" ~~~~~ Colorschemes ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{2
 " TODO: some of these can be quite slow to load (e.g., the venerable
 " 'chriskempson/tomorrow-theme', but also anything using a variant
 " of my 'naivecolors.vim').  So we should (a) sift through them to
@@ -197,12 +200,14 @@ call plug#begin(s:vimplug_dir)
 
 "Plug 'luochen1990/rainbow'
 "Plug 'mhinz/vim-janah'
+"Plug 'arzg/vim-colors-xcode'   " Port of Xcode 11's dark and light schemes.
 
 " ~~~~~ Tools for designing/debugging colorschemes
 "Plug 'RRethy/vim-hexokinase'
+"Plug 'lifepillar/vim-colortemplate'
 
 
-" ~~~~~ Lines: Statusline, Tabline, etc. ~~~~~~~~~~~~~~~~~~~~~~~ {{{2
+" ~~~~~ Lines: Statusline, Tabline, etc. ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{2
 Plug 'vim-airline/vim-airline'
 " TODO: this is one of the slower ones to load. Is there a way to
 " guard it to only load the g:airline_theme we actually want/use?
@@ -224,7 +229,7 @@ Plug 'vim-airline/vim-airline-themes'
 "Plug 'bling/vim-bufferline'
 
 
-" ~~~~~ Buffers & Tabs (other than their lines) ~~~~~~~~~~~~~~~~ {{{2
+" ~~~~~ Buffers & Tabs (other than their lines)  ~ ~ ~ ~ ~ ~ ~ ~ {{{2
 "   Originally I linked to 'weynham' version; but this one seems
 "   newest (albeit still last changed in 2016).  Maybe also check
 "   out 'arenieri' fork, for a few different patches.  If we like
@@ -235,7 +240,7 @@ Plug 'vim-airline/vim-airline-themes'
 "Plug 'moll/vim-bbye'
 
 
-" ~~~~~ Git & other VCSes ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {{{2
+" ~~~~~ Git & other VCSes  ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{2
 Plug 'airblade/vim-gitgutter', wrengr#plug#Cond(has('signs'))
 "   Like gitgutter, but for several VCSes
 "Plug 'mhinz/vim-signify',
@@ -259,22 +264,18 @@ Plug 'airblade/vim-gitgutter', wrengr#plug#Cond(has('signs'))
 "   Just the function gitbranch#name() but implemented smartly.
 "   For a clever use, see: <https://github.com/mhinz/vim-startify/wiki/Example-configurations>
 "Plug 'itchyny/vim-gitbranch'
+" <https://gist.github.com/romainl/a3ddb1d08764b93183260f8cdf0f524f>
+"
+" This defines a command `:Diff [githash]`
+" See: <https://gist.github.com/romainl/7198a63faffdadd741e4ae81ae6dd9e6>
+" TODO: Should be easy enough to make a fork that handles both Git
+"   and Mercurial (etc).
+" TODO: Also, I kinda feel like the <q-mods> aren't being handled
+"   entirely appropriately... Not that I know much about that.
+"Plug 'homogulosus/vim-diff'
 
 
-" ~~~~~ File-tree browsing ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {{{2
-"Plug 'scrooloose/nerdtree',         { 'on': 'NERDTreeToggle' }
-"Plug 'Xuyuanp/nerdtree-git-plugin', { 'on': 'NERDTreeToggle' }
-"Plug 'justinmk/vim-dirvish'  " Alternative to nerdtree.
-"Plug 'Shougo/vimfiler.vim'   " Alternative to netrw (end-of-life => defx.nvim)
-"Plug 'Shougo/defx.nvim'      " Alternative to netrw (Vim 8.2 | Nvim 0.4.0)
-"Plug 'tpope/vim-vinegar'     " Enhancing netrw to obviate nerdtree.
-"Plug 'eiginn/netrw'          " In case we want newer than the built-in version.
-    " netrw versions:       Comes with:
-    " 165  (2019 Jul 16)    Debian vim 8.1.2269    (2018 May 18)
-    " 171e (2020 Dec 15)    'eiginn/netrw' f665b0d (2020 Dec 27)
-
-
-" ~~~~~ Startify ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {{{2
+" ~~~~~ Picking up where you left off  ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{2
 " Note: there are a few latent interaction bugs with other plugins:
 " * vim-plug    -- Uncommon, but see `:h startify-faq-12`
 " * Goyo        -- Specifically when using `:h startify-faq-17`; bugfix is:
@@ -283,19 +284,43 @@ Plug 'airblade/vim-gitgutter', wrengr#plug#Cond(has('signs'))
 Plug 'mhinz/vim-startify'
   " BUG: Startify seems to change our :pwd for some reason...
   let g:startify_files_number=5
-  " TODO: (`:h startify-faq-18`) files on nfs mounts can cause a lot of slowdown.  That faq suggests adding nfs mounts to g:startify_skiplist, but that'll completely filter them out (defeating my purpose for using startify) rather than just disabling the IO checks.
-  " TODO: can we somehow add a custom directory to g:startify_lists?  Or I guess we can always just use g:startify_bookmarks
+  " TODO: (`:h startify-faq-18`) files on nfs mounts can cause a
+  "   lot of slowdown.  That faq suggests adding nfs mounts to
+  "   g:startify_skiplist, but that'll completely filter them out
+  "   (defeating my purpose for using startify) rather than just
+  "   disabling the IO checks.
+  " TODO: can we somehow add a custom directory to g:startify_lists?
+  "   Or I guess we can always just use g:startify_bookmarks
   let g:startify_padding_left=7
   "let g:startify_fortune_use_unicode=1     " For headers; iff it doesn't offend
   let g:startify_custom_header=[]           " Remove header.
-  " TODO: actually we want a couple blank lines or something; just, that cow was way too big is all.
+  " TODO: actually we want a couple blank lines or something; just,
+  "   that cow was way too big is all.
   "
   " TODO: update our colorscheme to handle `:h startify-colors`
   " TODO: (unrelated to startify per se, but: update our colorscheme to
   "   handle helpExample better; because Comment isn't the best thing...)
 
+"Plug 'farmergreg/vim-lastplace'
 
-" ~~~~~ Searching ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {{{2
+
+" ~~~~~ File-tree browsing ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{2
+"Plug 'scrooloose/nerdtree',         { 'on': 'NERDTreeToggle' }
+"Plug 'Xuyuanp/nerdtree-git-plugin', { 'on': 'NERDTreeToggle' }
+"Plug 'justinmk/vim-dirvish'  " Alternative to nerdtree.
+"Plug 'Shougo/vimfiler.vim'   " Alternative to netrw (end-of-life => defx.nvim)
+"Plug 'Shougo/defx.nvim'      " Alternative to netrw (Vim 8.2 || Nvim 0.4.0)
+"Plug 'tpope/vim-vinegar'     " Enhancing netrw to obviate nerdtree.
+"Plug 'eiginn/netrw'          " In case we want newer than the built-in version.
+    " netrw versions:       Comes with:
+    " 156  (2016 Apr 20)    OSX 10.14 vim     8.0.~1283  (8.0 == 2016 Sep 12)
+    " 156  (2016 Apr 20)    Fink      vim-nox 8.1.0296   (8.1 == 2018 May 18)
+    " 165  (2019 Jul 16)    Debian(?) vim     8.1.2269   (8.1 == 2018 May 18)
+    " 171  (2021 Aug 16)    Fink      vim-nox 8.2.3404-1 (8.2 == 2019 Dec 12)
+    " 171e (2020 Dec 15)    'eiginn/netrw'    f665b0d           (2020 Dec 27)
+
+
+" ~~~~~ Searching  ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{2
 " Of the main three: Ctrl-P is the oldest and requires the least
 " configuration; command-t uses a custom C implementation tightly bound
 " to vim; and fzf is the newest, with a custom Go implementation that
@@ -314,24 +339,64 @@ Plug 'mhinz/vim-startify'
 "Plug 'vim-scripts/SmartCase'
 "Plug 'vim-scripts/gitignore'
 
+" ~~~~~ Enhancing &incsearch and &hlsearch
+"Plug 'haya14busa/incsearch.vim'
+"  Plug 'haya14busa/incsearch-easymotion.vim'
+"  Plug 'haya14busa/incsearch-fuzzy.vim'    " seems to do it's own fuzzy thing (and/or it uses 'osyo-manga/vital-over'?)
+"  Plug 'haya14busa/incsearch-migemo.vim'   " Japanese kana+kanji(!!)
+"   Exec 'koron/cmigemo'                    " Dependency
+"   Plug 'Shougo/vimproc.vim'               " Dependency
+"Plug 'romainl/vim-cool'
 
-" ~~~~~ Undoing ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {{{2
+" ~~~~~ Enhancing `* #`
+" <https://stackoverflow.com/a/13682379>
+" <https://stackoverflow.com/a/49944815>
+" <https://stackoverflow.com/a/4262209> etc etc etc
+" <https://stackoverflow.com/a/54324658>
+"Plug 'bronson/vim-visual-star-search'
+"Plug 'vim-scripts/star-search'
+
+" ~~~~~ Enhancing `f F t T`
+"Plug 'dahu/vim-fanfingtastic'
+"Plug <https://www.vim.org/scripts/script.php?script_id=3877>
+"Plug <https://www.vim.org/scripts/script.php?script_id=4726>
+"Plug 'rhysd/clever-f.vim'
+
+
+" ~~~~~ Undoing  ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{2
+" <https://docs.stevelosh.com/gundo.vim/>
+" GPLv2+; requires: Vim >= 7.3, Python >= 2.4
+" Git repo is active this year; though the most recent tagged version
+" is 2016 (adding neovim support, and fixing python3 incompatibilities).
 "Plug 'sjl/gundo.vim'
+
+" Forked from gundo; supposedly adds a bunch of features and fixes,
+" but the details are hazy (since it looks like gundo inncorporated
+" them too).  Though the search feature seems really helpful.
+" Still GPLv2, Vim >= 7.3 || neovim, python >= 2.4 || python3.
+" Git repo is also active this year; latest release version was 2018.
+"Plug 'simnalamburt/vim-mundo'
+
+" Seems at least superficially similar; but is pure vimscript.
+" Git repo also active this year; last official release was 2019.
+" Though see <https://twitter.com/voldikss/status/1122515366524129280?lang=en>
 "Plug 'mbbill/undotree', { 'on': 'UndotreeToggle' } " [#jg]
-"Plug 'simnalamburt/vim-mundo'          " Undo tree visualizer
 
 
-" ~~~~~ Alignment, Indentation, & Folding ~~~~~~~~~~~~~~~~~~~~~~ {{{2
+" ~~~~~ Alignment, Indentation, & Folding  ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{2
 "Plug 'godlygeek/tabular'
 "Plug 'junegunn/vim-easy-align'
 "Plug 'michaeljsmith/vim-indent-object' " adds text objects `ii` / `ai`
 "Plug 'vim-scripts/Align'
 "Plug 'Yggdroot/indentLine', { 'on': 'IndentLinesEnable' } " [#jg]
     " junegunn uses:
+    " BUG: um, isn't that a bit circular?
     "autocmd wrengr_vimrc User indentLine doautocmd indentLine Syntax
     "let g:indentLine_color_term = 239
     "let g:indentLine_color_gui = '#616161'
     " Though we'll want to adapt that to our colorscheme.
+    " BUG: cterm-239 is #4e4e4e; whereas the closest to #616161 is cterm-241 (#626262)
+    " Note: we already use cterm-239 for AbsoluteLineNr, fwiw
 
 "   For more reliable indenting and performance
 "   (&fdm=syntax is notoriously slow)
@@ -340,7 +405,7 @@ Plug 'mhinz/vim-startify'
   "set fillchars='fold: '
 
 
-" ~~~~~ Simple text editing. ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {{{2
+" ~~~~~ Simple text editing. ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{2
 " Limelight and Goyo go really well together; though neither strictly
 " requires the other.  However, whenever the limelight module is
 " loaded, it slows scrolling down (namely when crossing paragraph
@@ -355,10 +420,9 @@ Plug 'junegunn/goyo.vim',       { 'on': 'Goyo' }
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" ~~~~~ Language-Generic Programming Support ~~~~~~~~~~~~~~~~~~~ {{{2
-
+" ~~~~~ Language-Generic Programming Support ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{2
 " ~~~~~ LSP (and asynchronicity)                                 {{{3
-" Normalize async job control api for vim and neovim.
+" Normalized async job control api for vim and neovim.
 Plug 'prabirshrestha/async.vim'
 " A well weathered LSP implementation for vim.
 Plug 'prabirshrestha/vim-lsp'
@@ -375,6 +439,7 @@ Plug 'prabirshrestha/vim-lsp'
 
 
 " ~~~~~ Auto-completion                                          {{{3
+" ~~~~~ YCM
 " N.B., YCM is basically a full-fledged IDE; so it's probably never
 " something we'd actually enjoy.
 "Plug 'rdnetto/YCM-Generator', { 'branch': 'stable' }
@@ -383,16 +448,51 @@ Plug 'prabirshrestha/vim-lsp'
 "Plug 'Valloric/YouCompleteMe', { 'do': './install.py' }
 " or maybe: { 'do': './install.sh --gocode-completer --tern-completer' }
 
+" ~~~~~
 "Plug 'ervandew/supertab'
 
-" TODO: if we switch to neovim (or get Vim 8.1/8.2 installed), then
-" consider 'Shougo/deoplete.nvim' or 'Shougo/ddc.vim' as an alternative
-" to asyncomplete.  See ~/.vim/NOTES-autocompletion.txt for more info.
+" TODO: maybe consider 'Shougo/ddc.vim' as an alternative to asyncomplete.
+"   See ~/.vim/NOTES/autocompletion.txt for more info.
 
+" ~~~~~ AsynComplete
 "Plug 'prabirshrestha/asyncomplete.vim'
 "  Plug 'prabirshrestha/asyncomplete-lsp.vim'   " for: 'prabirshrestha/vim-lsp'
-"  Plug 'prabirshrestha/asyncomplete-necovim.vim'    | Plug 'Shougo/neco-vim'
-"  Plug 'prabirshrestha/asyncomplete-necosyntax.vim' | Plug 'Shougo/neco-syntax'
+"    Plug 'prabirshrestha/asyncomplete-necovim.vim'    | Plug 'Shougo/neco-vim'
+"    Plug 'prabirshrestha/asyncomplete-necosyntax.vim' | Plug 'Shougo/neco-syntax'
+" N.B., Shougo's neco stuff has in the plugin/ part, the following:
+"   autocmd User CmSetup call cm#register_source({...})
+" That 'cm' is actually 'roxma/nvim-completion-manager' (which has
+" been deprecated in favor of 'ncm2/ncm2').  However, because it's
+" a User autocmd, I doubt that anyone will try to call it (excepting
+" 'cm' itself); so technically we can install prabirshrestha's wrapper
+" which will call Shougo's code, but without actually installing the
+" 'cm' part.  If we're worried, we can always use :au! to remove
+" those specific autocmds.
+" TODO: may also consider using the 'ilms49898723/neco-syntax' and
+" 'IngoMeyer441/neco-vim' forks, since they're better maintained (or
+" at least ahead by a couple dozen commits).
+
+" ~~~~~ Snippets
+" The snippets engine itself.
+" BUG: Mayari's vim-nox 8.2.3404-1 doesn't have '+python3'.
+"Plug 'SirVer/ultisnips', wrengr#plug#Cond(v:version >= 704 && has('python3'))
+"
+" Some kinda alternative engine.  They mention being TextMate-like in their
+" snippet features.
+"Plug 'garbas/vim-snipmate'
+"   Plug 'marcweber/vim-addon-mw-utils' " dependency; caching and lazy funcref.
+"   Plug 'tomtom/tlib_vim'              " dependency; utility functions.
+"
+" The actual snippets themselves.  Both ultisnips and snipmate use this.
+"Plug 'honza/vim-snippets'
+
+" Yet another alternative engine. (N.B., this has been deprecated
+" in favor of 'Shougo/deoppet.nvim'; however deoppet is NeoVim-only,
+" and also requires Python3.)  Suggested to use with 'deoplete',
+" but not required.
+"Plug 'Shougo/neosnippet.vim'
+"   " The default snippets themselves.
+"   Plug 'Shougo/neosnippet-snippets'
 
 
 " ~~~~~ Ctags (:help usr_29)                                     {{{3
@@ -413,6 +513,7 @@ Plug 'prabirshrestha/vim-lsp'
 "   <https://ctags.io/>     "Universal Ctags" (much better than "Exuberant")
 "   <https://github.com/sergioramos/jsctags>
 "   <https://github.com/vim-php/phpctags>
+"Plug 'soramugi/auto-ctags.vim'
 
 
 " ~~~~~ Linting                                                  {{{3
@@ -444,7 +545,7 @@ Plug 'prabirshrestha/vim-lsp'
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" ~~~~~ Specific Programming Languages ~~~~~~~~~~~~~~~~~~~~~~~~~ {{{2
+" ~~~~~ Specific Programming Languages ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{2
 
 " Note: Assuming none of the language-specific things below need
 " 'for', unless otherwise noted.
@@ -458,13 +559,21 @@ Plug 'prabirshrestha/vim-lsp'
 "   [#misc]     -- anything else.
 " TODO: actually clean up all that tag nonsense
 
+" TODO(2021-09-13): N.B., :PlugStatus is showing the following
+" modules as loaded despite not opening any relevant files: 'vim-bsv',
+" 'haskell-vim', 'applescript.vim', 'vim-cpp-modern', 'systemverilog.vim',
+" (Not 'verilog_systemverilog.vim'!), 'coq.vim', 'vim-llvm'.  They
+" may all be innocuous to load when unneeded, but worth keeping an
+" eye on.  Also, remember to use `:scriptnames` to see the order
+" things are loaded.
 
-" ~~~~~ {for: vim} ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {{{3
+
+" ~~~~~ {for: vim} ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{3
 "Exec 'Vimjas/vint'             " [#lint] 'vint' for syntastic.
 "Plug 'junegunn/vader.vim'      " [#test] unit-testing.
 
 
-" ~~~~~ {for: haskell} ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {{{3
+" ~~~~~ {for: haskell} ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{3
 " TODO: cf.,
 "   <https://www.reddit.com/r/haskell/comments/67384o/how_do_you_haskell_in_vim/>
 "   <http://www.stephendiehl.com/posts/vim_2016.html>
@@ -502,6 +611,8 @@ Plug 'neovimhaskell/haskell-vim'
 
 " ~~~~~ Other Haskell supports
 " [#lsp]
+" BUG: Doesn't work with ghc-9:
+"   <https://github.com/ennocramer/floskell/issues/66>
 "Exec 'haskell/haskell-language-server'
 " [#lint]
 "   In lieu of syntastic.
@@ -511,9 +622,14 @@ Plug 'neovimhaskell/haskell-vim'
 "Plug 'mpickering/hlint-refactor-vim',
 "   \wrengr#plug#Cond(executable('refactor') && executable('hlint'))
 "   Use 'haskell/stylish-haskell' for code formatting.
+" BUG: Doesn't work with ghc-9:
+"   <https://github.com/haskell/stylish-haskell/issues/370>
+"   <https://github.com/haskell/stylish-haskell/issues/378>
+"   Also I got a typecheck error when trying to build it (or one of the dependencies)
 "Exec 'haskell/stylish-haskell'
 "Plug 'nbouscal/vim-stylish-haskell',
 "   \wrengr#plug#Cond(executable('stylish-haskell'))
+"   " See also <https://hackage.haskell.org/package/hls-stylish-haskell-plugin>
 " [#complete]
 "   This is described as 'ghc-mod/hhpc completion for
 "   neocomplcache/neocomplete/deoplete'.  So I'm not sure if it'll
@@ -528,9 +644,11 @@ Plug 'neovimhaskell/haskell-vim'
 "Plug 'Twinside/vim-hoogle',
 "   \wrengr#plug#Cond(executable('hoogle'))
     " Though you can configure g:hoogle_search_bin to look elsewhere
+"Exec 'https://gitlab.haskell.org/haskell/ghcup-hs'
+"Plug 'hasufell/ghcup.vim'
 
 
-" ~~~~~ HDLs ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {{{3
+" ~~~~~ HDLs ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{3
 " [#syntax]
 " TODO: not so sure I trust these to not need the 'for'...
 " TODO: need to make these play nice with Coq, since both use *.v
@@ -546,8 +664,15 @@ if has('autocmd')
   autocmd wrengr_vimrc BufRead,BufNewFile *.bs set ft=haskell
 endif
 
+" Not an HDL, but is somewhat related.
+"Plug 'hwayne/tla.vim', { 'for': TLA+ }
+" See also:
+" TLA+ (itself):     <http://lamport.azurewebsites.net/tla/tla.html>
+" TLA+ Proof System: <http://tla.msr-inria.inria.fr/tlaps/content/Home.html>
+" TLA+ Toolbox:      <http://lamport.azurewebsites.net/tla/toolbox.html>
 
-" ~~~~~ LLVM/MLIR ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {{{3
+
+" ~~~~~ LLVM/MLIR  ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{3
 " The LLVM project itself provides the following plugin for syntax
 " highlighting MLIR files:
 "   <https://github.com/llvm/llvm-project/blob/main/mlir/utils/vim/>
@@ -579,7 +704,7 @@ endif
 Plug 'rhysd/vim-llvm'
 
 
-" ~~~~~ {for: markdown} ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {{{3
+" ~~~~~ {for: markdown}  ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{3
 " TODO: given the 'markdown' vs 'markdown.pandoc' distinction, it's
 "   unclear whether I can reliably leave out the 'for' for these...
 
@@ -618,7 +743,7 @@ Plug 'rhysd/vim-llvm'
 
 
 
-" ~~~~~ {for: applescript} ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {{{3
+" ~~~~~ {for: applescript} ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{3
 " [#syntax]
 " This particular fork seems a lot more complete than the original
 " vim-scripts/applescript.vim; however, it's still not the greatest.
@@ -626,7 +751,7 @@ Plug 'rhysd/vim-llvm'
 " Keyword just links to Statement).
 Plug 'vito-c/applescript.vim'
 
-" ~~~~~ {for: [c, cpp]} ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {{{3
+" ~~~~~ {for: [c, cpp]}  ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{3
 " [#syntax]
 " Supposedly this is halfway decent, but it barely does anything (even
 " with the various globals enabled).
@@ -650,6 +775,8 @@ Plug 'bfrg/vim-cpp-modern'
   " highlights the given constructs as being errors.
   " TODO: see also <https://idie.ru/posts/vim-modern-cpp>
 
+" TODO: see `:h ft-c-syntax` re gobal-var settings for the builtin/default C parser.
+
 " This version is the upsteam of 'bfrg/vim-cpp-modern' but it does a lot
 " more despite not having been touched in years.  Also, junegunn still uses
 " this one.  It still needs a lot of improvement, but it's better at least.
@@ -663,7 +790,7 @@ Plug 'bfrg/vim-cpp-modern'
 "   " and removed that warning, though it's for SpaceVim rather
 "   " than plain Vim.
 
-" ~~~~~ {for: clojure} ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {{{3
+" ~~~~~ {for: clojure} ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{3
 " All of this was copied from junegunn's vimrc
 "Plug 'kovisoft/paredit', { 'for': 'clojure' } " [#jg]
 "   let g:paredit_smartjump = 1
@@ -675,32 +802,57 @@ Plug 'bfrg/vim-cpp-modern'
 "Plug 'guns/vim-clojure-highlight'
 "Plug 'guns/vim-slamhound'
 
-" ~~~~~ {for: coq} ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {{{3
+" ~~~~~ {for: coq} ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{3
 " [#syntax]
 Plug 'jvoorhis/coq.vim'
 
-" ~~~~~ {for: go} ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {{{3
+" ~~~~~ {for: go}  ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{3
 "Plug 'fatih/vim-go', wrengr#plug#Cond(v:version >= 800, { 'do': ':GoInstallBinaries' })
     "let g:go_fmt_command = 'goimports'
 "Plug 'nsf/gocode', { 'rtp': 'vim', 'do': s:vimplug_dir . '/gocode/vim/symlink.sh' }
 
-" ~~~~~ {for: javascript} ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {{{3
+" ~~~~~ {for: javascript}  ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{3
 "Plug 'moll/vim-node'
 "Plug 'pangloss/vim-javascript'
 
-" ~~~~~ LaTeX ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {{{3
+" ~~~~~ LaTeX  ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{3
 " N.B., LaTeX files show up as &ft=tex
 " omg this looks nice
 "Plug 'LaTeX-Box-Team/LaTeX-Box'
 
-" ~~~~~ {for: python} ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {{{3
+" {for: [tex, bib]}
+" However, this one is more modern and is still actively developed
+" (v2.7.1 was released just a few days ago).  It started out as a
+" rewrite of 'LaTeX-Box' to modernise it: <https://vi.stackexchange.com/a/5747>.
+" For more comparison: <https://tex.stackexchange.com/a/148473>.
+" Also re highlighting, be sure to see:
+" <https://github.com/lervag/vimtex/issues/1946#issuecomment-843674951>
+"Plug 'lervag/vimtex', wrengr#plug#Cond(has('patch-8.0.1453')) " Or neovim 0.4.3
+
+" ~~~~~ {for: prolog}  ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{3
+" TODO: consider these, mentioned at <https://stackoverflow.com/q/19610734>
+"   Actually for Logtalk, which extends Prolog: <https://logtalk.org>
+"Plug 'LogtalkDotOrg/logtalk3' " ./coding/vim
+"   Widely known, but abandoned since June 2014.  Mainly for ISO Prolog.
+"   (See also the 'Aluriak/ASP.vim' fork)
+"Plug 'adimit/prolog.vim'
+"   Lesser known, but more updated and advanced.
+"   Also supports different flavors of Prolog: SWI, GNU, etc.
+"Plug 'soli/prolog-vim'
+"   Not mentioned by the above, and untouched since 2018, but this one does LSP stuff:
+"Plug 'LukasLeppich/prolog-vim'
+"
+" Only tangentially related, but, see this link re footpedals:
+" <https://groups.google.com/g/swi-prolog/c/DwGFeg9k0Mg/m/avCpztD7AQAJ>
+
+" ~~~~~ {for: python}  ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{3
 "Plug 'jmcantrell/vim-virtualenv'   " for Python virtualenvs (what about venv?)
 "Plug 'tmhedberg/SimpylFold'        " Fancy folding so you can still see docstrings
 
-" ~~~~~ {for: ruby} ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {{{3
+" ~~~~~ {for: ruby}  ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{3
 "Plug 'tpope/vim-bundler', { 'for': 'ruby' } " [#jg]
 
-" ~~~~~ {for: rust} ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {{{3
+" ~~~~~ {for: rust}  ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{3
 " [#lint] includes `rustc` for syntastic.
 " Though it probably does syntax et al too...
 "Plug 'rust-lang/rust.vim'
@@ -721,11 +873,6 @@ Plug 'jvoorhis/coq.vim'
 "Plug 'sjl/vitality.vim'                " for iTerm2 (+ tmux)
 "Plug 'christoomey/vim-tmux-navigator'  " Navitate freely between tmux and vim
 " <https://gist.github.com/mikeboiko/b6e50210b4fb351b036f1103ea3c18a9>
-
-" ~~~~~ Snippets                                                 {{{3
-"Plug 'SirVer/ultisnips', wrengr#plug#Cond(v:version >= 704)
-"    Plug 'honza/vim-snippets'
-"Plug 'garbas/vim-snipmate'             " TextMate-like snippet features
 
 
 " ~~~~~ Completely unsifted                                      {{{3
@@ -753,7 +900,6 @@ Plug 'jvoorhis/coq.vim'
 "Plug 'tpope/vim-endwise'
 "Plug 'tpope/vim-repeat'                " better <.> repetition support
 "Plug 'tpope/vim-sleuth'
-"Plug 'tpope/vim-unimpaired'
 "Plug 'tpope/vim-commentary'
 "Plug 'tpope/vim-scriptease'            " Metatooling for writing plugins
 "Plug 'danro/rename.vim'                " Allow to :Rename files
@@ -771,6 +917,7 @@ Plug 'jvoorhis/coq.vim'
 "Plug 'kana/vim-fakeclip'               " Emulate '+clipboard'
 "Plug 'nacitar/terminalkeys.vim'        " Improved support for rxvt
     " See also 'godlygeek/vim-files'
+"Plug 'romainl/vim-qf'                  " taming quickfix stuff
 call plug#end()
 unlet s:vimplug_dir
 
@@ -785,8 +932,10 @@ unlet s:vimplug_dir
 " (I.e., your terminal thinks they are typographically wide, taking
 " up two columns; when in fact they should only take up one column.)
 if has('multi_byte')
-  scriptencoding utf-8
+  " Note: Per `:h :scriptencoding`, we must set &encoding before
+  " we call :scriptencoding
   set encoding=utf-8
+  scriptencoding utf-8
   set termencoding=utf-8
   set fileencodings=ucs-bom,utf-8,latin1
 
@@ -810,6 +959,18 @@ if has('multi_byte')
 
   " If you want to change the color they show up as, &listchars are
   " highlighted as SpecialKey.
+endif
+
+
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+" ~~~~~ &langmap support                                         {{{1
+" Prevent &langmap from applying to characters generated by a
+" mapping, since that's liable to break the mappings.  &langremap
+" is enabled by default, but that's only for backwards compatibility
+" reasons.
+" HT: vim82/defaults.vim
+if has('langmap') && exists('+langremap')
+  set nolangremap
 endif
 
 
@@ -859,7 +1020,10 @@ endif
 " N.B., the default <C-l> can also be lazy (both with and without
 " &lazyredraw), so this is (I think) stricter about ensuring the
 " redraw happens immediately.
-nnoremap <silent> <C-l> :noh<CR>:redraw!<CR>
+" Note: see `:h map_bar` about the different spellings of bar.
+" However, I can't find anywhere that says anything about when to
+" use `<Bar>` vs `<CR>:` (both work just fine here).
+nnoremap <silent> <C-l> :<C-u>noh<Bar>redraw!<CR>
 
 " Note: there also exists commands :redrawstatus[!] and :redrawtabline
 
@@ -1037,6 +1201,9 @@ endif
 set laststatus=2
 " Note: &statusline is taken over by airline; also, requires '+statusline'.
 
+" Always(=2) show the tabline, even if there's only one tabpage.
+"set showtabline=1
+
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Columns: linenr, colorcolumn                             {{{1
@@ -1089,6 +1256,10 @@ set backspace=indent,eol,start " Allow backspacing anything (input mode).
 " N.B., see <https://github.com/sorin-ionescu/prezto/issues/61>
 " this can be reconfigured in iTerm2, but also see `:h :fixdel`
 
+" TODO: I've been getting rather annoyed by {ic}_<C-w> lately.
+" Should either remap that to something else, or remap all the :wimcmd
+" things to something else.
+
 set showmatch           " When inserting brackets, briefly jump to the match
 
 " ~~~~~ Timing                                                    {{{2
@@ -1102,9 +1273,11 @@ set showmatch           " When inserting brackets, briefly jump to the match
 "if has('reltime')
 "  set redrawtime=2000  " Only allow N millisec for redrawing/&hls.
 "endif
-"set ttimeout           " Let vim wait for timeouts
-"set timeoutlen=3000    " How long does vim wait for mapping sequences
-"set ttimeoutlen=100    " How long does vim wait for the end of escape sequence
+set timeout             " enable time out on mappings and keycodes.
+set ttimeout            " enable time out on keycodes.
+"set timeoutlen=3000    " Wait N milisec for mapping sequences (default: 1000)
+set ttimeoutlen=100     " Wait N milisec for keycodes (i.e., end of escape sequence).
+                        " If &ttimeoutlen < 0, then uses &timeoutlen
 
 " ~~~~~ Bells                                                    {{{2
 "set belloff=           " Which (non-message) events should never ring the bell?
@@ -1120,8 +1293,8 @@ set showmatch           " When inserting brackets, briefly jump to the match
 "endif
 
 " ~~~~~ Scrolling                                                {{{2
-set scrolloff=7         " Show N lines in advance when scrolling.
-"set sidescrolloff=10   " Columns visible to the left/right of cursor when scrolling
+set scrolloff=7         " Keep N lines between cursor and window top/bottom.
+set sidescrolloff=10    " Keep N columns between cursor and window left/right.
 " TODO: see also &scrollbind=no, &scrollopt=ver,jump, *scroll-binding*
 " TODO: also &scrollfocus=no, &scrolljump=1
 "set window=...         " Used by <C-f> and <C-b>
@@ -1138,6 +1311,13 @@ set scrolloff=7         " Show N lines in advance when scrolling.
 " nicely.
 nnoremap Q :call wrengr#BufferDelete()<CR>
 
+" Have quickfix and :sb{*} commands go to windows that already have
+" the file open, whether in current tab or another.  If there is none,
+" then quickfix commands will open in a new tabpage (rather than
+" ruining the current layout via 'split'/'vsplit', or hiding current
+" work via 'uselast').
+"set switchbuf=useopen,usetab,newtab
+
 " ~~~~~ Windows/Splits                                           {{{2
 set winheight=20        " Try to keep the active window  at least this tall.
 "set winminheight=1     " Try to keep non-active windows at least this tall.
@@ -1149,8 +1329,8 @@ set winheight=20        " Try to keep the active window  at least this tall.
 "set winfixheight       " If &ea, then keep height fixed when opening/closing.
 "set winfixwidth        " If &ea, then keep width  fixed when opening/closing.
 
-"set splitright         " :vs puts the new window (and focus) to the right.
-set splitbelow          " :sp puts the new window (and focus) to the bottom.
+"set splitright         " :vs puts the new window (and focus!) to the right.
+set splitbelow          " :sp puts the new window (and focus!) to the bottom.
 
 " TODO: a lot of times I'd really like to do a vertical split where
 "   the new window goes to the right, but the focus stays with the
@@ -1158,28 +1338,128 @@ set splitbelow          " :sp puts the new window (and focus) to the bottom.
 "   defining our own bespoke command?
 
 " ~~~~~ Bracketoids                                              {{{2
+" Many of these are a~la 'tpope/vim-unimpaired', though I came to
+" them through other means.  (And I'm not using vim-unimpaired
+" because I'm not a fan of how the other mappings are done.)
+
 " TODO: pretty sure none of these clash with any builtins...
 "   By default gitgutter wants to take `]c` and `[c`, so we can't
-"   use them for :cnext/:cprev.  However, I'm thinking not to let
-"   them, and to use some other thing instead, like `]g` `[g` (and
-"   updating all the other gitgutter default mappings to match).
-" Quickfix/errors
-nnoremap ]q :cnext<CR>zz
-nnoremap [q :cprev<CR>zz
-" TODO: something for :cclose
+"   just give those to :cnext/:cprev.  That comes from the default
+"   mappings for `[c ]c` meaning to go to start/end of change (I'm
+"   guessing in Vim's undo-history sense?).  See also: `g+ g- g, g;`
+"   And Signify also wants to set those `[c ]c` mappings.
+" In any case, I'm thinking to not let gitgutter (or signify) do
+" that, and to map them to `[g ]g` or something instead; and updating
+" all the other gitgutter mappings to match, naturally.
 
-" Quickfix/locations
-nnoremap ]l :lnext<CR>zz
-nnoremap [l :lprev<CR>zz
-" TODO: something for :lclose
+" Note: Re getting these to work with counts: when vim processes
+" the `:` it will automatically expand it to `:.,.+N` where N is one
+" less than the count provided.  Unfortunately these commands don't
+" accept such ranges.  So we must use <C-u> to remove that auto-expanded
+" range.  Then we need to inject the actual v:count to pass that to
+" the underlying command.  (Note that v:count defaults to 0 when no
+" count is provided; so for commands that can't hande that, we use
+" v:count1 instead.)  I'm opting to do that via <expr> because it's
+" inoffensive re handling the special characters <C-u> and <CR>.
+" Though we could always use other implementations, like using <C-r>=
+" or :execute.
+" Note: for commands that can't handle a zero count, there's always
+" v:count1 instead.  Also, some of the commands have explicitly
+" special behavior when there's *no* count given.  Also, some
+" commands have wraparound behavior, but they differ in the specifics.
+" TODO: we might should use the (v:count?v:count:'') idiom more
+"   liberally, to ensure we don't accidentally eliminate such special
+"   behavior. (HT: tpope)
 
-" Buffers
-nnoremap ]b :bnext<CR>
-nnoremap [b :bprev<CR>
+if has('quickfix')
+  " ~~~~~ Quickfix/errors
+  nnoremap <expr> [q ':<C-u>' . v:count . 'cprev<CR>zz'
+  nnoremap <expr> ]q ':<C-u>' . v:count . 'cnext<CR>zz'
+  nnoremap [Q :<C-u>cfirst<CR>zz
+  nnoremap ]Q :<C-u>clast<CR>zz
+  " TODO: should we also have stuff for :c{above,below,before,after,older,newer}
+  "   For a handly reference, see <https://stackoverflow.com/a/55117681>
+  " TODO: others we might consider just to avoid using the cmdline
+  "   so much include :cc, :cclose, :c{f,g,b,l}
+  " TODO: 'tpope/vim-unimpaired' also does :cpfile and :cnfile,
+  "   which the helppages aren't enough for me to decipher.
+  " TODO: 'tpope/vim-unimpaired' appends `zv` to the end of both
+  "  'q' and 'l' families of mappings; would we want that?
 
-" Tabpages
-nnoremap ]t :tabn<CR>
-nnoremap [t :tabp<CR>
+  " ~~~~~ Quickfix/locations
+  nnoremap <expr> [l ':<C-u>' . v:count . 'lprev<CR>zz'
+  nnoremap <expr> ]l ':<C-u>' . v:count . 'lnext<CR>zz'
+  nnoremap [L :<C-u>lfirst<CR>zz
+  nnoremap ]L :<C-u>llast<CR>zz
+  " TODO: ditto everything from above (though it's :ll ~ :cc because
+  " vimish); including the 'tpope/vim-unimpaired' comments.
+endif
+
+" ~~~~~ Buffers
+" Note: these commands have wraparound behavior, but they're robust
+"   enough to always handle the v:count.
+nnoremap <expr> [b ':<C-u>' . v:count . 'bprev<CR>'
+nnoremap <expr> ]b ':<C-u>' . v:count . 'bnext<CR>'
+nnoremap [B :<C-u>bfirst<CR>
+nnoremap ]B :<C-u>blast<CR>
+" TODO: if we come up with a nice macro naming pattern for :{c,l,p}close
+" then maybe also use that for our <Q> binding?
+
+" ~~~~~ Argument List
+" TODO: unlike the others, I got these actually from 'tpope/vim-unimpaired'.
+"   And unlike the others, these fail hard whenever the arglist is
+"   empty etc; are arglists some new/unused/unmaintained thing?  In
+"   any case, if we do these then we'll want to do some extra
+"   wrapping to make them friendlier.
+"nnoremap <expr> [a ':<C-u>' . v:count . 'prev<CR>'
+"nnoremap <expr> ]a ':<C-u>' . v:count . 'next<CR>'
+"nnoremap [A :<C-u>first<CR>
+"nnoremap ]A :<C-u>last<CR>
+
+" ~~~~~ Tabpages
+" Note: these commands cannot handle a 0 count.
+" Note: these commands have wraparound behavior, but only when *no*
+"   count is given; consequently, when the count is too high they
+"   simply stop at the ends.  They're not robust like the buffer commands.
+" TODO: given the fragility mentioned above, these surely need more testing.
+nnoremap <expr> [t ':<C-u>' . (v:count ? v:count : '') . 'tabp<CR>'
+nnoremap <expr> ]t ':<C-u>' . (v:count ? v:count : '') . 'tabn<CR>'
+" Remove now-redundant mappings.
+map gT <Nop>
+map gt <Nop>
+" I guess we can leave the {nvi}_<C-PageUp>/<C-PageDown> bindings there.
+" N.B., there's also g<Tab>, <C-w>g<Tab>, and <C-Tab> for analogue of <C-w>p
+nnoremap [T :<C-u>tabfirst<CR>
+nnoremap ]T :<C-u>tablast<CR>
+
+" TODO: 'tpope/vim-unimpaired' also does :ptprev and :ptnext; but if doing that then why not also do :ptfirst and :ptlast?  And really, that belongs under some other name than 't'; since ctags should not be confused with tabpages.
+
+
+" N.B., there's also these often unremarked upon ones by default:
+"   [i      ]i      :isearch          [d      ]d      :dsearch
+"   [I      ]I      :ilist            [D      ]D      :dlist
+"   [<C-i>  ]<C-i>  :ijump            [<C-d>  ]<C-d>  :djump
+"      <C-w>i       :isplit              <C-w>d       :dsplit
+
+" TODO: consider these ctags macros (HT: 'junegunn/dotfiles')
+" N.B., <C-]>   uses `:tag`     jumps to N'th match (default N=1), and push if &tagstack
+"       g<C-]>  uses `:tjump`   like `:tselect` but jumps if only one match.
+"       g]      uses `:tselect` lists a menu of matches.
+" all three work in both normal- and visual-mode.
+" Also, afaict `:pop` is basically the same as <C-t>; only difference
+" seems to be that it allows a bang.  Also, `:tag` can be used to go
+" the opposite direction in the stack (also allows a bang); the <C-]>
+" usage is special in that it gives the word-under-cursor as an
+" argument.
+"nnoremap <C-]> g<C-]>
+"nnoremap g[    :pop<CR>
+
+" There's also:
+"   <C-w>P      goto preview window.
+"   <C-w>z      :pclose
+"               :ppop       Should probably get mapped to <C-w>{
+"   <C-w>}      :ptag
+"   <C-w>g}     :ptjump
 
 
 " ~~~~~ Misc.                                                    {{{2
@@ -1212,18 +1492,10 @@ set lazyredraw
 "set tags=tags,$HOME/.vim/ctagsproject
 "set browsedir=buffer   " :browse e starts in %:h, not in $PWD
 
-" TODO: consider these ctags macros (HT: 'junegunn/dotfiles')
-" N.B., <C-]>   uses `:tag`     jumps to N'th match (default N=1), and push if &tagstack
-"       g<C-]>  uses `:tjump`   like `:tselect` but jumps if only one match.
-"       g]      uses `:tselect` lists a menu of matches.
-" all three work in both normal- and visual-mode.
-" Also, afaict `:pop` is basically the same as <C-t>; only difference
-" seems to be that it allows a bang.  Also, `:tag` can be used to go
-" the opposite direction in the stack (also allows a bang); the <C-]>
-" usage is special in that it gives the word-under-cursor as an
-" argument.
-"nnoremap <C-]> g<C-]>
-"nnoremap g[    :pop<CR>
+" Don't recognize octal numbers for <C-a> and <C-x>.
+" HT: vim82/defaults.vim
+set nrformats-=octal
+
 
 " ~~~~~ TODO URLs                                                {{{2
 "     http://www.tjansson.dk/filer/vimrc.html
@@ -1237,30 +1509,102 @@ set lazyredraw
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" ~~~~~ Movement                                                 {{{1
+" ~~~~~ Movement ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {{{1
 
-" TODO: consider setting &scrolljump
+" TODO: consider setting &scrolljump; not sure if it'd ever matter though
 
-" Gentler scrolling with Shift-up/down.
+" ~~~~~ Gentler scrolling with Shift-Up/Down.  [non-jump]
+" (Because they should not be synonymous with <PageUp>/<PageDown>!)
+" TODO: what was the point of the <C-y>/<C-e> if we're just going to `zz`?
+" TODO: can we wrap these to take a count again?
+" TODO: reconsider whether the vo-modes should exist / get slightly
+"   different definitions,
 noremap  <S-Up>   10k10<C-y>zz
 inoremap <S-Up>   <ESC>10k10<C-y>zzi
 noremap  <S-Down> 10j10<C-e>zz
 inoremap <S-Down> <ESC>10j10<C-e>zzi
-noremap  <C-Up>   <C-u>M
-noremap  <C-Down> <C-d>M
+
+" ~~~~~ Vertically-recenter the cursor after window scrolling.  [non-jump]
+" (Adjust distance with &scroll; see also &startofline.)
+" Note: the `M` command is a jump, but <C-u> and <C-d> aren't; and
+" for these bindings we want the semantics of <C-u>/<C-d> just with
+" moving the cursor to a better location (like `zz` would do, but we
+" want to do it without undoing the extent of scrolling provided
+" by <C-u>/<C-d>).
+" Thus, to avoid updating the jumplist we use the command :keepjumps.
+" Unfortunately that takes an Ex-command, so we have to use :normal!
+" to convert our desired normal-mode `<C-u>M` to an ex-command.  But
+" that doesn't work quite right because the <C-u> is a special
+" character, so we wrap it in :execute.  But that still doesn't work
+" quite right because using the five-character literal-string '<C-u>'
+" runs afoul of the same problem that not using :execute does (namely
+" just echoing the command but not actually doing anything), and using
+" the expr-string "\<C-u>" would come back as a one-character string
+" of the actual control character, which :execute interprets as
+" c_CTRL-u rather than leaving it alone for the :normal! to interpret
+" as n_CTRL-u.  So we have to use the expr-string "\<lt>C-u>" which
+" evaluates to the five-character literal-string '<C-u>' but in a way
+" that's somehow different than before.  Alas, I'm not sure if there's
+" any way to make this code cleaner than all that.  Vim really needs
+" a better way of talking about all this without the bizarro multiple
+" levels of string evaluation.
+" TODO: They're not using a special character, but this link
+" <https://www.reddit.com/r/vim/comments/59d621/can_i_make_vim_consider_a_sequence_of_jumps_in_a/>
+" puts an extra colon, saying `:keepjumps :normal! ...` whereas I
+" only tried without that second colon (thinking along the lines of
+" when you need to use the :call command vs being able to just use
+" the function directly)  I wonder if that would help us avoid some
+" of the complexity below?
+" TODO: or try doing the <eval> thing instead of :execute
+nnoremap  <C-Up>   :execute "keepjumps normal! \<lt>C-u>M"<CR>
+nnoremap  <C-Down> :execute "keepjumps normal! \<lt>C-d>M"<CR>
 " TODO: imaps for <C-Up> and <C-Down>?
 
-" Move by display-lines rather than by file-lines.
+" ~~~~~ Move by display-lines rather than by file-lines.
+" Warning: traditional `j`/`k` are linewise, whereas `gj`/`gk` are
+" exclusive.  (Though exclusive makes more sense to me, so I'm cool
+" with that.)  Fwiw, you can still use <C-n>/<C-p> to get the old
+" file-linewise.
+" TODO: we may want to spruce these up by checking v:count, cf:
+" <https://www.hillelwayne.com/post/intermediate-vim/> (They also
+" have the very nice hack of using <;> as the <leader> for i-maps,
+" since one seldom wants to type non-whitespace characters immediately
+" after a semicolon.)
 noremap <Up>   gk
 noremap k      gk
 noremap <Down> gj
 noremap j      gj
+" I swap these two because: (a) `0` is so much easier to reach than
+" `^`; (b) because '^' means the true BOL in regexes, so the discrepancy
+" always struck me as odd.
+noremap 0      g^
+noremap ^      g0
+" Note: can still use `1|` or <Home> to get to the file-line first
+" character, also keeping their unique property of setting curswant=col.
+" I don't really care for `g$` so much, also `$` and <End> have the
+" unique property of setting curswant='$', so that would be lost by
+" using `g$` instead.
+
+
+" TODO: They prolly deserve a separate section, but consider also
+"   the following commands for moving whole lines around (HT: junegunn),
+"   instead of my <d><p> shenanigans for achieving the same effect.
+" TODO: see also 'matze/vim-move' for a more sophisticated version.
+" TODO: why isn't '< needed for the x_<C-k>, but '> is needed for x_<C-j>?
+" TODO: alas these won't work for the same reasons as trying to map
+"   <C-k> to <C-w>k etc; namely <C-j> *is* <NL>, if you're using the
+"   terminal.  Though we could always use <leader>j/<leader>k or similar
+"   instead.
+"nnoremap <silent> <C-k> :move-2<CR>
+"nnoremap <silent> <C-j> :move+<CR>
+"xnoremap <silent> <C-k> :move-2<CR>gv
+"xnoremap <silent> <C-j> :move'>+<CR>gv
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ History, backups, & stupidity                            {{{1
-set history=100                 " size of command and search history
-"set undolevels=1000            " depth of undo tree
+set history=200                 " size of command and search history.
+"set undolevels=1000            " depth of undo tree.
 
 " N.B., vim-6.2 can't handle the '<' entry here.
 set viminfo='20,<100,s100,\"100
@@ -1270,48 +1614,123 @@ set viminfo='20,<100,s100,\"100
 "           |   +---------------- Maximum of N lines for registers
 "           +-------------------- Keep marks for N files
 "set confirm                    " ask before doing something stupid
-set autowrite                   " autosave before commands like next and make
-set nobackup                    " make a backup file?
-"set patchmode=.orig            " save original file with suffix the first time
-"set backupdir=$HOME/.vim/backup " where to put backup files
-"set directory=$HOME/.vim/temp  " where to put temp files
+set autowrite                   " autosave before commands like :next and :make
+
+" See: `:h *backup-table*`
+" Before overwriting an existing file: If (&backup || &writebackup
+" || &patchmode) && &backupskip !~ %, then make a backup of the
+" original, according to how &backupcopy says to do it (copying vs
+" renaming).  After a successful write: If &backup, then keep it
+" around; If !&backup && &writebackup, then delete the backup; If
+" &patchmode && !exists(% . &patchmode), then rename the backup into
+" the patchfile (thus, only keeping the oldest version of the file).
+set nobackup                    " Make and retain backups? (default: no)
+if has('writebackup')
+  set writebackup               " Make temporary backups? (default: yes)
+endif
+"set patchmode=.orig            " Keep oldest backup with a suffix? (def: '')
+"if has('wildignore')
+"  set backupskip=....
+"endif
+set backupcopy=auto             " Create backups via copy or move?
+set backupdir=$HOME/.vim/backup " Where to put backup files? (comma-list)
+" Note: must use $HOME or expand('~'); can't just use '~'.
+" Warning: if none of the directories in &backupdir exist/writable,
+" then vim won't make backups; which means, if the other options say
+" to make backups before writing, then you can't write!
+
+" See: `:h *swap-file*`
+set swapfile                    " Create swapfiles? (default: yes; buffer-local)
+set directory=$HOME/.vim/swap   " Where to put swapfiles? (comma-list)
 "set nofsync swapsync=          " DANGEROUS: save power by never syncing to disk
 
+" TODO: consider &undoreload too
+" TODO: consider this option
+"if has('persistent_undo')
+"  set nobackup noswapfile nowritebackup history=10000 undolevels=10000
+"    \ undofile undodir=$HOME/.vim/undo
+"endif
 
-" TODO: Do I still want the `:ClearUndoHistory` command now that I
-"   have the `<leader>w` mapping?
-command! -nargs=0 ClearUndoHistory call wrengr#ClearUndoHistory()
-command! -nargs=0 ClearRegisters   call wrengr#ClearRegisters()
+" TODO: May want to check that &backupdir, &directory, and &undodir
+" have at least one existing writable directory; just to report the
+" problem early rather than leaving it to only be discovered once we
+" try to write out.
 
-" This wrapper function is an egregious hack in order to:
-" (1) see the 'foo written' message from `:write`;
-" (2) not have the `:call` clobber that message.
-" We can't simply inline this definition into the mapping, because:
-" (1) using `:silence` only silences the *output* of the `:call`,
-"   it doesn't silence the echoing of the `:silence call` command;
-" (2) using `<silence>` will prevent echoing the command,
-"   however it also silences the message from `:write`
-" There's a chance that joining the commands via <Bar> rather than
-" <CR> would make it work, but this wrapper function also works.
-" TODO: we may want to make a bang version of this too
-"
-" Warning: Doesn't affect us here but, beware of the syntastic bugs
-" around typing <C-z> too quickly after `:w`.  If we ever do run into
-" issues like that, then maybe insert a brief pause into this mapping.
-nnoremap <silent> <leader>w :call <SID>WriteAndClearUndoHistory()<CR>
-fun! s:WriteAndClearUndoHistory()
-  update " Like `:write` but only writes when &modified.
-  silent call wrengr#ClearUndoHistory()
-endfun
 
-" TODO: if we used a control character or something else very
-"   unlikely to be typed, we could also do something like this:
-"inoremap <silent> <leader>w <C-o>:call <SID>WriteAndClearUndoHistory()<CR>
-"   Maybe use <D-s> for regularity with OSX stuff; though I'm not
-"   sure whether iTerm2 uses <D-s> for anything.  (Of course, if
-"   <D-s> isn't used by iTerm2, then we could always use that for
-"   the normal-mode mapping too!)
-"   However, see <https://github.com/macvim-dev/macvim/issues/676>
+" i_<C-u> deletes a lot; so we first i_<C-g>u to break the undo
+" sequence and start a new change, that way we can <C-u> after
+" inserting a line break.
+" HT: vim82/defaults.vim
+inoremap <C-u> <C-g>u<C-u>
+
+" Make n_<.> work as expected despite using arrow keys when making the edit.
+inoremap <Left>  <C-g>U<Left>
+inoremap <Right> <C-g>U<Right>
+
+
+" Note: I use ClearUndoHistory far more often than I really should.
+" For my purposes, `:earlier 1f` will do (more or less) what I want:
+" which is to get back to the most recently saved version.  However,
+" beware that that only works if you're in a changed state; if you're
+" already on the most recent save, then it'll go to the previous one!
+" So eventually I'll need to define my own thing to make it idempotent.
+" Plus, of course, I should make a mapping for it.
+" See Also: `:h usr_32` and `:h undo-redo`.
+nnoremap <leader>du :call wrengr#ClearUndoHistory()<CR>
+nnoremap <leader>dr :call wrengr#ClearRegisters()<CR>
+nnoremap <leader>dm :delmarks<CR>
+if has('jumplist')
+  nnoremap <leader>dj :clearjumps<CR>
+endif
+" Re tags, see <https://vi.stackexchange.com/q/11964>
+
+" TODO: Since all those share the <leader>d prefix, maybe make some
+" extra wrapper that'll give a popup of completions if/when the
+" <leader>d timesout (or we do some other key like <Space> or <CR>)?
+
+" Note: the letter 'z' is punning off the ex-command `:z` for echoing
+" a bunch of stuff.  It is (afaict) completely unrelated to the
+" normal-mode `z` ops for adjusting the screen.
+" TODO: is there a better second letter for these? Can't use 'p'
+"   as in 'print'/'put' unless we want to change the clipboard thing
+"   currently bound to `<leader>p`
+nnoremap <leader>zu :undolist<CR>
+" while `g; g,` say they need '+jumplist'; `:changes` doesn't...
+nnoremap <leader>zc :changes<CR>
+nnoremap <leader>zr :registers<CR>
+nnoremap <leader>zm :marks<CR>
+if has('jumplist')
+  nnoremap <leader>zj :jumps<CR>
+endif
+nnoremap <leader>zt :tabs<CR>
+nnoremap <leader>zb :ls<CR>
+" TODO: when the arglist is empty it just leaves the command echoed
+" there, rather than showing an empty list like :jumps etc do.  So
+" we should wrapper this to do something more like that.
+nnoremap <leader>za :args<CR>
+
+
+" Because this is so much easier to type than `:w<CR>`
+nnoremap <leader>w :update<CR>
+" Note: :update is like :write, but it only writes when the buffer
+" has been &modified.
+" TODO: is there a good way to make :update tell us when it when
+"   it didn't write?  Cuz I'd like to always get a message a~la :write,
+"   just to have some feedback that yes the command did indeed run.
+" TODO: is there a way to form a new branch in the undo tree (so
+"   that n_<C-r> doesn't go anywhere), but without actually making
+"   additional changes?  If there's no such builtin, then we may
+"   want to implement a hack to achieve such.
+" TODO: I'm guessing :update doesn't allow using `:earlier 1f`
+"   anymore.  If not, then we'll definitely have to implement our
+"   checkpointing hack, so that we can jump back to the most recent
+"   time we called this mapping (or otherwise wrote to disk).
+" TODO: if we used a control character (or something else excedingly
+"   unlikely to be written) then we could also make an :imap for
+"   doing this.  Maybe we could use <D-s>?  Not sure if iTerm2
+"   already uses <D-s> for anything; of course, if they don't then
+"   we could use it for the normal-mode mapping too.  However, see
+"   <https://github.com/macvim-dev/macvim/issues/676>
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1361,6 +1780,9 @@ set autoindent
 "   Applies To: curly braces, hash mark, &cinwords, `>>` command.
 "   Requires: has('smartindent').
 "   Overruled By: &cin, &inde.
+"   N.B., &si is from the olden days and shouldn't really be used
+"   now; everyone uses &cin with custom settings, or some other
+"   language-specific algorithm.
 if has('smartindent')
   " Don't be stupid about hash (and also other stuff).
   set nosmartindent
@@ -1379,13 +1801,29 @@ endif
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ <Tab> handling (:help *ins-expandtab*)                   {{{1
+" See: <https://www.reddit.com/r/vim/wiki/tabstop> for a nice
+" clarification of what three behaviors &ts, &sts, and &sw are
+" really distinguishing (which is poorly explained by Vim, imo).
+" See: <https://en.wikipedia.org/wiki/Tab_key#Tab_characters> for
+" the history of how punchcards lead to <HT>=8chars and <VT>=6lines
+" (in lieu of the typewriter's <HT>=5chars).  And a bit more history
+" about how <VT> has been repurposed over the years:
+" <https://stackoverflow.com/q/3380538>
 
-set tabstop=4       " Display a <Tab> character as if N characters wide.
+set tabstop=4       " Display real <Tab> characters as if N characters wide.
 set softtabstop=0   " (0=)Don't pretend N positions are a <Tab> character
                     " (-1: Pretend &ts positions are a <Tab> character).
-set shiftwidth=0    " Indent by N positions for shift commands (0: use &ts)
-" TODO: consider &shiftround
-" TODO: consider &varsofttabstop requires '+vartabs'
+set shiftwidth=4    " Indent by N positions for shift commands (0: use &ts)
+set shiftround      " Make `>` and `<` operators round to a multiple of &sw
+                    " (like i_<C-t> and i_<C-d> always do).
+
+" if has('vartabs'), then there are two other options of note:
+" &vartabstop and &varsofttabstop.  Both of these override their
+" non-'var' counterparts to specify a non-regular sequence of
+" hard/soft tabstops.  IMO they're not for general use, but rather
+" only for specific filetypes (e.g., assembly code) that warrant
+" such non-regularity.
+
 
 " Enabling smarttab means we will interpret <Tab> keypress at beginning
 " of line as indenting by &sw positions (instead of only using &sw for
@@ -1410,6 +1848,7 @@ set expandtab
 
 " Stay in visual-mode after shifting.
 " HT: <https://github.com/cypher/dotfiles/blob/master/vim/bindings.vim>
+" TODO: do we really mean :vmap and not :xmap here? junegunn uses :xmap, fwiw
 "vnoremap < <gv
 "vnoremap > >gv
 
@@ -1451,7 +1890,9 @@ call wrengr#utils#DisableHardWrapping()
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Searching                                                {{{1
 set nohlsearch      " After finishing a search command, highlight matches?
-set incsearch       " While typing a search command, highlight match-so-far?
+if has('reltime')
+  set incsearch     " While typing a search command, highlight match-so-far?
+endif
 set ignorecase      " Make search commands ignore case.
 "set smartcase      " Become case-sensitive if the pattern has any uppercase.
 
@@ -1472,7 +1913,8 @@ set magic
 " (Mainly for use with CJK unicode, probably not so useful otherwise.)
 " See also: <https://vi.stackexchange.com/a/560> and `:h ga` and `:h g8`
 " TODO: really need a better keybinding/name.
-nnoremap <leader>z xu/<C-r>-<CR>
+nnoremap <leader>f xu/<C-r>-<CR>
+nnoremap <leader>F xu?<C-r>-<CR>
 
 " TODO: really need a better keybinding/name.
 " Also, we probably want something different from this.
@@ -1544,19 +1986,36 @@ endif
 " ~~~~~ Insert-mode Autocompletion (:help *ins-completion*)      {{{1
 " &cpt is used by i_<C-p>, i_<C-n>, i_<C-x><C-l>, and maybe also i_<C-x><C-d>.
 "set complete=.,w,b,u,t,i
-"set completeopt=menu,preview
-    " See also: *ins-completion-menu*, *complete-popuphidden*
-"set completepopup=     (if '+textprop' or '+quickfix')
-    " See also: *complete-popup*
-"set infercase      " When doing *ins-completion* and &ignorecase is on...
-" &dict is used by i_<C-x><C-k> and for others if 'k' is in &cpt.
+"   Used by i_<C-x><C-k> and if &cpt =~ 'k' then for others too.
 "set dictionary=
-" &tsr is used by i_<C-x><C-t> and for others if 's' is in &cpt.
+"   Used by i_<C-x><C-t> and if &cpt =~ 's' then for others too.
 "set thesaurus=
+"if has('eval')
+"  " Really these two should be set based on FileType; thus they
+"  " shouldn't really be set here.
+"  " See also: *complete-functions*
+"  "    Used by i_<C-x><C-u>
+"  set completefunc=
+"  "    Used by i_<C-x><C-o>
+"  set omnifunc=
+"endif
+"   See also: *ins-completion-menu*, *complete-popuphidden*
+"set completeopt=menu,preview
+"if has('textprop') || has('quickfix')
+"  " See also: *complete-popup*
+"  set completepopup=
+"endif
+set pumheight=15
+"set pumwidth=15
+"set infercase      " When doing *ins-completion* and &ignorecase is on...
 
-" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" ~~~~~ (:help *complete-functions*)                             {{{1
-"set completefunc=      (if '+eval')
+" Note: Both <Up>/<Down> and <C-p>/<C-n> change the selection in
+" the pmenu; the difference is: <C-p>/<C-n> will also insert/update
+" the provisional completion, whereas <Up>/<Down> will not.
+" TODO: what should we have map to <C-e> ?
+inoremap <expr> <CR>       pumvisible() ? "\<C-y>" : "\<CR>"
+inoremap <expr> <Tab>      pumvisible() ? "\<C-n>" : "\<Tab>"
+inoremap <expr> <S-Tab>    pumvisible() ? "\<C-p>" : "\<S-Tab>"
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1598,50 +2057,86 @@ endif
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Highlight whitespace errors                              {{{1
+" TODO: move this off to autoload/wrengr.vim or similar
 " TODO: actually make this toggle!
-" BUG: these patterns don't seem to work everywhere (e.g., inside
-"   `function!` itself; though it works just fine inside `if`.
-"   Similarly, it does nothing inside vimCommentLine)
-" TODO: should prolly move this off to our colorscheme, ne?
-command! -nargs=0 HighlightSpaces call s:HighlightSpaces()
-fun! s:HighlightSpaces()
-  " TODO: should prolly guard this one based on how &expandtab is set.
-  syntax match hardTab display "\t"
-  highlight link hardTab Error
-
-  syntax match trailingWhite display "[[:space:]]\+$"
-  highlight link trailingWhite Error
-
+" TODO: also, make sense to add an augroup to toggle it off whenever
+"   in insert-mode; though it's only a minor annoyance to see the
+"   spaces briefly highlighted while you're typing.
+"   See: 'ntpeters/vim-better-whitespace'
+" Note: using matchadd() ensures that this has higher priority than
+" any :syntax, as well as higher than searches when &hls is enabled.
+" That should help ensure that it does indeed match everywhere.
+" Also note that since matchadd() only applies to the current window,
+" this command too will only dis-/enable highlighting whitespace
+" errors for the buffer from which it's called.
+command! -nargs=0 HighlightWhiteError call s:HighlightWhiteError()
+let w:whiteErrorID = []
+fun! s:HighlightWhiteError()
+  if !empty(w:whiteErrorID)
+    return
+  endif
+  if &expandtab
+    call add(w:whiteErrorID, matchadd('Error', '\t'))
+  endif
+  " \s matches only <Space> and <Tab>.
+  " [[:space:]] matches all ASCII whitespace, as per C's isspace()
+  "     That is: <Space>, <Tab>, <NL>, VertTab, <FF>, <CR>
+  "     C0 notation:      ^I     ^J    ^K       ^L    ^M
+  "     ASCII hex:        \x09   \x0A  \x0B     \x0C  \x0D
+  "     Moreover, beware that since Vim uses the code \x0A in buffers
+  "     as a representation of the code \x00 in files, that means
+  "     [[:space:]] will also match <Nul>; which seems okay for our
+  "     purposes here.
+  " I don't think it's smart enough to handle Unicode, since
+  " 'ntpeters/vim-better-whitespace' explicitly defines their own
+  " group for: '\u0020\u00a0\u1680\u180e\u2000-\u200b\u202f\u205f\u3000\ufeff'
+  call add(w:whiteErrorID, matchadd('Error', '[[:space:]]\+$'))
   " The \ze ends the match, so that only the spaces are highlighted.
-  syntax match spaceBeforeTab display " \+\ze\t"
-  highlight link spaceBeforeTab Error
+  call add(w:whiteErrorID, matchadd('Error', '\ \+\ze\t'))
+endfun
+command! -nargs=0 NoHighlightWhiteError call s:NoHighlightWhiteError()
+fun! s:NoHighlightWhiteError()
+  for l:id in w:whiteErrorID
+    call matchdelete(l:id)
+  endfor
+  let w:whiteErrorID = []
 endfun
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Folding (:help usr_28)                                   {{{1
-" By default <z><a> is used for un/folding. but that can be annoying
-" if you accidentally mistype the <z> and so enter append mode. Should
-" use nnoremap to choose some other key combo for un/folding.
 if has('folding')
-  "set foldenable          " Turn on folding
+  " &foldenable turns folding on; but we don't need to set it here
+  " because there are default mappings (N.B., &fen is window-local only):
+  "     nnoremap zn :set nofen
+  "     nnoremap zN :set fen
+  "     nnoremap zi :set fen!
+  " Also, many of the fold commands will automatically enable &fen
+  " too, namely: `zc zC za zA zx zm zM`
+
+  "set foldmethod=syntax    " How to make folds? (manual, marker, indent, syntax, expr)
+  "set foldexpr=...         " Expression used by &fdm=expr.  Requires '+eval'.
+  "set foldignore=#         " Characters used by &fdm=indent.
+  "set foldmarker={{{,}}}   " Markers used by &fdm=marker. (Bad idea to change)
+  set foldnestmax=5         " Maximum nesting level for &fdm={indent,syntax}.
+  set foldminlines=2        " Minimum screen-lines to bother displaying as folded.
+  "set foldlevelstart=-1    " Initial value of &foldlevel: 0=`zM`, 99=`zR`
+    " Again, there's no point in setting &foldlevel itself (in $MYVIMRC).
+    " You can adjust it with the `zm zM zr zR` commands; and the
+    " `zx zX` commands will reapply its current setting (in case
+    " something doesn't automatically do so).
+
   " This shows the first line of the fold, with '/*', '*/' and '{{{' removed.
   "set foldtext=v:folddashes.substitute(getline(v:foldstart),'/\\*\\\|\\*/\\\|{{{\\d\\=','','g')
-  "set foldmethod=syntax   " Make folding by: syntax, indent,...
-  "set foldlevel=0         " Autofold (0)just this level, (99)all levels
-  "set foldlevelstart=0    " Initially close all folds
-  "set foldminlines=2      " Don't fold lines that are less than
-  "set foldnestmax=3       " Maximum nesting for foldings
+
+  " TODO: &fillchars
 
   " Use N columns of gutter to show the extent of folds.
   " (the N-th column is always empty, so only shows N-1 levels of nesting
   " in tree-like format; the rest are abbreviated by numbers for their depth)
   set foldcolumn=1
 
-  "set foldopen+=insert    " Open folds when action happens
-  "set foldopen+=jump      " Open folds when action happens
-  "set foldopen=all        " Open folds when action happens
-  "set foldclose=all       " Automatically close folds when leaving
+  " TODO: &foldopen, &foldclose
 
   " TODO: might should use wrengr#plug#DataDir(), but I've no idea
   "   what NeoVim uses for this.
@@ -1667,12 +2162,23 @@ endif
 " The shell used for `!` and `:!` commands.
 "set shell=/bin/bash
 
+"if has('quickfix')
+"  set errorfile=
+"  set errorformat=
+"endif
+
 " Force the <~> key command to behave like an operator (thus, like `g~`).
 "set tildeop
 
 " The thing the <=> key command uses.
 "set equalprg=
 " TODO: cf., <http://vim.wikia.com/wiki/Par_text_reformatter>
+" TODO: I'm sure it's woefully outdated, but maybe consider the
+" example for setting &equalprg re HTML tidy:
+" <https://github.com/jgm/dotvim/blob/master/doc/vimtips.txt>
+" Not that we'd want to do that per-se; rather, it may be helpful
+" for seeing how to get these external programs to dump things into
+" &errorfile for quickfix'ing.
 
 " The thing `gq` uses.
 "set formatexpr=
@@ -1700,6 +2206,12 @@ map <S-k> <Nop>
 
 " The thing `:make` uses.
 "set makeprg=make
+" Despite the name, this is used not just for :make, but also :grep, :cf, :lf, etc
+"set makeencoding=...
+" TODO: We may want to add something like the following to ftplugin/java.vim
+"   HT: <https://github.com/jgm/dotvim/blob/master/doc/vimtips.txt>
+"   set makeprg=jikes -nowarn -Xstdout +E %
+"   set errorformat=%f:%l:%c:%*\d:%*\d:%*\s%m
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1707,9 +2219,14 @@ map <S-k> <Nop>
 
 "set pastetoggle=<F9>
 
-" Make <S-y> yank from cursor to end of line (a~la <S-d>, and akin
-" to <S-a>), rather than yanking the whole line (a~la <y><y>, as
-" is done in traditional vi).
+" Make n_Y yank from cursor to end of line (a~la n_D and n_C, and
+" akin to n_A), rather than yanking the whole line (a~la n_yy, as
+" is done in traditional vi).  (Unfortunately it's not entirely cut
+" and dried, because n_S is also linewise; then again there is no
+" n_ss, and n_s takes a character count like n_x rather than a
+" motion like n_d or n_c.)  Note that I'm being specific about the
+" normal-mode because for the visual-mode the capital letters do
+" generally mean linewise (including n_V, o_V, v_D, v_C, v_S,...)
 nnoremap Y y$
 
 " In Visual/Select modes: have <p> replace selected text with the "" register.
@@ -1828,6 +2345,9 @@ if has('autocmd')
 
     " Try to enforce correct spelling and short messages.
     autocmd Filetype gitcommit setlocal spell nocursorline textwidth=72
+
+    " HT: <https://www.hillelwayne.com/post/intermediate-vim/>
+    "autocmd FileType markdown inoremap <buffer> ;` ```<CR><CR>```<Up><Up>
   augroup END
 endif
 
@@ -1865,6 +2385,13 @@ let g:netrw_list_hide    = '\(^\|\s\s\)\zs\.[^\.]\+' " Toggle hiddenness with <g
 "let g:netrw_silent=1           " TODO: look it up and consider
 "let g:netrw_special_syntax=1   " TODO: look it up and consider
 
+" We should either do something like this:
+"if has('mac') && executable('open')
+"  let g:netrw_browsex_viewer = 'open'
+"endif
+" Or else probably want to give up and do this:
+"let g:netrw_nogx=1
+
 " TODO: if we don't use vinegar, then should copy-paste the stuff
 " for using 'suffixes' in lieu of the default strange C-oriented
 " sorting. Also for enhancing the hidden files based on 'wildignore'.
@@ -1880,7 +2407,7 @@ let g:netrw_list_hide    = '\(^\|\s\s\)\zs\.[^\.]\+' " Toggle hiddenness with <g
 "augroup wrengrvinegar
 "  autocmd!
 "  autocmd FileType netrw
-"    \nnoremap <buffer> q :call wrengr#BufferDelete()<CR>
+"    \  nnoremap <buffer> q :call wrengr#BufferDelete()<CR>
 "    \| nnoremap <buffer> ~ :edit ~/<CR>
 "augroup END
 
@@ -1924,7 +2451,7 @@ if has('multi_byte')
   "endif
   "let g:airline_left_sep           = '▶' " '»'
   "let g:airline_right_sep          = '◀' " '«'
-  "let g:airline_symbols.crypt      = '🔒'
+  "let g:airline_symbols.crypt      = '🔒︎'  " beware to keep the \uFE0E there!
   "let g:airline_symbols.linenr     = '¶' " '␊', '␤'
   "let g:airline_symbols.maxlinenr  = '' " '☰'
   "let g:airline_symbols.branch     = '⎇'
@@ -1945,8 +2472,12 @@ let g:airline_right_sep=''
 " isn't too useful to me.
 let g:airline_section_z=''
 
+" TODO: see <https://github.com/ilms49898723/dotfiles/blob/master/config/.vimrc>
+" for various functions to construct your own entries.  Granted
+" theirs are for lightline, but the ideas should translate readily.
 
-" ~~~~~ gitgutter configuration                                  {{{2
+
+" ~~~~~ gitgutter configuration (:help *gitgutter-options*)      {{{2
 if has('signs')
   set updatetime=500
   " Newer versions of gitgutter replaced g:gitgutter_sign_column_always
@@ -1958,32 +2489,36 @@ if has('signs')
   else
     let g:gitgutter_sign_column_always = 1
   endif
-  "let g:gitgutter_max_signs = 500 " default=500
+  "let g:gitgutter_grep = 'grep --color=never' " gitgutter can't handle ANSI codes
+  "let g:gitgutter_max_signs = 500 " default=500 if Vim < 8.1.0614; else -1
   "let g:gitgutter_map_keys  = 0   " don't set up default mappings
   " Default mappings:
-  "     nmap ]c         <Plug>GitGutterNextHunk
-  "     nmap [c         <Plug>GitGutterPrevHunk
-  "     nmap <Leader>hp <Plug>GitGutterPreviewHunk
-  "     nmap <Leader>hs <Plug>GitGutterStageHunk
-  "     nmap <Leader>hu <Plug>GitGutterUndoHunk
-  "     omap ic         <Plug>GitGutterTextObjectInnerPending " all lines in hunk
-  "     omap ac         <Plug>GitGutterTextObjectOuterPending " also trailing empty lines
-  "     xmap ic         <Plug>GitGutterTextObjectInnerVisual
-  "     xmap ac         <Plug>GitGutterTextObjectOuterVisual
+  "     nmap ]c         <Plug>(GitGutterNextHunk)
+  "     nmap [c         <Plug>(GitGutterPrevHunk)
+  "     nmap <Leader>hp <Plug>(GitGutterPreviewHunk)
+  "     nmap <Leader>hs <Plug>(GitGutterStageHunk)
+  "     nmap <Leader>hu <Plug>(GitGutterUndoHunk)
+  "     omap ic         <Plug>(GitGutterTextObjectInnerPending) " all lines in hunk
+  "     omap ac         <Plug>(GitGutterTextObjectOuterPending) " also trailing empty lines
+  "     xmap ic         <Plug>(GitGutterTextObjectInnerVisual)
+  "     xmap ac         <Plug>(GitGutterTextObjectOuterVisual)
   " TODO: the readme has all sorts of function suggestions
   " TODO: It looks like I've fixed the SignColumn stuff, but maybe
   "     check out the documentation for g:gitgutter_set_sign_backgrounds.
   " TODO: maybe also check out `:h gitgutter-statusline` for
-  "     something to put into airline's section Z.
+  "     something to put into airline's section Z. (Though it looks
+  "     like we already get that in section B)
 endif
 
 
 " ~~~~~ nerdtree configuration                                   {{{2
 "if exists(':NERDTree')
-"  noremap <C-t> :NERDTreeToggle<CR>
+"  nnoremap <leader>t :NERDTreeToggle<CR>
 "
 "  " Allow vim to close if the only open window is nerdtree
-"  autocmd wrengr_vimrc BufEnter * if (winnr('$') == 1 && exists('b:NERDTree') && b:NERDTree.isTabTree()) | q | endif
+"  autocmd wrengr_vimrc BufEnter *
+"    \ if (winnr('$') == 1 && exists('b:NERDTree') && b:NERDTree.isTabTree())
+"    \| q | endif
 "
 "  " TODO: see also junegunn's `augroup nerd_loader`
 "
@@ -2039,14 +2574,14 @@ let g:goyo_height = '90%'
 " per tab/window/buffer.
 let s:goyo_saved_sc = &showcmd
 let s:goyo_saved_so = &scrolloff
-fun! s:on_GoyoEnter()
+fun! s:GoyoEnter()
   let s:goyo_saved_sc = &showcmd
   let s:goyo_saved_so = &scrolloff
   set noshowcmd
   set scrolloff=999
   Limelight
 endfun
-fun! s:on_GoyoLeave()
+fun! s:GoyoLeave()
   let &showcmd   = s:goyo_saved_sc
   let &scrolloff = s:goyo_saved_so
   Limelight!
@@ -2056,15 +2591,15 @@ endfun
 " was recommended by Goyo's README, but I don't think it's really
 " needed, since our functions shouldn't trigger any new auto events
 " (unless Limelight uses a similar autocmd-as-callback trick).
+" TODO: maybe we should be using the newer `++nested` syntax?
 augroup wrengr_vimrc
-  autocmd User GoyoEnter nested call s:on_GoyoEnter()
-  autocmd User GoyoLeave nested call s:on_GoyoLeave()
+  autocmd User GoyoEnter nested call s:GoyoEnter()
+  autocmd User GoyoLeave nested call s:GoyoLeave()
 augroup END
 
 " TODO: consider using something like this (or similar for Goyo):
-"nnoremap <Leader>l <Plug>(Limelight)
-"xnoremap <Leader>l <Plug>(Limelight)
-"nnoremap <Leader>ll :Limelight!<cr>
+"nmap <Leader>l <Plug>(Limelight)
+"nnoremap <Leader>ll :Limelight!<CR>
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2073,102 +2608,52 @@ augroup END
 "
 " TODO: if we run into certain issues with asyncomplete doing too much,
 " then take a look at: <https://github.com/prabirshrestha/vim-lsp/issues/328>
+"
+" Note: even though exists('g:lsp_loaded') is true by the time we
+" can ask it on the cmdline, it's not yet true here!
+" (N.B., prabirshrestha doesn't follow the `g:loaded_{plugin}` convention.)
 
 
-" ~~~~~ Setup Kythe for Google-specific code searching
+" TODO: the next three were suggested by CiderLSP; do we actually want them?
+" [asyncomplete-lsp]: Send async completion requests.
+" WARNING: Might interfere with other completion plugins.
+"let g:lsp_async_completion = 1
+" Enable diagnostics signs in the gutter.
+" TODO: how different from g:lsp_diagnostics_signs_enabled?
+"let g:lsp_signs_enabled = 1
+" Enable echo under cursor when in normal mode.
+"let g:lsp_diagnostics_echo_cursor = 1
+
+"let g:lsp_format_sync_timeout = 1000
+"autocmd wrengr_vimrc BufWritePre *.rs,*.go call execute('LspDocumentFormatSync')
+"
+" TODO: if we ever end up usng EasyMotion, then see
+"   `:h lsp#disable_diagnostics_for_buffer()` re autocommands to
+"   toggle lsp's diagnostics so as not to interfere with EasyMotion.
+
+" Only called for languages that have a registered server.
+autocmd wrengr_vimrc User lsp_buffer_enabled call wrengr#lsp#BufferEnabled()
+
+
+" ~~~~~ Setup Kythe for Google-specific code searching           {{{3
 " Kythe is almost entirely open source (just not the stubby wrapping);
 " cf., <https://github.com/kythe/kythe/tree/master/kythe/go/languageserver>
 
-" Alas, prabirshrestha doesn't follow the `g:loaded_{plugin}` convention.
-" TODO: should we also guard for exists('g:async_vim') ?
-if exists('g:lsp_loaded')
-  fun! s:lsp_register_Kythe()
-    let l:kythe_exe = '/google/bin/releases/grok/tools/kythe_languageserver'
-    if executable(l:kythe_exe)
-      call lsp#register_server({
-        \ 'name': 'Kythe Language Server',
-        \ 'cmd': {server_info->[l:kythe_exe, '--google3']},
-        \ 'allowlist': ['cpp', 'go', 'java', 'proto', 'python'],
-        \ })
-    endif
-  endfun
-  autocmd wrengr_vimrc User lsp_setup call s:lsp_register_Kythe()
-
-  " TODO: the next three were suggested by CiderLSP; do we actually want them?
-  " [asyncomplete-lsp]: Send async completion requests.
-  " WARNING: Might interfere with other completion plugins.
-  "let g:lsp_async_completion = 1
-  " Enable diagnostics signs in the gutter.
-  " TODO: how different from g:lsp_diagnostics_signs_enabled?
-  "let g:lsp_signs_enabled = 1
-  " Enable echo under cursor when in normal mode.
-  "let g:lsp_diagnostics_echo_cursor = 1
-
-  " Not sure exactly how 'sign_define' differs from the usual 'signs' but...
-  " Also, whenever the guard passes, it may already be enabled by default...
-  if has('patch-8.1.0772') && has('sign_define')
-    let g:lsp_diagnostics_signs_enabled = 1
+fun! s:lsp_register_Kythe()
+  let l:kythe_exe = '/google/bin/releases/grok/tools/kythe_languageserver'
+  if executable(l:kythe_exe)
+    call lsp#register_server({
+      \ 'name': 'Kythe',
+      \ 'cmd': {server_info->[l:kythe_exe, '--google3']},
+      \ 'allowlist': ['cpp', 'go', 'java', 'proto', 'python'],
+      \ })
   endif
-
-  fun! s:on_lsp_buffer_enabled() abort
-    " TODO: Do we actually want these two? (see `:h vim-lsp-omnifunc`)
-    "setlocal omnifunc=lsp#complete
-    " Specifies the function to be used to perform tag searches.
-    " also see `:h vim-lsp-tagfunc` and g:lsp_tagfunc_source_methods
-    "if has('patch-8.1.1228') && exists('+tagfunc')
-    "  setlocal tagfunc=lsp#tagfunc
-    "endif
-    "
-    " TODO: how exactly does the :LspDefinition<CR> version differ from
-    "   the <plug>(lsp-definition) version?  See `:h vim-lsp-mappings`
-    "   vs `:h vim-lsp-commands`; though that stull doesn't explain really.
-    "   Though for us at least, the <plug> versions aren't working (i.e.,
-    "   they don't do anything afaict)
-    " BUG: all too often we get "No definition found" even when it's
-    "   defined in the same file!  Does it need to be fully-qualified
-    "   at the use site or not type-dependant or something?
-    " TODO: consider also/instead :LspPeekDefinition
-    nnoremap <buffer> gd :LspDefinition<CR>
-    " BUG: "Retrieving declaration not supported for filetype 'cpp'";
-    "   despite this command existing precisely for languages like C/C++
-    "   which distinguish declarations from definitons.
-    " TODO: consider also/instead :LspPeekDeclaration
-    nnoremap <buffer> gD :LspDeclaration<CR>
-    nnoremap <buffer> gr :LspReferences<CR>
-    " Other mappings suggested in the readme
-    " TODO: decide which of these I'd like
-    "noremap  <buffer> gs <plug>(lsp-document-symbol-search)    " :LspDocumentSymbol (shows not searches)
-    "nnoremap <buffer> gS <plug>(lsp-workspace-symbol-search)   " :LspWorkspaceSymbol, :LspWorkspaceSymbolSearch
-    "nnoremap <buffer> gi <plug>(lsp-implementation)            " :LspImplementation, :LspPeekImplementation; this is for 'implementations of interfaces' whatever that means...
-    "nnoremap <buffer> gt <plug>(lsp-type-definition)           " :LspTypeDefinition, :LspPeekTypeDefinition
-    "nnoremap <buffer> <leader>rn <plug>(lsp-rename)            " :LspRename
-    "nnoremap <buffer> [g <plug>(lsp-previous-diagnostic)       " :LspPreviousDiagnostic
-    "nnoremap <buffer> ]g <plug>(lsp-next-diagnostic)           " :LspNextDiagnostic
-    "nnoremap <buffer> K <plug>(lsp-hover)                      " :LspHover
-    "
-    " Scrolls the current displayed floating/popup window.
-    "inoremap <buffer><expr> <C-f> lsp#scroll(+4)
-    "inoremap <buffer><expr> <C-d> lsp#scroll(-4)
-    "
-    "let g:lsp_format_sync_timeout = 1000
-    "autocmd! BufWritePre *.rs,*.go call execute('LspDocumentFormatSync')
-    "
-    " See `:h vim-lsp-folding` also may want to wrap this in `augroup
-    " lsp_folding` and only apply it to certain filetypes.
-    set foldmethod=expr
-      \ foldexpr=lsp#ui#vim#folding#foldexpr()
-      \ foldtext=lsp#ui#vim#folding#foldtext()
-    " TODO: also see `:h vim-lsp-semantic`
-  endfun
-  " Only called for languages that have a server registered.
-  autocmd wrengr_vimrc User lsp_buffer_enabled call s:on_lsp_buffer_enabled()
-  " TODO: if we ever end up usng EasyMotion, then see
-  "   `:h lsp#disable_diagnostics_for_buffer()` re autocommands to toggle
-  "   lsp's diagnostics so as not to interfere with EasyMotion.
-endif " exists('g:lsp_loaded')
+endfun
+autocmd wrengr_vimrc User lsp_setup call s:lsp_register_Kythe()
 
 
 " ~~~~~ 'prabirshrestha/asyncomplete.vim' configuration          {{{2
+" TODO: move this off to its own autoload file too.
 "fun! s:asyncomplete_setup()
 "  " if 'asyncomplete-tags'
 "  call asyncomplete#register_source(
@@ -2206,7 +2691,7 @@ endif " exists('g:lsp_loaded')
 
 " BUG: why does wildmode not expand this to have a trailing space
 "   after the `:Page` like it used to?
-command! -nargs=+ -complete=command Page :call wrengr#Page(<q-args>)
+command! -nargs=+ -complete=command Page call wrengr#Page(<q-args>)
 
 " TODO: should probably give this a better mapping.
 nnoremap <leader>s :call wrengr#SynStack()<CR>
@@ -2215,13 +2700,38 @@ nnoremap <leader>s :call wrengr#SynStack()<CR>
 nnoremap <leader>o o<ESC>
 nnoremap <leader>O O<ESC>
 
+" <https://github.com/jgm/dotvim/blob/master/doc/vimtips.txt> has
+" a nice tip about using `<C-R>=expand("%:p:h")` to get the path
+" to the directory of the file in the current buffer.  However,
+" with wildmode enabled we can also just type the % character
+" followed by the &wildcar, and it'll replace the '%' with the
+" result of `<C-r>=expand("%:p")`.  So, that's still missing the
+" ":h" part, but is pretty close.  We can do the same with `#<WildChar>`
+"
+" N.B., (:help *`=*) apparently we can use `= as a modern replacement
+" for <C-r>= ; the difference being that `= is terminated by ` whereas
+" <C-r>= is terminated by <CR>
+" Alas, I just got to the end of reading that help section, and
+" apparently one can only use `= in places where a filename is expected.
+
+" TODO: <https://github.com/jgm/dotvim/blob/master/doc/vimtips.txt>
+" also has a nice trick of doing `:g/^/m0` to reverse all the lines
+" in the file.  I seldom need that, but sometimes I do want to reverse
+" lines in a certain range.  I'm guessing that `0` is an absolute
+" linenr, so we'd need to do some golfing to get a macro that does
+" the right thing for regions.  Might be able to use :g/^/m'<   but only after a visual selection.
+" There're also some nice examples at
+"   `:h *edit-paragraph-join*`  :g/./,/^$/join
+"   `:h *collapse*`             GoZ<Esc>:g/^$/.,/./-j<CR>Gdd
+"                               GoZ<Esc>:g/^[ <Tab>]*$/.,/[^ <Tab>]/-j<CR>Gdd
+
 " Haskell comment pretty printer (command mode)
 " TODO: make this work for indented comments too
-noremap =hs :.!sed 's/^-- //; s/^/   /' \| fmt \| sed 's/^  /--/'<CR>
+nnoremap =hs :.!sed 's/^-- //; s/^/   /' \| fmt \| sed 's/^  /--/'<CR>
 
 " JavaDoc comment pretty printer.
 " TODO: make this work for indented comments too
-noremap =jd :.,+1!~/.vim/macro_jd.pl<CR>
+nnoremap =jd :.,+1!~/.vim/macro_jd.pl<CR>
 
 " TODO: can I write a single smart macro (or external program) to
 "   handle comments wrapping for all of Haskell, JavaDoc, Bash,
