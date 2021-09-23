@@ -2,6 +2,13 @@
 use warnings;
 use strict;
 
+my $re;
+if (@ARGV) {
+    $re = qr/$ARGV[0]/;
+} else {
+    $re = qr//;
+}
+
 # TODO: we'd need to use 'open3' if we want to get the child PID;
 #   see my `psed` script for more info.
 # Probably ASCII is more accurate
@@ -26,7 +33,9 @@ die "$0: unexpected error while reading: $!"
 
 foreach (sort { hex $a <=> hex $b } keys %K) {
     my ($r,$g,$b) = $_ =~ m/^(..)(..)(..)$/ or die;
+    my $K_ = join ' ', @{$K{$_}};
     print
         "\e[38:2::" . (hex $r) . ':' . (hex $g) . ':' . (hex $b) . 'm',
-        $_, "\t", (join ' ', @{$K{$_}}), "\e[0m\n";
+        $_, "\t", $K_, "\e[0m\n"
+        if $K_ =~ $re;
 }
