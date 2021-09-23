@@ -346,6 +346,8 @@
     # BUG: this won't tab-complete the branch name, unlike `oo` itself
     oorop = "!f(){ git oo $1 && git rop ; }; f"
     wdiff = diff --color-words
+    # For when you want orphan branches
+    unparent = branch --unset-upstream
     # This will undo the most recent commit action, leaving the changes
     # from that commit in place. <http://stackoverflow.com/q/927358/358069>
     unrecord = reset --soft 'HEAD^'
