@@ -4,6 +4,16 @@
 "              Thomas Koehler <jean-luc@picard.franken.de>
 " Last Change: 2002 September 30
 " URL:         http://jeanluc-picard.de/vim/syntax/prolog.vim
+"
+" TODO: There's a newer version of this (2016-09-06) by Thomas Koehler, at:
+" <https://github.com/vim/vim/commit/64d8e25bf6efe5f18b032563521c3ce278c316ab>
+" After that it was taken over by Anton Kochkov (2019-08-29):
+" <https://github.com/vim/vim/commit/06fe74aef72606ac34c9f494186e52614b8fb59a>
+" With another update in 2021-01-05:
+" <https://github.com/vim/vim/commit/82be4849eed0b8fbee45bc8da99b685ec89af59a>
+" Was this/my version because it didn't used to be distributed with
+" vim itself?  Or did I not like some of those changes for some reason?
+
 
 " There are two sets of highlighting in here:
 " If the "prolog_highlighting_clean" variable exists, it is rather sparse.
