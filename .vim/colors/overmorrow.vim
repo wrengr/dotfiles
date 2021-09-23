@@ -1,7 +1,7 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " Name:     colors/overmorrow.vim
-" Modified: 2021-09-17T13:54:36-07:00
-" Version:  1a
+" Modified: 2021-09-22T22:12:47-07:00
+" Version:  1b
 " Author:   wren romano
 " Summary:  My own personal colorscheme.
 " License:  This program is free software; you can redistribute it and/or
@@ -22,10 +22,13 @@
 "   * variables         = magenta (both tyvars and tmvars)
 "   * parens, forall, colon, "Type"/"*" = black (on white)
 "   ...Maybe not everything exactly as such, but just vaguely along those lines.
+" TODO: we should also add a &background=light variant, to reduce eyestrain.
 
 " TODO: see <https://github.com/tweekmonster/helpful.vim> for when various features got added.
 
 " TODO: see also <https://github.com/ajvondrak/vondark/wiki/Highlighting> for a guided tour of some various groups.
+
+" TODO: also <https://gist.github.com/romainl/379904f91fa40533175dfaec4c833f2f> for some nice thoughts on autocmd.
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -100,9 +103,9 @@ let g:colors_name='overmorrow'
 
 " ~~~~~ User-configurable settings.
 " When we want italic font, what should cterm do?
-let g:overmorrow_cterm_italic = get(g:, 'overmorrow_cterm_italic', 'italic')
+let g:overmorrow#cterm_italic = get(g:, 'overmorrow#cterm_italic', 'italic')
 " When we want bold font, what should cterm do?
-let g:overmorrow_cterm_bold = get(g:, 'overmorrow_cterm_bold', 'bold')
+let g:overmorrow#cterm_bold = get(g:, 'overmorrow#cterm_bold', 'bold')
 
 " BUG: Apparently our default xterm settings configure &t_ZH and
 "   &t_ZR to send &t_mr and &t_me instead; so we need to reconfigure
@@ -215,8 +218,8 @@ let g:overmorrow_cterm_bold = get(g:, 'overmorrow_cterm_bold', 'bold')
 "   (The system colors mentioned in comments are based on the
 "   mnemonic of the variable name, not on the actual shade that
 "   variable stores!)
-let s:black          = {'hex':'000000', 'cterm256':16}  " system=0,8
-let s:white          = {'hex':'ffffff', 'cterm256':231} " system=7,15
+let s:black          = {'hex':'000000', 'cterm256':16}  " system~0,8
+let s:white          = {'hex':'ffffff', 'cterm256':231} " system~7,15
 let s:red            = {'hex':'d54e53', 'cterm256':167} " system~1,9    ; TODO: d54e53 -> 167; 167 -> d75f5f
 let s:orange         = {'hex':'e78c45', 'cterm256':172} " {no system}   ; TODO: e78c45 -> 173; 172 -> d78700
 let s:yellow         = {'hex':'e7c547', 'cterm256':184} " system~3,11   ; TODO: e7c547 -> 185; 184 -> d7d700
@@ -244,7 +247,6 @@ let s:sienna         = {'hex': 'a0522d', 'cterm256':130}
     " This is really pretty, but doesn't necessarily mesh well with
     " the other colors.
 
-
 " ~~~~~ Semantically named color choices.
 let s:fg             = {'hex':'e4e4e4', 'cterm256':254} " 89.41% ; TNB was #eaeaea (91.76%)
 let s:bg             = s:black
@@ -260,7 +262,7 @@ let s:window         = {'hex':'4d5057', 'cterm256':59} "            ; TODO: 4d50
 "   cdc1c5 -> 182 -> d7afd7: also too bright
 "   36648b ->  60 -> 5f5f87: that'll work for now
 " BUG: this value of s:preproc may be acceptable for SpecialComment
-"   (i.e., haskell pragmas); but it's not at all acceptible for other
+"   (i.e., haskell pragmas); but it's not at all acceptable for other
 "   forms of PreProc
 let s:preproc        = {'hex':'5f5f87', 'cterm256':60}
 
@@ -270,7 +272,7 @@ let s:AbsoluteLineNr = {'hex':'4e4e4e', 'cterm256':239} " 30.58% ; TNB was 237 (
 let s:RelativeLineNr = s:violet
 " A pleasant but high-contrast color:
 let s:ColorColumn    = {'hex':'e5786d', 'cterm256':173} "           ; TODO: e5786d -> 173; 173 -> d7875f
-    " N.B., is very close to s:orange, but definitely not interchangable.
+    " N.B., is very close to s:orange, but definitely not interchangeable.
 
 " TODO: I also rather like airline's (default?) fg/bg pairing:
 " 	ctermfg=85 ctermbg=234 guifg=#9cffd3 guibg=#202020
@@ -314,7 +316,7 @@ let s:ColorColumn    = {'hex':'e5786d', 'cterm256':173} "           ; TODO: e578
 " inscrutable syntax error (unlike Vim's internal errors which merely
 " abort this file, as expected).
 fun! s:Die(where, msg)
-  let l:msg = 'ERROR(overmorrow/' . a:where . '): ' . a:msg
+  let l:msg = 'ERROR(overmorrow#' . a:where . '): ' . a:msg
   echohl ErrorMsg
   echomsg l:msg
   echohl NONE
@@ -367,8 +369,8 @@ let s:attrStyles =
   \   , 'underline': 'underline'
   \   }
   \ , 'cterm':
-  \   { 'bold':      g:overmorrow_cterm_bold
-  \   , 'italic':    g:overmorrow_cterm_italic
+  \   { 'bold':      g:overmorrow#cterm_bold
+  \   , 'italic':    g:overmorrow#cterm_italic
   \   , 'reverse':   'reverse'
   \   , 'standout':  'standout'
   \   , 'strike':    'strike'
@@ -399,15 +401,22 @@ let s:validAttrs =
 " TODO: support inheriting as well as overriding.
 fun! s:getAttrs(attrs, tg) abort
   let l:t_attrs = type(a:attrs)
-  " TODO: also allow s:t_string, for singleton lists.
-  if l:t_attrs != s:t_list
+  if l:t_attrs == s:t_string
+    " Note: vim-8.2 has that strings are lists of characters, whereas
+    " vim-8.0 does not.  Thus, without this automatic promotion we
+    " would get different errors on the different versions (either
+    " 'expected list' or 'unknown attr').
+    let l:attrs = [a:attrs]
+  elseif l:t_attrs == s:t_list
+    let l:attrs = a:attrs
+  else
     call s:Die('s:getAttrs', 'Expected list but got: ' . l:t_attrs)
   endif
   unlet l:t_attrs
   "
   let l:strings = []
   let l:styles  = s:attrStyles[a:tg]
-  for l:attr in a:attrs
+  for l:attr in l:attrs
     if !has_key(s:validAttrs, l:attr)
       call s:Die('s:getAttrs', 'Unknown attr: ' . l:attr)
     endif
@@ -565,7 +574,7 @@ fun! s:HiLink(src, dst)
   " (unlike argument-less `:hi clear`). N.B., this does not
   " remove any previous `:hi link Src ...` setting however.
   " Also, n.b., there is no bang version of this command.
-  " Also, n.b., newwer versions of Vim keep the old styling
+  " Also, n.b., newer versions of Vim keep the old styling
   " around in a hidden way so that it can be recovered if
   " desired; so we may need to explicitly set it to something
   " to avoid that.
@@ -576,8 +585,6 @@ fun! s:HiLink(src, dst)
   " link (which is fine because we trust ourselves about that).
   execute 'hi! link ' . a:src . ' ' . a:dst
 endfun
-" FIXME: Does the s:HiLink need to be called in some particular
-"   order wrt calling s:Hi/s:HiLink for the a:dst?
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " Only introduce the link if the a:src group already exists.
@@ -605,68 +612,97 @@ endfun
 " ~~~~~ Maintext region (except lines/columns) ~~~~~~~~~~~~~~~~~
 " N.B., for buggy reasons, one must set Normal before anything else
 " (cf., `:h hi-normal-cterm`)
-call s:Hi('Normal',        s:fg,       s:bg,       s:fg, {})
-call s:Hi('NonText',       s:selection,{},         {}, {}) " for &showbreak etc
-call s:Hi('SpecialKey',    s:selection,{},         {}, {}) " for &listchars
+call s:Hi('Normal',     s:fg,       s:bg,       s:fg, {})
+" TODO: despite the name, we may want to set these to use s:AbsoluteLineNr
+"   to make them a little more visible than they are now.
+call s:Hi('NonText',    s:selection,{},         {}, {}) " for &showbreak etc
+call s:Hi('SpecialKey', s:selection,{},         {}, {}) " for &listchars
+" HACK: While this is cleared by default on mayari's default
+" colorscheme, it's not cleared on my ciruela's default colorscheme.
+" Thus, we explicitly clear it out.
+" BUG: on ciruela, someone is setting Conceal to ctermfg=7 ctermbg=242 guifg=LightGrey guibg=DarkGrey, but :verbose blames us!!
 call s:HiLink('Conceal', 'NONE')
-" BUG: on ciruela, someone is setting Conceal to ctermfg=7 ctermbg=242 guifg=LightGrey guibg=DarkGrey, but :verbose blames us!! So we're re-clearing it.  Also, n.b., while it'd make sense to the idea of conceal to make all the colors s:bg, a bunch of plugins use the conceal feature to display unicode characters while leaving ASCII in the file; and for that usage, we need to have the Conceal highlight group do nothing (cf., <https://vi.stackexchange.com/q/25956>).  Of course, we may need to try explicitly using 'none' for the fg and bg colors, as per the accepted answer there.
+" Note: for the original intended purpose of concealment, we may
+" be inclined to treat it like 'Ignore'; but that is incorrect.
+" Moreover, it is extremely common for folks to use the conceal
+" feature in order to display unicode renditions of ASCII symbols
+" stored in the file; and for that purpose, if we have any stylization
+" here then that'll only expose the lie (since this group applies to
+" all the characters displayed via the conceal feature/mechanism);
+" cf., <https://vi.stackexchange.com/q/25956>.  Of course, we may
+" need to try explicitly using 'none' for the fg and bg colors, as
+" per the accepted answer there.
 " TODO: see also <https://vi.stackexchange.com/q/5533>
+
 " ~~~~~ Searching, Selecting, Matching.
-call s:Hi('Search',        s:bg,       s:yellow,   {}, {}) " for &hlsearch
-call s:HiLink('IncSearch', 'Search')                       " for &incsearch
-call s:Hi('Visual',        {},         s:selection,{}, {})
+" TODO: the reverse is rather jarring when the fg is s:fg.
+call s:Hi('Search',     {},         {},         {}, 'reverse')  " for &hlsearch
+call s:HiLink('IncSearch', 'Search')                            " for &incsearch
+call s:Hi('Visual',     {},         s:selection,{}, {}) " the visual-mode selection
 " VisualNOS only for |gui-x11| and |xterm-clipboard|
-" BUG: using reverse can be too jarring; but only setting the
-"   bg=s:selection can be too subtle for the single character.
-call s:Hi('MatchParen',    {},         s:selection,{}, 'reverse')
-" ~~~~~ Insert-completion (`:h popupmenu-completion` / `ins-completion-menu`)
+" HACK: this'll have to do for now.  Whenever the paren has color,
+" using 'reverse' looks quite nice; but whenever the paren is s:fg
+" then the reverse is too jarring.  I tried a few other things but
+" none of them seemed to be sufficiently noticable and yet also
+" sufficiently subtle.  Another issue I kept running into with
+" (s:fg,s:bg) is that it was all too easy to loose track of which
+" paren was the one I was on.
+call s:Hi('MatchParen', s:selection, s:ColorColumn, {}, 'bold')
+
+" ~~~~~ Insert-completion (`:h popupmenu-completion`)
 if v:version >= 700
-  call s:Hi('PMenu',       s:fg,       s:selection,{}, {})
-  call s:Hi('PMenuSel',    s:selection,s:fg,       {}, {})
+  call s:Hi('PMenu',    s:fg,       s:selection,{}, {})
+  call s:Hi('PMenuSel', s:selection,s:fg,       {}, {})
   " PmenuSbar      xxx ctermbg=248 guibg=Grey
   " PmenuThumb     xxx ctermbg=15  guibg=White
 endif
 
 
 " ~~~~~ Cmdline region ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-call s:Hi('ModeMsg',       s:green,    {},         {}, {}) " for &showmode
-call s:Hi('MoreMsg',       s:green,    {},         {}, {}) " for *more-prompt*
-call s:Hi('Question',      s:green,    {},         {}, {}) " for *hit-enter* prompt
-" QuickFixLine                                             " current *quickfix* item
-call s:Hi('WarningMsg',    s:red,      {},         {}, {})
-" ErrorMsg       xxx term=standout ctermfg=15 ctermbg=1 guifg=White guibg=Red
+call s:Hi('ModeMsg',    s:green,    {},         {}, {}) " for &showmode
+call s:Hi('MoreMsg',    s:green,    {},         {}, {}) " for *more-prompt*
+call s:Hi('Question',   s:green,    {},         {}, {}) " for *hit-enter* prompt
+" QuickFixLine -> Search                                " current *quickfix* item
+call s:Hi('WarningMsg', s:red,      {},         {}, {})
+call s:Hi('ErrorMsg',   s:white,    s:red,      {}, {'term': ['standout']})
+
 " ~~~~~ Cmdline-completion (`:h cmdline-completion`)
 " N.B., WildMenu is used for the current/selected menu item; and
 " though it's not mentioned anywhere anywhere in the helppages,
 " StatusLine is used for the rest of the menu: <https://superuser.com/a/495546>
 " (maybe also check out: <https://vi.stackexchange.com/q/2590>)
-call s:Hi('WildMenu',       s:bg,       s:orange,   {}, 'bold')
+call s:Hi('WildMenu',   s:bg,       s:orange,   {}, 'bold')
 " Directory only applies to directories via &wildmode=list, not to
-" directories via &wildmode=full.
-" (Maybe also applies to netrw and other directory listings? dunno)
-call s:Hi('Directory',      s:blue,     {},         {}, {})
+" directories via &wildmode=full.  (Though netrwDir also links to it.)
+call s:Hi('Directory',  s:blue,     {},         {}, {})
 
 
 " ~~~~~ Lines and columns ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-call s:Hi('VertSplit',      s:window,   s:window,       {}, {})
+call s:Hi('VertSplit',  s:window,   s:window,   {}, {})
 " ~~~~~ StatusLine (cf., &laststatus, &statusline, *status-line*)
 " StatusLine has two uses:
 " * the current/active window's statusline
 "     (but only if not using airline &c.)
 " * non-selected items in the wildmenu
 " Since we use airline, we set this based on the needs of wildmenu.
-call s:Hi('StatusLine',     s:comment,  s:selection,    {}, {})
+call s:Hi('StatusLine', s:comment,  s:selection,{}, {})
 " This is only used for non-current windows' statuslines; again,
 " only if not using airline &c.  Nevertheless, we set this to the
 " same thing we('ll) have airline use for non-current windows too.
-call s:Hi('StatusLineNC',   s:selection,s:CursorLine,   {}, {})
-" Where did I hear about StatusLineTerm/StatusLineTermNC from? They show up in &highlight.
+call s:Hi('StatusLineNC', s:selection, s:CursorLine, {}, {})
+" StatusLineTerm/StatusLineTermNC like above but for terminal windows
+" (cf., `:h hl-...`).  Don't know if I need to bother setting them
+" since I'm using airline.
+" TODO: see also 'Terminal', mentioned at `:h hl-Terminal` though
+" the group hasn't been created for us yet.
 " N.B., statusline also has User1, User2,...User9
 " ~~~~~ TabLine
-call s:Hi('TabLine',       s:bg,       s:fg,       {}, {}) " inactive tabs
-" TabLineSel     xxx term=bold cterm=bold gui=bold         " active tab
-" TabLineFill    xxx term=reverse cterm=reverse gui=reverse " filler
-" ~~~~~ Toolbar
+" TODO: could use tweaking, but okay for now.  Matches airline_{b,c}
+call s:Hi('TabLine',    s:fg,       s:CursorLine,   {}, {})     " inactive tabs
+call s:Hi('TabLineSel', s:fg,       s:selection,    {}, 'bold') " the active tab
+cal s:HiLink('TabLineFill', 'TabLine')                          " empty filler
+" ~~~~~ Toolbar (GUI-only afaict)
+" TODO: where did I hear about these from?
 " ToolbarLine    xxx term=underline ctermbg=242 guibg=Grey50
 " ToolbarButton  xxx cterm=bold ctermfg=0 ctermbg=7 gui=bold guifg=Black guibg=LightGrey
 " ~~~~~
@@ -687,21 +723,21 @@ endif
 if v:version >= 703 && exists('+colorcolumn')
   " fg is brighter than s:fg, because of the bright s:ColorColumn
   " TODO: is this case of term=bold okay/safe?
-  call s:Hi('ColorColumn', s:white, s:ColorColumn, {}, 'bold')
+  call s:Hi('ColorColumn',  s:white, s:ColorColumn, {}, 'bold')
 endif
 if has('folding')
-  call s:Hi('Folded',      s:comment,  s:bg,       {}, {})
+  call s:Hi('Folded',       s:comment,  s:bg,       {}, {})
   " TODO: guard has('foldcolumn') ??
   call s:HiLink('FoldColumn', 'Normal') " TNB had fg unset here.
 endif
 if v:version >= 700 && exists('+cursorline') && exists('+cursorcolumn')
   " HACK: like '+colorcolumn' we need to use exists('+') rather than has(); weird.
-  call s:Hi('CursorLine',  {},         s:CursorLine,{}, {})
+  call s:Hi('CursorLine',   {},         s:CursorLine,{}, {})
   call s:HiLink('CursorColumn', 'CursorLine')
   "
-  " Apparently this is for insert-completion. See `:h popupmenu-completion`, `:h popupmenu-keys`
-  call s:Hi('PMenu',       s:fg,       s:selection,{}, {})
-  call s:Hi('PMenuSel',    s:selection,s:fg,       {}, {})
+  " For `:h popupmenu-completion`
+  call s:Hi('PMenu',        s:fg,       s:selection,{}, {})
+  call s:Hi('PMenuSel',     s:selection,s:fg,       {}, {})
   " PmenuSbar      xxx ctermbg=248 guibg=Grey
   " PmenuThumb     xxx ctermbg=15  guibg=White
 endif
@@ -770,15 +806,14 @@ endif
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" ~~~~~ Diff Highlighting
-" ~~~~~ Builtin diff highlighting (also used by 'airblade/vim-gitgutter')
+" ~~~~~ Diff Highlighting (both builtin, and Plug 'airblade/vim-gitgutter')
 " TODO: should we guard for has('signs')?
 " BUG: our usual colors really don't work for this!  The green is
 "   too pale/yellow, the orange or lavender is too close to the
 "   red, the red is too dull, etc.  So what looks good?  Should
 "   we just go with system colors?
 call s:Hi('DiffAdd',    s:green,   s:bg, {}, {})
-call s:Hi('DiffChange', s:violet,  s:bg, {}, {})
+call s:Hi('DiffChange', s:cyan,    s:bg, {}, {})
 call s:Hi('DiffDelete', s:red,     s:bg, {}, {})
 " DiffText is used for 'Changed text within a changed line'; cf., `:h diff.txt`
 call s:HiLink('DiffText', 'Normal')
@@ -800,40 +835,48 @@ call s:HiLink('diffRemoved', 'DiffDelete')
 " Todo       <- helpNote            : any "Note:" at the beginning of a paragraph
 " Identifier <- helpHyperTextJump   : anything in (invisible)pipes.
 " Ignore     <- helpBar             : the invisible pipes themselves.
+" PreProc    <- helpHeader          : Header for inline tabulars.
 " Statement  <- helpHeadline        : The left justified labels for sections.
 " String     <- helpHyperTextEntry  : The right justified labels for entries.
-" Comment    <- helpCommand         : anything in (invisible)backticks.
+" Comment    <- helpCommand         : anything in (invisible)backticks. [Rare]
 " Ignore     <- helpBacktick        : the invisible backticks themselves.
 " Comment    <- helpExample         : all the indented code examples.
-
+" Special    <- helpSpecial         : Character/key codes, either "CTRL-" or in <>; also things in curly braces, as generic arguments.
+" SpecialChar <- helpSpecialChar    : ???
+" SpecialComment <- helpSpecialComment : ???
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" ~~~~~ Plug 'airblade/vim-gitgutter'
-" (Set by ~/.vim/bundle/vim-gitgutter/autoload/gitgutter/highlight.vim)
-" TODO: change anything from the defaults? From looking at the code,
-"   it seems like they do the right thing about linking their groups
-"   to the standard ones (i.e., Diff*, SignColumn, and CursorLineNr);
-"   so everything ought to work fine so long as the standard groups
-"   are done correctly.  However, do be sure to see the discussion
-"   above where we set SignColumn.
+" ~~~~~ Builtin netrw
+" (Set by /opt/sw/share/vim/vim82/syntax/netrw.vim)
+" TODO: Many of the default links make no sense, so we should fix that.
+"   NONE        <- netrwSortBy, netrwSortSeq, netrwQuickHelp, netrwCopyTgt,
+"                   netrwPlain, netrwSpecial, netrwTime, netrwSizeDate,
+"                   netrwTreeBarSpace, netrwSlash, netrwCmdNote,
+"                   (netrwPlain <- netrwHdr, netrwLex, netrwYacc).
+"   Comment     <- (netrwComment <- netrwComma, netrwHide, netrwHideSep).
+"   Delimiter   <- netrwCmdSep, (netrwDateSep <- netrwTimeSep).
+"   DiffChange  <- netrwLib, netrwMakefile.
+"   Directory   <- netrwDir.
+"   Folded      <- netrwData, (netrwGray <- netrwBak, netrwCompress, netrwObj,
+"                   netrwSpecFile, netrwTags, netrwTilde, netrwTmp).
+"   Function    <- netrwClassify, netrwHelpCmd.
+"   Identifier  <- netrwVersion.
+"   Number      <- netrwQHTopic.
+"   PreProc     <- netrwExe.
+"   Question    <- netrwSymLink.
+"   Special     <- netrwLink, netrwPix, netrwTreeBar.
+"   Statement   <- netrwHidePat, netrwList.
+"   TabLineSel  <- netrwMarkFile.
+"   WarningMsg  <- netrwCoreDump.
 
 
 " ~~~~~ Plug 'jamessan/vim-gnupg' (set by ~/.vim/plugin/gnupg.vim)
 " TODO: change anything from the defaults?
 
-
-" ~~~~~ Plug 'vim-airline/vim-airline'
-" TODO: now it's time to learn how to do airline themes...
-" Looks like we need to define
-"   g:airline#themes#{g:airline_theme}#palette
-" Which is a dict of dicts:
-"   first-level keys are {normal,insert,replace,visual,inactive}{,_modified}
-"   second-level keys include {airline_c} but the whole dict can be constructed via airline#themes#generate_color_map()
-" and so forth.
-" See <~/.vim/bundle/vim-airline-themes/autoload/airline/themes/tomorrow.vim>
-" or others in there.
+" ~~~~~ Plug 'mhinz/vim-startify'
+" TODO:
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -846,9 +889,6 @@ call s:HiLink('diffRemoved', 'DiffDelete')
 " syntax files seem to use Structure where they should be using
 " Statement (or similar).
 
-" TODO: when do we want to actually inherit attr rather than setting
-"   NONE? ever? Ditto for the fg/bg too imo.
-"
 " ~~~ Comment-like
 call s:Hi('Comment',   s:comment,  s:bg,   {}, {})
 call s:Hi('Title',     s:lavender, s:bg,   {}, {})
@@ -861,12 +901,9 @@ call s:Hi('Todo',      s:yellow,   s:bg,   {}, {})
 " then it gets vimCommentString(->vimString).
 call s:Hi('Ignore',    s:bg, s:bg, {}, {})
 " ~~~ Special<-
-" TODO: What the heck is Special /really/ for? (vimContinue is
-"   Special; as is helpSpecial which includes things in braces like
-"   {motion})
-" TODO: just for now we're sticking with elflord settings; find better ones.
+" TODO: What the heck is Special *really* for?  All sorts of random
+"   things get linked to this group.
 call s:Hi('Special',   s:violet, {}, {}, 'bold')
-" Apparently forward linking is fine.
 call s:HiLink('SpecialComment', 'PreProc')
 " TODO: what's a good color for Delimiter?  Is s:sienna good for the longterm?
 call s:Hi('Delimiter', s:sienna, s:bg, {}, {})
@@ -998,6 +1035,8 @@ call s:Hi('rubyInterpolationDelimiter', s:orange, {}, {}, {}) " ==Constant; Defa
 call s:HiLink('markdownCode', 'Special') " Default: CLEARED
 " TODO: the markdownUrl->Float link makes no sense, though the
 "   colors seem fine enough for now.
+" TODO: consider wrengr#utils#MarkdownIncludeCodeblock()
+"   Not that we ought to call it here, just something to remember.
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ JavaScript Syntax
