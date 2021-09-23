@@ -198,6 +198,9 @@ call plug#begin(s:vimplug_dir)
 "Plug 'luochen1990/rainbow'
 "Plug 'mhinz/vim-janah'
 
+" ~~~~~ Tools for designing/debugging colorschemes
+"Plug 'RRethy/vim-hexokinase'
+
 
 " ~~~~~ Lines: Statusline, Tabline, etc. ~~~~~~~~~~~~~~~~~~~~~~~ {{{2
 Plug 'vim-airline/vim-airline'
@@ -375,6 +378,8 @@ Plug 'prabirshrestha/vim-lsp'
 " For additional help on ctags, see also:
 "   <http://www.oualline.com/vim/10/top_10.html>
 "   <https://andrew.stwrt.ca/posts/vim-ctags/>
+" TODO: for debugging certain issues on OSX (and more generally):
+" <https://dev.to/zev/how-i-got-go-to-definition-working-in-vim-in-2019-2ec2>
 "
 " Browse ctags of current file, organized by scope.
 " (N.B., despite the name, it is not a "line")
@@ -475,6 +480,8 @@ Plug 'neovimhaskell/haskell-vim'
 "Plug 'itchyny/vim-haskell-indent'
 
 " ~~~~~ Other Haskell supports
+" [#lsp]
+"Exec 'haskell/haskell-language-server'
 " [#lint]
 "   In lieu of syntastic.
 "Plug 'eagletmt/ghcmod-vim'
