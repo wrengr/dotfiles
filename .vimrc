@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" wren gayle romano's vim config                    ~ 2021.09.22
+" wren gayle romano's vim config                    ~ 2021.09.24
 "
 " This file uses &foldmethod=marker, but I refuse to add a modeline
 " to say that; because modelines are evil.
@@ -2070,9 +2070,13 @@ endif
 " this command too will only dis-/enable highlighting whitespace
 " errors for the buffer from which it's called.
 command! -nargs=0 HighlightWhiteError call s:HighlightWhiteError()
-let w:whiteErrorID = []
+" N.B., must autovivify w:whiteErrorID from within these functions;
+" because it's window-local, we can't do it from outside (without
+" adding an autocmd).
 fun! s:HighlightWhiteError()
-  if !empty(w:whiteErrorID)
+  if !exists('w:whiteErrorID')
+    let w:whiteErrorID = []
+  elseif !empty(w:whiteErrorID)
     return
   endif
   if &expandtab
@@ -2096,10 +2100,11 @@ fun! s:HighlightWhiteError()
 endfun
 command! -nargs=0 NoHighlightWhiteError call s:NoHighlightWhiteError()
 fun! s:NoHighlightWhiteError()
+  if !exists('w:whiteErrorID') | return | endif
   for l:id in w:whiteErrorID
     call matchdelete(l:id)
   endfor
-  let w:whiteErrorID = []
+  unlet w:whiteErrorID
 endfun
 
 
