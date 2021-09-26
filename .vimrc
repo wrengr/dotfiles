@@ -292,20 +292,22 @@ Plug 'mhinz/vim-signify', (has('patch-8.0.902') ? {} : { 'tag': 'legacy' })
 " <https://github.com/mhinz/vim-startify/wiki/Known-issues-with-other-plugins>
 " * NERDTree    -- Common. `:h startify-faq-17`, `:h startify-faq-14`
 Plug 'mhinz/vim-startify'
-  " BUG: Startify seems to change our :pwd for some reason...
+  " Limit the number of MRU and cwd-MRU files listed.
   let g:startify_files_number=5
+  " No, don't change our :pwd thankyouverymuch.
+  let g:startify_change_to_dir=0
   " TODO: (`:h startify-faq-18`) files on nfs mounts can cause a
   "   lot of slowdown.  That faq suggests adding nfs mounts to
   "   g:startify_skiplist, but that'll completely filter them out
   "   (defeating my purpose for using startify) rather than just
   "   disabling the IO checks.
-  " TODO: can we somehow add a custom directory to g:startify_lists?
-  "   Or I guess we can always just use g:startify_bookmarks
-  let g:startify_padding_left=7
+  " TODO: easiest way to add a custom directory to g:startify_lists?
+  " TODO: also, see the help of g:startify_lists for an idea about listing recent git (or other vcs) commits.
+  let g:startify_padding_left=10
   "let g:startify_fortune_use_unicode=1     " For headers; iff it doesn't offend
-  let g:startify_custom_header=[]           " Remove header.
-  " TODO: actually we want a couple blank lines or something; just,
-  "   that cow was way too big is all.
+  let g:startify_custom_header=['', '', ''] " Very boring header.
+    " TODO: maybe keep the startify#fortune#quote() or even the
+    " #boxed(); it's just that the #cowsay() was too huge!
   "
   " TODO: update our colorscheme to handle `:h startify-colors`
   " TODO: (unrelated to startify per se, but: update our colorscheme to
