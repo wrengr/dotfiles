@@ -75,3 +75,6 @@ let g:haskell_indent_do = 3                " lines after `do`+line
 let g:haskell_indent_in = 0                " `in` keyword itself
 
 let g:cabal_indent_section = 4
+
+" ~~~~~ Step Last:
+" BUG: We should set b:undo_ftplugin to undo everything we changed.

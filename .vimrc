@@ -2346,6 +2346,11 @@ if has('autocmd')
   filetype plugin on
   filetype indent on
 
+  " Help the default filetype.vim improve its guesswork.
+  let g:filetype_pl = 1       " *.pl are always always Perl (unnecessary so far)
+  let g:bash_is_sh  = 1       " *.sh are almost always Bash
+  let g:tex_flavor  = 'latex' " Help choose between LaTeX, ConTeXt, & PlainTeX.
+
   " TODO: move these off to ~/.vim/ftdetect/ where they belong.
   augroup wrengr_vimrc
     " Yes, all my *.pro files ARE prolog files
@@ -2359,9 +2364,6 @@ if has('autocmd')
     " TODO: actual support for Agda
     " <http://wiki.portal.chalmers.se/agda/agda.php?n=Main.VIMEditing>
     autocmd BufNewFile,BufRead *.agda set ft=haskell
-
-    " Try to enforce correct spelling and short messages.
-    autocmd Filetype gitcommit setlocal spell nocursorline textwidth=72
 
     " HT: <https://www.hillelwayne.com/post/intermediate-vim/>
     "autocmd FileType markdown inoremap <buffer> ;` ```<CR><CR>```<Up><Up>

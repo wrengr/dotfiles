@@ -6,7 +6,5 @@
 call wrengr#utils#DisableHardWrapping()
 
 " The noexpandtab is the most important bit here.
-setlocal
-    \ noexpandtab
-    \ shiftwidth=8
-    \ softtabstop=0
+setlocal noexpandtab shiftwidth=8 softtabstop=0
+" BUG: We should set b:undo_ftplugin to undo everything we changed.
