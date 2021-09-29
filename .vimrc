@@ -2070,7 +2070,7 @@ endif
 " this command too will only dis-/enable highlighting whitespace
 " errors for the buffer from which it's called.
 command! -nargs=0 HighlightWhiteError call s:HighlightWhiteError()
-" N.B., must autovivify w:whiteErrorID from within these functions;
+" Note: must autovivify w:whiteErrorID from within these functions;
 " because it's window-local, we can't do it from outside (without
 " adding an autocmd).
 fun! s:HighlightWhiteError()
