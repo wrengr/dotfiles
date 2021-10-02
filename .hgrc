@@ -1,36 +1,83 @@
 [ui]
 username = wren romano <wrengr@google.com>
+color = auto
+mergemarkers = detailed
+
+# TODO: add a [color] section, namely to change things from google's
+#   version of "bright" system colors, to the colors we actually want.
+#   Not sure if the [color256] section is purely google-only (they mention
+#   the 'terminal256colors' google_hgext subextension), or if it's
+#   something more public.
+
+[extensions]
+# Note: evolve updates the meaning of 'commit --amend' (but not 'commit'
+# itself) and also adds the commands: 'uncommit', 'prune', 'touch', 'fold',
+# 'split', 'next', 'prev'.  For more guidance, see:
+#   <https://www.mercurial-scm.org/wiki/EvolveExtension>
+#   <https://www.mercurial-scm.org/doc/evolution/user-guide.html>
+#   <https://www.mercurial-scm.org/doc/evolution/evolve-faq.html>
+evolve =
+
+
+[commands]
+update.requiredest = true
+rebase.requiredest = true
+
 
 [alias]
-# BUG: hg normally has `ci` mean the equivalent of `git commit -a`;
-#   not sure if this alias will override that or no.
-ci = commit --interactive
-ca = commit
 # This is the most common meaning for which I use the `git oo` alias.
 # (N.B., mercurial does have `co` as an alias for update; and `oo`
 # originated as a simplification of typing `co` anyways.)
 oo = update
+# Note: there's also (apparently) an alias 'record'='commit --interactive'
+# BUG: hg normally has `ci` mean the equivalent of `git commit -a`;
+#   not sure if this alias will override that or no.
+ci = commit --interactive
+ca = commit
+# N.B., The 'evolve' plugin adds its own 'amend' command/alias which
+# modifies the behavior of the standard 'commit --amend', so we want to
+# be sure to use that here.
+# Note: there's also (apparently) an alias 'camend'='amend --interactive'
+ai = amend --interactive
+aa = amend
 ra = rebase --abort
 rc = rebase --continue
-# TODO: `hg rebase --stop`
-# BUG: supposedly mercurial already has an 'amend' command; but it's
-#   not showing up for me... (is it just fig not hg?) also it's equivalent
-#   of `git commit --amend -a`; which I dislike.
-amend = commit --amend --interactive
+# TODO: would we ever want a short name for `hg rebase --stop`?
+ea = evolve --abort
+ec = evolve --continue
+ma = merge --abort
+mc = merge --continue
+
+# Note: this is quite different from `hg summary`, but you may be
+#   interested in that command too.
 # Warning: for some reason this seems to take a long time to finish
-# after it's printed that one commit.
-top = log --stat --limit 1
-# TODO: There's also `hg diff -c .` which is like `git show` with no
-#   arguments, or technically closer to `git diff --cached HEAD^`.
-#   I often use the no-argument `git show` for this purpose, but I
-#   use arguments often enough that I'm not sure if `hg show` would be
-#   a good alias.  N.B., for `.`=`tip` specifically there's also
-#   `hg tip -p` which runs a bit faster and doesn't use $PAGER.
-#   For more on this topic, see: <https://stackoverflow.com/a/3547662>
-#   and <https://stackoverflow.com/a/39867096> plus others on this page.
-# TODO: how does the builtin `hg blame` compare to `hg annotate --user --number`?  Also, what's a good alias for `blame -u -c -l`?
+#   after it's printed that one commit.
+top = log --stat --limit 1 --rev .
+
+# Like `git show {commit}`, instead of autocompleting to `hg showconfig`.
+# (Technically, when the commit is `.` then this is closer to
+# `git diff --cached HEAD^` than to `git show`.)
+# Note: when the commit is `tip` specifically, there's also the alternative
+#   command: `hg tip -p`, which runs a bit faster and doesn't use $PAGER.
+# TODO: For more on this topic, see: <https://stackoverflow.com/a/3547662>
+#   and <https://stackoverflow.com/a/39867096> plus others on the same page.
+# BUG: got to make this smarter so that when we forget to pass an
+#   argument it'll use the current/latest revision.
+show = diff -c
+
+# TODO: how does the builtin `hg blame` compare to `hg annotate --user
+# --number`?  Also, what's a good alias for `blame -u -c -l`?
+
+# N.B., there's also an 'uncommit' extension that adds both `uncommit`
+# and `unamend`; overriding the commands from the 'evolve' extension.
 unmerge = update -C -r.
 
+# This points to our local copy of fig_status.py.  We do not directly
+# use the version in Piper because that would entail performance loss
+# by making a roundtrip to the server on every access/invocation of
+# hg (as well as constantly giving us a warning message explaining
+# that fact).  Alas, that means we need to manually keep it in sync
+# with the original.
 [extensions]
 # Yes, ~/.hgrc does understand tilde expansion
 figstatus = ~/local/lib/prompts/fig_status/fig_status.py
