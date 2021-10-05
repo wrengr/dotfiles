@@ -1,7 +1,7 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " Name:     autoload/wrengr/utils.vim
-" Modified: 2021-09-22T22:39:28-07:00
-" Version:  3
+" Modified: 2021-10-05T14:01:31-07:00
+" Version:  4
 " Author:   wren romano
 " Summary:  Utility functions for writing plugins.
 " License:  [0BSD] Permission to use, copy, modify, and/or distribute
@@ -16,6 +16,7 @@
 "           negligence or other tortious action, arising out of or
 "           in connection with the use or performance of this software.
 "
+" Version 4: Major bugfixing in vlet()
 " Version 3: added error(), warn(), ShowIndentOptions(), ShowFoldOptions(),
 "   IncludeSyntax(), MarkdownIncludeCodeblock().
 "   * Removed the list-type `.=` from vlet()
@@ -190,28 +191,28 @@ let s:t_string = type('')
 let s:t_list   = type([])
 let s:t_dict   = type({})
 
-fun! wrengr#utils#vlet(var, op, val)
+fun! wrengr#utils#vlet(var, op, val) abort
   let l:t_val = type(a:val)
   if l:t_val == s:t_string
     if a:op ==# '.='
       " We use `.=` syntax with semantics like `:let $e .=` and `:let @r .=`
       " and `:let &o .=`; rather than using `:let v ..=` of `:scriptversion 2`
       if !exists(a:var)
-        exec 'let' a:var '= ""'
+        exec 'let ' . a:var . ' = ""'
       endif
-      " TODO: I think that'll do the right thing to double-quote/escape
-      " the string so that :exec doesn't unwrap it.  But needs verification.
-      exec 'let' a:var '.=' string(string(a:val))
+      " TODO: we can use string() to quote/escape things; but I'm going
+      " to try relying on the evaluation context instead for now.
+      exec 'let ' . a:var . ' .= a:val'
       return 1
     elseif a:op ==# '+='
       " Like `:h :set+=` (albeit only for comma-lists, not pure/true
       " strings); but unlike `:let &o +=` (which doesn't support strings).
       " Also fwiw, neither `:let $e +=` nor `:let @r +=` exist.
       if !exists(a:var)
-        exec 'let' a:var '=' string(string(a:val))
+        exec 'let ' . a:var . ' = a:val'
         return 1
       else
-        exec 'let' a:var '.= '','' . ' string(string(a:val))
+        exec 'let ' . a:var . ' .= "," . a:val'
         return 1
       endif
     else
@@ -223,16 +224,18 @@ fun! wrengr#utils#vlet(var, op, val)
     endif
   elseif l:t_val == s:t_list
     if !exists(a:var)
-      exec 'let' a:var '= []'
+      exec 'let ' . a:var . ' = []'
     endif
     if a:op ==# '+='
+      " BUGFIX: Vim 8.1.2269 doesn't have the list-function append(), it
+      "   only has the append() function which is like the `:append` command.
       " BUG: how to requote a:val if/as necessary?
       " TODO: supposedly `+` and `:let+=` work on lists, but istr that
       "   not working for me in the past...
-      exec 'call append(' a:var ',' a:val ')'
+      exec 'call extend(' . a:var . ', a:val)'
       return 1
     elseif a:op ==# '^='
-      exec 'call extend(' a:var ',' a:val ', 0)'
+      exec 'call extend(' . a:var . ', a:val, 0)'
       return 1
     else
       " TODO: we'd like to have `.=` do add(), but to do that would
@@ -243,14 +246,14 @@ fun! wrengr#utils#vlet(var, op, val)
     endif
   elseif l:t_val == s:t_dict
     if !exists(a:var)
-      exec 'let' a:var '= {}'
+      exec 'let ' . a:var . ' = {}'
     endif
     if a:op ==# '.=' || a:op ==# '+='
       " BUG: how to requote a:val if/as necessary?
-      exec 'call extend(' a:var ',' a:val ', "force")'
+      exec 'call extend(' . a:var . ', a:val, "force")'
       return 1
     elseif a:op ==# '^='
-      exec 'call extend(' a:var ',' a:val ', "keep")'
+      exec 'call extend(' . a:var . ', a:val , "keep")'
       return 1
     else
       call wrengr#utils#error('ERROR(wrengr#utils#vlet): unsupported list operation: ' . a:op)
