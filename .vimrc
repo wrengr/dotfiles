@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" wren gayle romano's vim config                    ~ 2021.09.24
+" wren gayle romano's vim config                    ~ 2021.10.05
 "
 " This file uses &foldmethod=marker, but I refuse to add a modeline
 " to say that; because modelines are evil.
@@ -242,16 +242,26 @@ Plug 'vim-airline/vim-airline-themes'
 
 " ~~~~~ Git & other VCSes  ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{2
 Plug 'airblade/vim-gitgutter', wrengr#plug#Cond(has('signs'))
-"   Like gitgutter, but for several VCSes
-"Plug 'mhinz/vim-signify',
-"   \ (has('nvim') || has('patch-8.0.902')) ? {} : { 'tag': 'legacy' }
-" HACK: Signify's README.md is wrong, 'legacy' is a 'tag' not a 'branch'.
-" TODO: should we add {'tag':'stable'} for the async case?
-"   let g:signify_vcs_list = ['git', 'hg', 'darcs']
-"   let g:signify_difftool = 'gnudiff'      " for darcs to use -U0 flag
-" Note: using signify at google is tricksy; so ~/.vimrc_google will add
-"   some additional configuration.
-" BUG: Signify wants to bind `[c ]c` too; so it's gonna fight with gitgutter.
+" Like gitgutter, but for several VCSes
+" BUG: We cannot use the `||` operator in that conditional; something
+"   about how the :Plug command (or any user-defined command?) handles
+"   <Bar> causes it to break in an inscrutable manner.  So if we want
+"   to re-add the condition that has('nvim') also works, then we'll need
+"   to break the whole condition out as a function.
+Plug 'mhinz/vim-signify', (has('patch-8.0.902') ? {} : { 'tag': 'legacy' })
+  " HACK: Signify's README.md is wrong, 'legacy' is a 'tag' not a 'branch'.
+  " TODO: should we add {'tag':'stable'} for the async case?
+  " Note: So far there's no way to add truly new VCSes to Signify,
+  "   instead you need to coopt the name of one that's already supported.
+  "   For more details, see: <https://github.com/mhinz/vim-signify/issues/327>
+  let g:signify_vcs_list = ['git', 'hg', 'darcs']
+  "let g:signify_difftool = 'gnudiff'      " for darcs to use -U0 flag
+  " Note: using signify at google is tricksy; so ~/.vimrc_google will add
+  "   some additional configuration.
+  " BUG: Signify wants to bind `[c ]c` too; so it's gonna fight with
+  "   gitgutter.  For now, we'll try this workaround.
+  let g:gitgutter_enabled=0
+  let g:signify_disable_by_default=0
 "
 "Plug 'ludovicchabant/vim-lawrencium' " like vim-fugitive, but for Mercurial
 "Plug 'junegunn/vim-github-dashboard'
@@ -2494,6 +2504,7 @@ if has('signs')
   else
     let g:gitgutter_sign_column_always = 1
   endif
+  "let g:gitgutter_use_location_list=1  " Have `:GitGutterQuickFix` use loclist instead of quickfix.
   "let g:gitgutter_grep = 'grep --color=never' " gitgutter can't handle ANSI codes
   "let g:gitgutter_max_signs = 500 " default=500 if Vim < 8.1.0614; else -1
   "let g:gitgutter_map_keys  = 0   " don't set up default mappings
@@ -2504,8 +2515,8 @@ if has('signs')
   "     nmap <Leader>hs <Plug>(GitGutterStageHunk)
   "     nmap <Leader>hu <Plug>(GitGutterUndoHunk)
   "     omap ic         <Plug>(GitGutterTextObjectInnerPending) " all lines in hunk
-  "     omap ac         <Plug>(GitGutterTextObjectOuterPending) " also trailing empty lines
   "     xmap ic         <Plug>(GitGutterTextObjectInnerVisual)
+  "     omap ac         <Plug>(GitGutterTextObjectOuterPending) " also trailing empty lines
   "     xmap ac         <Plug>(GitGutterTextObjectOuterVisual)
   " TODO: the readme has all sorts of function suggestions
   " TODO: It looks like I've fixed the SignColumn stuff, but maybe
