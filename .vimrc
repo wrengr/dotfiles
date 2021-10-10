@@ -1282,7 +1282,7 @@ endif
 " ~~~~~ Lines: cmdline, statusline, tabline  ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{2
 set showcmd             " Show the cmdline (cuz we're not still in the 1970s).
 set cmdheight=1         " The cmd-*line*   is N rows high.
-"set cmdwinheight=7     " The cmd-*window* is N rows high.
+"set cmdwinheight=7     " The cmd-*window* is N rows high. (cf., `:h c_CTRL-F`)
 set noshowmode          " Don't show the mode in the cmdline
 if has('cmdline_info')
   " Show the cursor's line/column position in the statusline (unless
@@ -1456,6 +1456,10 @@ set splitbelow          " :sp puts the new window (and focus!) to the bottom.
 " inoffensive re handling the special characters <C-u> and <CR>.
 " Though we could always use other implementations, like using <C-r>=
 " or :execute.
+" TODO: for some of these, we may consider using `:h :map-cmd` in
+"   lieu of the leading xo_`:<C-u>` or i_`<C-o>:`.  Since all these
+"   are just for n-mode that doesn't actually apply here, but it's
+"   important to remember for all the ohter places we use <expr> or <C-u>.
 " Note: for commands that can't handle a zero count, there's always
 " v:count1 instead.  Also, some of the commands have explicitly
 " special behavior when there's *no* count given.  Also, some
@@ -1464,14 +1468,28 @@ set splitbelow          " :sp puts the new window (and focus!) to the bottom.
 "   liberally, to ensure we don't accidentally eliminate such special
 "   behavior. (HT: tpope)
 
+" TODO: make these all honor &foldopen and &foldclose.  The
+"   wrengr#qf#BracketExpr() function handles &foldopen for quickfix
+"   windows, but the others will need to check different things
+"   within &foldopen.
+" BUG: vim/iterm2 has been behaving oddly ever since I factored
+"   wrengr#qf#BracketExpr() out for these mappings.  I don't know
+"   why/how that would cause problems, but it seems indicative of
+"   some sort of bug somewhere.
+
 if has('quickfix')
   " ~~~~~ Quickfix/errors                                        {{{3
+  " TODO: see also 'vim-qf' for nicer wrappers around the builtin
+  "   :c{*} commands that don't error when they reach end of list.
+  " Note: these understand v:count=0 just fine; it's just a bit
+  "   unsightly to be echoed that way.
   nnoremap <expr> [q ':<C-u>' . v:count . 'cprev<CR>zz'
   nnoremap <expr> ]q ':<C-u>' . v:count . 'cnext<CR>zz'
-  nnoremap [Q :<C-u>cfirst<CR>zz
-  nnoremap ]Q :<C-u>clast<CR>zz
+  nnoremap        [Q :<C-u>cfirst<CR>zz
+  nnoremap        ]Q :<C-u>clast<CR>zz
   " TODO: should we also have stuff for :c{above,below,before,after,older,newer}
   "   For a handly reference, see <https://stackoverflow.com/a/55117681>
+  "   Re :c{older,newer} beware of getting E380; cf., <https://vimways.org/2018/colder-quickfix-lists/>
   " TODO: others we might consider just to avoid using the cmdline
   "   so much include :cc, :cclose, :c{f,g,b,l}
   " TODO: 'tpope/vim-unimpaired' also does :cpfile and :cnfile,
@@ -1482,21 +1500,34 @@ if has('quickfix')
   " ~~~~~ Quickfix/locations                                     {{{3
   nnoremap <expr> [l ':<C-u>' . v:count . 'lprev<CR>zz'
   nnoremap <expr> ]l ':<C-u>' . v:count . 'lnext<CR>zz'
-  nnoremap [L :<C-u>lfirst<CR>zz
-  nnoremap ]L :<C-u>llast<CR>zz
+  nnoremap        [L :<C-u>lfirst<CR>zz
+  nnoremap        ]L :<C-u>llast<CR>zz
   " TODO: ditto everything from above (though it's :ll ~ :cc because
-  " vimish); including the 'tpope/vim-unimpaired' comments.
+  " vimish); including the 'tpope/vim-unimpaired' comments; and the
+  " autocmd (with l* pattern and lwindow)
+  " TODO: while `:copen` will work fine when there's no qflist;
+  " `:lopen` will error when there's no loclist.  So we should
+  " wrapper that to make it behave nicer; or wrapper :copen to
+  " behave analogously (since :{c,l}{next,prev} all error when
+  " there's no list, and the error message depends only on the 'c' vs 'l').
 endif
 
 " ~~~~~ Buffers                                                  {{{3
 " Note: these commands have wraparound behavior, but they're robust
 "   enough to always handle the v:count.
+" Note: when there's only one listed buffer, these simply echo the
+"   command (like :tab{p,n}) rather than issuing an error message
+"   (like :{c,l}{prev,next}).  The command is also echoed whenever
+"   the v:count causes us to loop around to the exact same buffer
+"   we started from.
+" BUG: The helppage says that when used in a help-buffer these'll
+"   move between help-buffers; but that's not working for me, not
+"   even with typing the commands manually (so it's nothing about
+"   this mapping).
 nnoremap <expr> [b ':<C-u>' . v:count . 'bprev<CR>'
 nnoremap <expr> ]b ':<C-u>' . v:count . 'bnext<CR>'
-nnoremap [B :<C-u>bfirst<CR>
-nnoremap ]B :<C-u>blast<CR>
-" TODO: if we come up with a nice macro naming pattern for :{c,l,p}close
-" then maybe also use that for our <Q> binding?
+nnoremap        [B :<C-u>bfirst<CR>
+nnoremap        ]B :<C-u>blast<CR>
 
 " ~~~~~ Argument List                                            {{{3
 " TODO: unlike the others, I got these actually from 'tpope/vim-unimpaired'.
@@ -1506,20 +1537,25 @@ nnoremap ]B :<C-u>blast<CR>
 "   wrapping to make them friendlier.
 "nnoremap <expr> [a ':<C-u>' . v:count . 'prev<CR>'
 "nnoremap <expr> ]a ':<C-u>' . v:count . 'next<CR>'
-"nnoremap [A :<C-u>first<CR>
-"nnoremap ]A :<C-u>last<CR>
+"nnoremap        [A  :<C-u>first<CR>
+"nnoremap        ]A  :<C-u>last<CR>
 
 " ~~~~~ Tabpages                                                 {{{3
-" Note: these commands cannot handle a 0 count.
+" Note: these commands *cannot* handle a 0 count.
 " Note: these commands have wraparound behavior, but only when *no*
 "   count is given; consequently, when the count is too high they
 "   simply stop at the ends.  They're not robust like the buffer commands.
+" Note: when there's only one tabpage, these simply echo the command
+"   (like :b{prev,next}) rather than issuing an error message (like
+"   :{c,l}{prev,next}).
 " TODO: given the fragility mentioned above, these surely need more testing.
-nnoremap <expr> [t ':<C-u>' . (v:count ? v:count : '') . 'tabp<CR>'
-nnoremap <expr> ]t ':<C-u>' . (v:count ? v:count : '') . 'tabn<CR>'
+nnoremap <expr> [t ':<C-u>' . (v:count ? v:count : '') . 'tabprev<CR>'
+nnoremap <expr> ]t ':<C-u>' . (v:count ? v:count : '') . 'tabnext<CR>'
 " Remove now-redundant mappings.
-map gT <Nop>
-map gt <Nop>
+map gT      <Nop>
+map gt      <Nop>
+map <C-w>gT <Nop>
+map <C-w>gt <Nop>
 " I guess we can leave the {nvi}_<C-PageUp>/<C-PageDown> bindings there.
 " N.B., there's also g<Tab>, <C-w>g<Tab>, and <C-Tab> for analogue of <C-w>p
 nnoremap [T :<C-u>tabfirst<CR>
@@ -1529,11 +1565,24 @@ nnoremap ]T :<C-u>tablast<CR>
 
 
 " ~~~~~ Misc (includes, declarations, tags,...)                  {{{3
+" TODO: consider this pair from <https://www.reddit.com/r/vim/comments/7boh5s/comment/dpjr0ow/?utm_source=reddit&utm_medium=web2x&context=3> (N.B., `[z` and `]z` already exist...; though `[Z`/`]Z` may make sense as names for these)
+"nnoremap <silent> z] :<C-u>silent! normal! zc<CR>zjzozz
+"nnoremap <silent> z[ :<C-u>silent! normal! zc<CR>zkzo[zzz
+
+
 " N.B., there's also these often unremarked upon ones by default:
 "   [i      ]i      :isearch          [d      ]d      :dsearch
 "   [I      ]I      :ilist            [D      ]D      :dlist
 "   [<C-i>  ]<C-i>  :ijump            [<C-d>  ]<C-d>  :djump
 "      <C-w>i       :isplit              <C-w>d       :dsplit
+" TODO: see 'romainl/vim-qlist' for improvements to `:{i,d}list`
+"   That's a bit unhygenic about metadata when saving/restoring
+"   registers; but otherwise the implementation seems decent enough,
+"   even if there are other bits I find unhygenic.  (Be sure to see
+"   the 'studio-vx' fork if you want to add :botright to the :cwindow
+"   calls. And see the 'wolloda' fork re adding a g:qlist_ignorecase
+"   variable.)
+
 
 " TODO: consider these ctags macros (HT: 'junegunn/dotfiles')
 " N.B., <C-]>   uses `:tag`     jumps to N'th match (default N=1), and push if &tagstack
@@ -1547,9 +1596,21 @@ nnoremap ]T :<C-u>tablast<CR>
 " argument.
 "nnoremap <C-]> g<C-]>
 "nnoremap g[    :pop<CR>
+" If we do those, then we should also handle the <C-w> variants.
 
 " There's also:
-"   <C-w>P      goto preview window.
+"   <C-w><C-]>  :stag
+"   <C-w>]      (also :stag)
+"   <C-w>g<C-]> :stjump
+"   <C-w>g]     :stselect
+"
+"   :cstag      for cscope+ctags integration; is like either
+"               `:cs find g` or `:tjump` depending.
+"
+"   <C-w> {f <C-f> F gf gF} for exiting file under cursor, in new split or tab
+"   <C-w><C-i> for opening include-files
+"
+"   <C-w>P      goto preview window. (is an error if there is none though, so we might want to wrap this to fail more gracefully)
 "   <C-w>z      :pclose
 "               :ppop       Should probably get mapped to <C-w>{
 "   <C-w>}      :ptag
@@ -1607,6 +1668,13 @@ set nrformats-=octal
 
 " TODO: consider setting &scrolljump; not sure if it'd ever matter though
 
+" TODO: Check out the VCenterCursor() function at:
+" <https://vim.fandom.com/wiki/Keep_your_cursor_centered_vertically_on_the_screen>
+" It toggles between &so=999 and whatever &so we set normally.
+" It also shows how to use autocmd for the OptionSet event, to
+" automatically run some code whenever someone changes an option.
+
+
 " ~~~~~ Gentler scrolling with Shift-Up/Down.  [non-jump]
 " (Because they should not be synonymous with <PageUp>/<PageDown>!)
 " TODO: what was the point of the <C-y>/<C-e> if we're just going to `zz`?
@@ -1629,29 +1697,17 @@ inoremap <S-Down> <ESC>10j10<C-e>zzi
 " Unfortunately that takes an Ex-command, so we have to use :normal!
 " to convert our desired normal-mode `<C-u>M` to an ex-command.  But
 " that doesn't work quite right because the <C-u> is a special
-" character, so we wrap it in :execute.  But that still doesn't work
-" quite right because using the five-character literal-string '<C-u>'
-" runs afoul of the same problem that not using :execute does (namely
-" just echoing the command but not actually doing anything), and using
-" the expr-string "\<C-u>" would come back as a one-character string
-" of the actual control character, which :execute interprets as
-" c_CTRL-u rather than leaving it alone for the :normal! to interpret
-" as n_CTRL-u.  So we have to use the expr-string "\<lt>C-u>" which
-" evaluates to the five-character literal-string '<C-u>' but in a way
-" that's somehow different than before.  Alas, I'm not sure if there's
-" any way to make this code cleaner than all that.  Vim really needs
-" a better way of talking about all this without the bizarro multiple
-" levels of string evaluation.
-" TODO: They're not using a special character, but this link
-" <https://www.reddit.com/r/vim/comments/59d621/can_i_make_vim_consider_a_sequence_of_jumps_in_a/>
-" puts an extra colon, saying `:keepjumps :normal! ...` whereas I
-" only tried without that second colon (thinking along the lines of
-" when you need to use the :call command vs being able to just use
-" the function directly)  I wonder if that would help us avoid some
-" of the complexity below?
-" TODO: or try doing the <eval> thing instead of :execute
-nnoremap  <C-Up>   :execute "keepjumps normal! \<lt>C-u>M"<CR>
-nnoremap  <C-Down> :execute "keepjumps normal! \<lt>C-d>M"<CR>
+" character.  Usually we get around that by using :execute or <expr>,
+" however in this case those would only make things worse: because
+" they'd want to interpret our <C-u> as c_CTRL-u (rather than leaving
+" it to the :normal to interpret it as n_CTRL-u), which then gives
+" errors about ambiguous wildcard expansions.  We could get around
+" that by doing yet another layer of escaping (ending up with
+"   :execute "keepjumps normal! \<lt>C-d>M"<CR>
+" ) and that works.  But only the `M` needs to be wrapped in :keepjumps,
+" not the <C-u>; so it's easier to just say exactly that :)
+nnoremap  <C-Up>   <C-u>:keepjumps normal! M<CR>
+nnoremap  <C-Down> <C-d>:keepjumps normal! M<CR>
 " TODO: imaps for <C-Up> and <C-Down>?
 
 " ~~~~~ Move by display-lines rather than by file-lines.
@@ -1700,13 +1756,15 @@ noremap ^      g0
 set history=200                 " size of command and search history.
 "set undolevels=1000            " depth of undo tree.
 
-" N.B., vim-6.2 can't handle the '<' entry here.
-set viminfo='20,<100,s100,\"100
-"           |   |    |    |
-"           |   |    |    +------ lines of history (default 50)
-"           |   |    +----------- Exclude registers larger than N kb
-"           |   +---------------- Maximum of N lines for registers
-"           +-------------------- Keep marks for N files
+if has('viminfo')
+  " N.B., vim-6.2 can't handle the '<' entry here.
+  set viminfo='20,<100,s100,\"100
+  "           |   |    |    |
+  "           |   |    |    +------ lines of history (default 50)
+  "           |   |    +----------- Exclude registers larger than N kb
+  "           |   +---------------- Maximum of N lines for registers
+  "           +-------------------- Keep marks for N files
+endif
 "set confirm                    " ask before doing something stupid
 set autowrite                   " autosave before commands like :next and :make
 
@@ -1757,11 +1815,17 @@ set directory=$HOME/.vim/swap   " Where to put swapfiles? (comma-list)
 " HT: vim82/defaults.vim
 inoremap <C-u> <C-g>u<C-u>
 
+" TODO: an interesting idea from <https://github.com/JesseLeite/dotfiles/blob/54fbd7c5109eb4a8e8a9d5d3aa67affe5c18efae/.vimrc#L190-L194> is to also have insertmode break undo-chains after certain characters, namely the basic punctuations .,!?
+
 " Make n_<.> work as expected despite using arrow keys when making the edit.
 inoremap <Left>  <C-g>U<Left>
 inoremap <Right> <C-g>U<Right>
 
 
+" TODO: for some of these, we may consider using `:h :map-cmd` in
+"   lieu of the leading xo_`:<C-u>` or i_`<C-o>:`.  Since all these
+"   are just for n-mode that doesn't actually apply here, but it's
+"   important to remember for all the ohter places we use <expr> or <C-u>.
 " Note: I use ClearUndoHistory far more often than I really should.
 " For my purposes, `:earlier 1f` will do (more or less) what I want:
 " which is to get back to the most recently saved version.  However,
@@ -1770,11 +1834,13 @@ inoremap <Right> <C-g>U<Right>
 " So eventually I'll need to define my own thing to make it idempotent.
 " Plus, of course, I should make a mapping for it.
 " See Also: `:h usr_32` and `:h undo-redo`.
-nnoremap <leader>du :call wrengr#ClearUndoHistory()<CR>
-nnoremap <leader>dr :call wrengr#ClearRegisters()<CR>
-nnoremap <leader>dm :delmarks<CR>
+nnoremap <leader>du :<C-u>call wrengr#ClearUndoHistory()<CR>
+nnoremap <leader>dr :<C-u>call wrengr#ClearRegisters()<CR>
+nnoremap <leader>dm :<C-u>delmarks<CR>
 if has('jumplist')
-  nnoremap <leader>dj :clearjumps<CR>
+  nnoremap <leader>dj :<C-u>clearjumps<CR>
+else
+  nnoremap <leader>dj <Nop>
 endif
 " Re tags, see <https://vi.stackexchange.com/q/11964>
 
@@ -1789,7 +1855,7 @@ endif
 "   as in 'print'/'put' unless we want to change the clipboard thing
 "   currently bound to `<leader>p`
 nnoremap <leader>zu :undolist<CR>
-" while `g; g,` say they need '+jumplist'; `:changes` doesn't...
+" while `g; g,` say they need '+jumplist'; `:changes` doesn't say so...
 nnoremap <leader>zc :changes<CR>
 nnoremap <leader>zr :registers<CR>
 nnoremap <leader>zm :marks<CR>
@@ -1942,9 +2008,8 @@ set expandtab
 
 " Stay in visual-mode after shifting.
 " HT: <https://github.com/cypher/dotfiles/blob/master/vim/bindings.vim>
-" TODO: do we really mean :vmap and not :xmap here? junegunn uses :xmap, fwiw
-"vnoremap < <gv
-"vnoremap > >gv
+"xnoremap < <gv
+"xnoremap > >gv
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2230,6 +2295,7 @@ if has('folding')
   "set foldtext=v:folddashes.substitute(getline(v:foldstart),'/\\*\\\|\\*/\\\|{{{\\d\\=','','g')
 
   " TODO: &fillchars
+  " See also <https://groups.google.com/g/vim_dev/c/xc006C7XJfo>
 
   " Use N columns of gutter to show the extent of folds.
   " (the N-th column is always empty, so only shows N-1 levels of nesting
@@ -2325,6 +2391,7 @@ nnoremap Y y$
 
 " In Visual/Select modes: have <p> replace selected text with the "" register.
 vnoremap p <Esc>:let current_reg = @"<CR>gvdi<C-r>=current_reg<CR><Esc>
+" TODO: consider using `:h :map-cmd` in lieu of `:` to avoid needing the `gv` trick.
 
 " BUG: neither "* nor "+ registers behave apropriately on the version
 " of vim that ships with newer OSX. Instead must use MacVim
@@ -2378,13 +2445,16 @@ endif
 "   or <D-v>  (Though as of recently someone's started binding <D-v>)
 " TODO: see 'ConradIrwin/vim-bracketed-paste'
 if has('clipboard')
-  nnoremap <Leader>p :set paste<CR>:put *<CR>:set nopaste<CR>
+  nnoremap <Leader>p :set paste<Bar>put *<Bar>set nopaste<CR>
 endif
 
 " Select the most-recently INSERTed text. (N.B., that'll be the
 " whole file if you've just loaded it up and have never entered
 " INSERT mode yet.)
 " HT: <https://dougblack.io/words/a-good-vimrc.html>
+" Warning: if we ever want this facility, we should give it a
+" different name, since `gV` is already mapped to preventing automatic
+" reselection (i.e., the inverse of `gv`)
 "nnoremap gV `[v`]
 
 " Auto indent pasted text
@@ -2497,6 +2567,7 @@ let g:netrw_list_hide    = '\(^\|\s\s\)\zs\.[^\.]\+' " Toggle hiddenness with <g
 " so that's the main reason to want to go for something else
 " <https://www.reddit.com/r/vim/comments/22ztqp/why_does_nerdtree_exist_whats_wrong_with_netrw/cgs4aax/>
 "
+" TODO: if we actually want this, then move it off to ~/.vim/after/ftplugin/
 "augroup wrengrvinegar
 "  autocmd!
 "  autocmd FileType netrw
@@ -2703,7 +2774,7 @@ augroup wrengr_vimrc
 augroup END
 
 " TODO: consider using something like this (or similar for Goyo):
-"nmap <Leader>l <Plug>(Limelight)
+"nmap     <Leader>l <Plug>(Limelight)
 "nnoremap <Leader>ll :Limelight!<CR>
 
 
@@ -2717,6 +2788,8 @@ augroup END
 " Note: even though exists('g:lsp_loaded') is true by the time we
 " can ask it on the cmdline, it's not yet true here!
 " (N.B., prabirshrestha doesn't follow the `g:loaded_{plugin}` convention.)
+" However, we can check has_key(g:plugs, 'vim-lsp') if we really
+" want to guard this section.
 
 
 " TODO: the next three were suggested by CiderLSP; do we actually want them?
@@ -2744,6 +2817,7 @@ autocmd wrengr_vimrc User lsp_buffer_enabled call wrengr#lsp#BufferEnabled()
 " Kythe is almost entirely open source (just not the stubby wrapping);
 " cf., <https://github.com/kythe/kythe/tree/master/kythe/go/languageserver>
 
+" TODO: should probably move this off to wrengr#lsp# as well.
 fun! s:lsp_register_Kythe()
   let l:kythe_exe = '/google/bin/releases/grok/tools/kythe_languageserver'
   if executable(l:kythe_exe)
@@ -2798,8 +2872,8 @@ autocmd wrengr_vimrc User lsp_setup call s:lsp_register_Kythe()
 "   after the `:Page` like it used to?
 command! -nargs=+ -complete=command Page call wrengr#Page(<q-args>)
 
-" TODO: should probably give this a better mapping.
-nnoremap <leader>s :call wrengr#SynStack()<CR>
+" TODO: should probably give this a better name/mapping.
+nnoremap <leader>s :<C-u>call wrengr#SynStack()<CR>
 
 " Insert blank line, without entering insert-mode.
 nnoremap <leader>o o<ESC>
