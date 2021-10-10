@@ -673,7 +673,7 @@ Plug 'vhda/verilog_systemverilog.vim', { 'for': 'verilog_systemverilog' }
 if has('autocmd')
   " TODO: Like the other &ft setting autocmds below, we really should
   " move this off to a more appropriate place in ~/.vim/ftdetect
-  autocmd wrengr_vimrc BufRead,BufNewFile *.bs set ft=haskell
+  autocmd wrengr_vimrc BufRead,BufNewFile *.bs setf haskell
 endif
 
 " Not an HDL, but is somewhat related.
@@ -2354,7 +2354,7 @@ if has('autocmd')
   " TODO: move these off to ~/.vim/ftdetect/ where they belong.
   augroup wrengr_vimrc
     " Yes, all my *.pro files ARE prolog files
-    autocmd BufNewFile,BufRead *.pro,*.ecl set ft=prolog
+    autocmd BufNewFile,BufRead *.pro,*.ecl setf prolog
 
     " This causes GHC to type check every time you save the file
     "autocmd BufWritePost *.hs !ghc -c %
@@ -2363,7 +2363,7 @@ if has('autocmd')
 
     " TODO: actual support for Agda
     " <http://wiki.portal.chalmers.se/agda/agda.php?n=Main.VIMEditing>
-    autocmd BufNewFile,BufRead *.agda set ft=haskell
+    autocmd BufNewFile,BufRead *.agda setf haskell
 
     " HT: <https://www.hillelwayne.com/post/intermediate-vim/>
     "autocmd FileType markdown inoremap <buffer> ;` ```<CR><CR>```<Up><Up>
