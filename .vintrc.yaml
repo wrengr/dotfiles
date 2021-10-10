@@ -1,0 +1,49 @@
+cmdargs:
+  # The default is severity:warning.  Then again, this setting is
+  # a bit of a ruse: there are no "error" policies, and only two
+  # "style" policies (one of which really ought to be a warning).
+  severity: style_problem
+  color: true
+
+policies:
+  # [Warnings]
+  # This one seems a bit dubious imo; at least when it's the first
+  # or second command in ~/.vimrc I mean.
+  ProhibitSetNoCompatible:
+    enabled: false
+  # While `abort` is nice in principle, there are some portability
+  # concerns; so stop warning me about it.  Alas, this is also the
+  # same thing that chacks for bang; and while vim central says it's
+  # deprecated, that doesn't mean it isn't required for portability.
+  # Re separating the bang vs abort checks, see:
+  # <https://github.com/Vimjas/vint/issues/322>
+  ProhibitNoAbortFunction:
+    enabled: false
+  # I really like this check in principle, but sometimes it gives
+  # false-positives (i.e., issues warnings when there is in fact a
+  # group given).
+  #ProhibitAutocmdWithNoGroup:
+  #
+  # This one is also very good in principle, but it gives false-positives
+  # for cases where the variable was set inside an :exec.  A hard
+  # problem in general, I know, but it happens even when the string
+  # is very transparently parseable to see that it sets the variable.
+  #ProhibitUsingUndeclaredVariable:
+
+  # [Style]
+  # Alas, it doesn't look like we can disable this for &cpo only
+  # yet leave it on for everything else.  And while we can give
+  # comments that disable/reenable it, that just seems like an
+  # antipattern of its own imo.  (Also it's unclear if the +Foo
+  # comment really turns it on, or just reverts it to what it was
+  # before.  And while we can do "next-line" modifications, that'll
+  # get old real quick since the &cpo idiom requires two lines at
+  # both beginning and end.)
+  # TODO: aha, it looks like this is an undocumented ability:
+  # <https://github.com/Vimjas/vint/issues/266>
+  # Hrm, must be specific to ProhibitUnusedVariable, since it doesn't work here.
+  # Filed: <https://github.com/Vimjas/vint/issues/376>
+  ProhibitAbbreviationOption:
+    enabled: true
+    ignored_patterns:
+      - '^cpo$'
