@@ -1341,61 +1341,17 @@ endif
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" ~~~~~ General usability ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {{{1
-
-set backspace=indent,eol,start " Allow backspacing anything (input mode).
-"set whichwrap=b,s,<,>,~,[,]   " Backspace and cursor keys wrap too.
-" N.B., see <https://github.com/sorin-ionescu/prezto/issues/61>
-" this can be reconfigured in iTerm2, but also see `:h :fixdel`
-
-" TODO: I've been getting rather annoyed by {ic}_<C-w> lately.
-" Should either remap that to something else, or remap all the :wimcmd
-" things to something else.
-
-set showmatch           " When inserting brackets, briefly jump to the match
-
-" ~~~~~ Timing ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{2
-"set matchtime=5        " how long (N/10 secs) to &showmatch for.
-"set updatetime=4000    " Doing nothing for N millisec will trigger stuff:
-    " (1) saving the swapfile to disk,
-    " (2) issue CursorHold event on the next keypress (requires keypress!),
-    " (3) at least historically, stop highlighting searches (a~la `:noh`)
-    " (N.B., gitgutter will set a short &ut below)
-"set updatecount=200    " Save swapfile after typing N characters.
-"if has('reltime')
-"  set redrawtime=2000  " Only allow N millisec for redrawing/&hls.
-"endif
-set timeout             " enable time out on mappings and keycodes.
-set ttimeout            " enable time out on keycodes.
-"set timeoutlen=3000    " Wait N milisec for mapping sequences (default: 1000)
-set ttimeoutlen=100     " Wait N milisec for keycodes (i.e., end of escape sequence).
-                        " If &ttimeoutlen < 0, then uses &timeoutlen
-
-" ~~~~~ Bells  ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{2
-"set belloff=           " Which (non-message) events should never ring the bell?
-"set noerrorbells       " Should error messages ring the bell?
-"set novisualbell       " Should bells be visual in lieu of beep?
-"set t_vb=              " What command code implements visual bells?
-
+" ~~~~~ Tabpages, Windows/Splits, Buffers, Diffs, & bracketoids  {{{1
 " ~~~~~ Diff ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{2
-"if has('diff')
-"  " Comma-separated list of settings for diff-mode.
-"  set diffopt=internal,filler,closeoff
-"  " see also *fold-diff*, *diff-diffexpr*, &diffexpr, &vimdiff, &cursorbind
-"endif
-
-" ~~~~~ Scrolling  ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{2
-set scrolloff=7         " Keep N lines between cursor and window top/bottom.
-set sidescrolloff=10    " Keep N columns between cursor and window left/right.
-" TODO: see also &scrollbind=no, &scrollopt=ver,jump, *scroll-binding*
-" TODO: also &scrollfocus=no, &scrolljump=1
-"set window=...         " Used by <C-f> and <C-b>
-
-" TODO: Check out the VCenterCursor() function at:
-" <https://vim.fandom.com/wiki/Keep_your_cursor_centered_vertically_on_the_screen>
-" It toggles between &so=999 and whatever &so we set normally.
-" It also shows how to use autocmd for the OptionSet event, to
-" automatically run some code whenever someone changes an option.
+if has('diff')
+  " Comma-separated list of settings for diff-mode.
+  "set diffopt=internal,filler,closeoff " Default on Fink's vim-nox 8.2.3404
+  " 'closeoff' == when closing penultimate window-in-tab-with-&diff, do :diffoff
+  set diffopt+=vertical             " prefer vertical splitting
+  set diffopt+=followwrap           " leave &wrap alone
+  set diffopt+=algorithm:patience
+  " see also *fold-diff*, *diff-diffexpr*, &diffexpr, &vimdiff, &cursorbind
+endif
 
 " ~~~~~ Buffers  ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{2
 " I hate <Q> switching to ex-mode.  Also, I hate that wiping buffers
@@ -1494,14 +1450,21 @@ if has('quickfix')
   "   so much include :cc, :cclose, :c{f,g,b,l}
   " TODO: 'tpope/vim-unimpaired' also does :cpfile and :cnfile,
   "   which the helppages aren't enough for me to decipher.
-  " TODO: 'tpope/vim-unimpaired' appends `zv` to the end of both
-  "  'q' and 'l' families of mappings; would we want that?
+  nnoremap <expr> <leader>zq ':<C-u>copen ' . (v:count ? v:count : '') . '<CR>'
+  nnoremap        <leader>dq  :<C-u>cclose<CR>
+
+  " TODO: want this?
+  " HT: <https://gist.github.com/romainl/ce55ce6fdc1659c5fbc0f4224fd6ad29>
+  "autocmd QuickFixCmdPost [^l]* cwindow
+  " See also: <#gistcomment-3881035> therein.
 
   " ~~~~~ Quickfix/locations                                     {{{3
-  nnoremap <expr> [l ':<C-u>' . v:count . 'lprev<CR>zz'
-  nnoremap <expr> ]l ':<C-u>' . v:count . 'lnext<CR>zz'
-  nnoremap        [L :<C-u>lfirst<CR>zz
-  nnoremap        ]L :<C-u>llast<CR>zz
+  nnoremap <expr> [l         ':<C-u>' . v:count . 'lprev<CR>zz'
+  nnoremap <expr> ]l         ':<C-u>' . v:count . 'lnext<CR>zz'
+  nnoremap        [L          :<C-u>lfirst<CR>zz
+  nnoremap        ]L          :<C-u>llast<CR>zz
+  nnoremap <expr> <leader>zl ':<C-u>lopen ' . (v:count ? v:count : '') . '<CR>'
+  nnoremap        <leader>dl  :<C-u>lclose<CR>
   " TODO: ditto everything from above (though it's :ll ~ :cc because
   " vimish); including the 'tpope/vim-unimpaired' comments; and the
   " autocmd (with l* pattern and lwindow)
@@ -1513,8 +1476,9 @@ if has('quickfix')
 endif
 
 " ~~~~~ Buffers                                                  {{{3
-" Note: these commands have wraparound behavior, but they're robust
-"   enough to always handle the v:count.
+" Note: these commands have wraparound behavior, and they're robust
+"   enough to always handle the v:count.  Though we still use the
+"   idiom because it's a bit unsightly to echo the 0.
 " Note: when there's only one listed buffer, these simply echo the
 "   command (like :tab{p,n}) rather than issuing an error message
 "   (like :{c,l}{prev,next}).  The command is also echoed whenever
@@ -1524,10 +1488,12 @@ endif
 "   move between help-buffers; but that's not working for me, not
 "   even with typing the commands manually (so it's nothing about
 "   this mapping).
-nnoremap <expr> [b ':<C-u>' . v:count . 'bprev<CR>'
-nnoremap <expr> ]b ':<C-u>' . v:count . 'bnext<CR>'
-nnoremap        [B :<C-u>bfirst<CR>
-nnoremap        ]B :<C-u>blast<CR>
+nnoremap <expr> [b         ':<C-u>' . (v:count ? v:count : '') . 'bprev<CR>'
+nnoremap <expr> ]b         ':<C-u>' . (v:count ? v:count : '') . 'bnext<CR>'
+nnoremap        [B          :<C-u>bfirst<CR>
+nnoremap        ]B          :<C-u>blast<CR>
+nnoremap        <leader>zb  :<C-u>ls<CR>
+" TODO: would we want to have <leader>db for wrengr#BufferDelete()?
 
 " ~~~~~ Argument List                                            {{{3
 " TODO: unlike the others, I got these actually from 'tpope/vim-unimpaired'.
@@ -1535,10 +1501,16 @@ nnoremap        ]B :<C-u>blast<CR>
 "   empty etc; are arglists some new/unused/unmaintained thing?  In
 "   any case, if we do these then we'll want to do some extra
 "   wrapping to make them friendlier.
-"nnoremap <expr> [a ':<C-u>' . v:count . 'prev<CR>'
-"nnoremap <expr> ]a ':<C-u>' . v:count . 'next<CR>'
+"nnoremap <expr> [a ':<C-u>' . (v:count ? v:count : '') . 'prev<CR>'
+"nnoremap <expr> ]a ':<C-u>' . (v:count ? v:count : '') . 'next<CR>'
 "nnoremap        [A  :<C-u>first<CR>
 "nnoremap        ]A  :<C-u>last<CR>
+" TODO: when the arglist is empty it just leaves the command echoed
+" there, rather than showing an empty list like :jumps etc do.  And
+" when it's non-empty it just shows things as a list, rather than the
+" nicer vertical formatting of :ls etc.  So we should make a wrapper
+" that makes this nicer.
+nnoremap <leader>za :<C-u>args<CR>
 
 " ~~~~~ Tabpages                                                 {{{3
 " Note: these commands *cannot* handle a 0 count.
@@ -1558,8 +1530,9 @@ map <C-w>gT <Nop>
 map <C-w>gt <Nop>
 " I guess we can leave the {nvi}_<C-PageUp>/<C-PageDown> bindings there.
 " N.B., there's also g<Tab>, <C-w>g<Tab>, and <C-Tab> for analogue of <C-w>p
-nnoremap [T :<C-u>tabfirst<CR>
-nnoremap ]T :<C-u>tablast<CR>
+nnoremap [T         :<C-u>tabfirst<CR>
+nnoremap ]T         :<C-u>tablast<CR>
+nnoremap <leader>zt :<C-u>tabs<CR>
 
 " TODO: 'tpope/vim-unimpaired' also does :ptprev and :ptnext; but if doing that then why not also do :ptfirst and :ptlast?  And really, that belongs under some other name than 't'; since ctags should not be confused with tabpages.
 
@@ -1617,55 +1590,14 @@ nnoremap ]T :<C-u>tablast<CR>
 "   <C-w>g}     :ptjump
 
 
-" ~~~~~ Misc.                                                    {{{2
-
-" Improve latency/responsiveness by not redrawing while running macros.
-" This also improves latency for scrolling when there's a lot of
-" syntax highlighting going on (e.g., the recent regression when
-" editing Perl files).  Alas, it makes scrolling choppy whenever the
-" viewport moves.  So which is worse: lagginess or choppiness?
-" TODO: it might help to set &regexpengine=1 <https://stackoverflow.com/a/25276429>
-" TODO: or perhaps setting &ttyscroll to something small (when redrawing is fast but scrolling is slow)
-" TODO: maybe also `hi NonText cterm=NONE ctermfg=NONE`, as suggested by :h slow-terminal
-" TODO: if all else fails, maybe it's an iTerm2 problem. Try setting
-"   opacity to 100% and blur to 0. (This seems an unlikely culprit,
-"   since I'm only really encountering issues with Perl files.)
-set lazyredraw
-
-"set hidden             " Allow hiding of buffers with unsaved changes.
-                        " <http://items.sjbach.com/319/configuring-vim-right>
-"set autochdir          " Change directory to the file in the current window.
-"set nojoinspaces       " No additional spaces when joining lines with <J>
-                        " (but see <gJ> if you only want that occasionally)
-"set esckeys            " Allow cursor keys within insert mode.
-"set debug=msg,throw    " Help debug &foldexpr, &formatexpr, &indentexpr by
-                        " giving error messages that would normally be omitted.
-"set report=0           " (0=)Always report the number of lines changed.
-"set display=lastline   " Show as much of the last file-line as possible.
-"set fileformat=unix
-"set path=$HOME/,.      " Set the basic path (see below)
-"set tags=tags,$HOME/.vim/ctagsproject
-"set browsedir=buffer   " :browse e starts in %:h, not in $PWD
-
-" Don't recognize octal numbers for <C-a> and <C-x>.
-" HT: vim82/defaults.vim
-set nrformats-=octal
-
-
-" ~~~~~ TODO URLs                                                {{{2
-"     http://www.tjansson.dk/filer/vimrc.html
-"     http://saulusdotdyndnsdotorg/~david/config/vimrc
-"         This one has a whole hell of a lot of stuff!
-"     https://github.com/mad-raz/dotvim/blob/master/.vimrc
-"     https://github.com/junegunn/dotfiles/blob/8646aae3aec418662d667b36444e771041ad0d23/vimrc#L12-L91
-"     http://www.apaulodesign.com/vimrc.html
-"     https://github.com/thoughtbot/dotfiles/blob/master/vimrc
-"     https://dougblack.io/words/a-good-vimrc.html
-
-
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Movement & Scrolling ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {{{1
 
+set scrolloff=7         " Keep N lines between cursor and window top/bottom.
+set sidescrolloff=10    " Keep N columns between cursor and window left/right.
+" TODO: see also &scrollbind=no, &scrollopt=ver,jump, *scroll-binding*
+" TODO: also &scrollfocus=no, &scrolljump=1
+"set window=...         " Used by <C-f> and <C-b>
 " TODO: consider setting &scrolljump; not sure if it'd ever matter though
 
 " TODO: Check out the VCenterCursor() function at:
@@ -1749,6 +1681,104 @@ noremap ^      g0
 "nnoremap <silent> <C-j> :move+<CR>
 "xnoremap <silent> <C-k> :move-2<CR>gv
 "xnoremap <silent> <C-j> :move'>+<CR>gv
+" TODO: consider using `:h :map-cmd` in lieu of the x_`:` to avoid
+"   needing the `gv` trick.
+
+
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+" ~~~~~ Misc/General Usability ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {{{1
+
+set backspace=indent,eol,start " Allow backspacing anything (input mode).
+"set whichwrap=b,s,<,>,~,[,]   " Backspace and cursor keys wrap too.
+" N.B., see <https://github.com/sorin-ionescu/prezto/issues/61>
+" this can be reconfigured in iTerm2, but also see `:h :fixdel`
+
+" TODO: I've been getting rather annoyed by {ic}_<C-w> lately.
+" Should either remap that to something else, or remap all the :wimcmd
+" things to something else.
+
+set showmatch           " When inserting brackets, briefly jump to the match
+
+" ~~~~~ Timing ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{2
+"set matchtime=5        " how long (N/10 secs) to &showmatch for.
+"set updatetime=4000    " Doing nothing for N millisec will trigger stuff:
+    " (1) saving the swapfile to disk,
+    " (2) issue CursorHold event on the next keypress (requires keypress!),
+    " (3) at least historically, stop highlighting searches (a~la `:noh`)
+    " (N.B., gitgutter will set a short &ut below)
+"set updatecount=200    " Save swapfile after typing N characters.
+"if has('reltime')
+"  set redrawtime=2000  " Only allow N millisec for redrawing/&hls.
+"endif
+set timeout             " enable time out on mappings and keycodes.
+set ttimeout            " enable time out on keycodes.
+"set timeoutlen=3000    " Wait N milisec for mapping sequences (default: 1000)
+set ttimeoutlen=100     " Wait N milisec for keycodes (i.e., end of escape sequence).
+                        " If &ttimeoutlen < 0, then uses &timeoutlen
+
+" ~~~~~ Bells  ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{2
+"set belloff=           " Which (non-message) events should never ring the bell?
+"set noerrorbells       " Should error messages ring the bell?
+"set novisualbell       " Should bells be visual in lieu of beep?
+"set t_vb=              " What command code implements visual bells?
+
+" ~~~~~ Directories  ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{2
+" Actually, I'll set these closer to wherever seems relevant; but
+" for reference, there are at least the following directory options
+" (most of which are actually comma-lists):
+"
+" For &path see <https://gist.github.com/romainl/7e2b425a1706cd85f04a0bd8b3898805>
+"set path       " Analogue of $PATH, where we search for files to open.
+"set tags       " ctags files
+"set backupdir  " backupfiles               (&g:bk, &g:wb, &g:pm)
+"set directory  " swapfiles                 (&b:swf)
+"set undodir    " '+persistent_undo' files  (&b:udf)
+"set viewdir    " `:mk{view,session}` files (&g:vop, &g:ssop)
+
+" ~~~~~ Misc.  ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{2
+
+" Improve latency/responsiveness by not redrawing while running macros.
+" This also improves latency for scrolling when there's a lot of
+" syntax highlighting going on (e.g., the recent regression when
+" editing Perl files).  Alas, it makes scrolling choppy whenever the
+" viewport moves.  So which is worse: lagginess or choppiness?
+" TODO: it might help to set &regexpengine=1 <https://stackoverflow.com/a/25276429>
+" TODO: or perhaps setting &ttyscroll to something small (when redrawing is fast but scrolling is slow)
+" TODO: maybe also `hi NonText cterm=NONE ctermfg=NONE`, as suggested by :h slow-terminal
+" TODO: if all else fails, maybe it's an iTerm2 problem. Try setting
+"   opacity to 100% and blur to 0. (This seems an unlikely culprit,
+"   since I'm only really encountering issues with Perl files.)
+set lazyredraw
+
+"set hidden             " Allow hiding of buffers with unsaved changes.
+                        " <http://items.sjbach.com/319/configuring-vim-right>
+"set autochdir          " Change directory to the file in the current window.
+"set nojoinspaces       " No additional spaces when joining lines with <J>
+                        " (but see <gJ> if you only want that occasionally)
+"set esckeys            " Allow cursor keys within insert mode.
+"set debug=msg,throw    " Help debug &foldexpr, &formatexpr, &indentexpr by
+                        " giving error messages that would normally be omitted.
+"set report=0           " (0=)Always report the number of lines changed.
+"set display=lastline   " Show as much of the last file-line as possible.
+"set fileformat=unix
+"set path=$HOME/,.      " Set the basic path
+    " Actually, for &path see <https://gist.github.com/romainl/7e2b425a1706cd85f04a0bd8b3898805>
+"set tags=tags,$HOME/.vim/ctags
+"set browsedir=buffer   " :browse e starts in %:h, not in $PWD
+
+" Don't recognize octal numbers for <C-a> and <C-x>.
+" HT: vim82/defaults.vim
+set nrformats-=octal
+
+" ~~~~~ TODO URLs                                                {{{2
+"     http://www.tjansson.dk/filer/vimrc.html
+"     http://saulusdotdyndnsdotorg/~david/config/vimrc
+"         This one has a whole hell of a lot of stuff!
+"     https://github.com/mad-raz/dotvim/blob/master/.vimrc
+"     https://github.com/junegunn/dotfiles/blob/8646aae3aec418662d667b36444e771041ad0d23/vimrc#L12-L91
+"     http://www.apaulodesign.com/vimrc.html
+"     https://github.com/thoughtbot/dotfiles/blob/master/vimrc
+"     https://dougblack.io/words/a-good-vimrc.html
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1862,12 +1892,6 @@ nnoremap <leader>zm :marks<CR>
 if has('jumplist')
   nnoremap <leader>zj :jumps<CR>
 endif
-nnoremap <leader>zt :tabs<CR>
-nnoremap <leader>zb :ls<CR>
-" TODO: when the arglist is empty it just leaves the command echoed
-" there, rather than showing an empty list like :jumps etc do.  So
-" we should wrapper this to do something more like that.
-nnoremap <leader>za :args<CR>
 
 
 " Because this is so much easier to type than `:w<CR>`
@@ -2306,19 +2330,14 @@ if has('folding')
 
   " TODO: might should use wrengr#plug#DataDir(), but I've no idea
   "   what NeoVim uses for this.
-  "set viewdir=$HOME/.vim/view  " Where to put `:mkview` files
-
-  " To automatically save manual folds and reload them:
-  " (I'm not sure if I actually want this, but it's good to remember)
-  " TODO: add guards to the autocmds to check that &foldmethod==manual;
-  "   since `:mkview` saves so much more than just manual folds.
-  "if has('autocmd')
-  "  augroup save_restore_manual_folds
-  "    autocmd!
-  "    autocmd BufWinLeave * mkview
-  "    autocmd BufWinEnter * silent loadview
-  "  augroup END
+  "if has('mksession')
+  "  set viewdir=$HOME/.vim/view  " Where to put `:mkview` files
+  "  set viewoptions={...todo...}
+  "  set sessionoptions={...todo...}
   "endif
+
+  " TODO: if you want to automatically call `:mkview`/`:loadview`
+  " then see 'zhimsel/vim-stay' rather than rolling our own autocmds.
 endif
 
 
@@ -2372,6 +2391,22 @@ map <S-k> <Nop>
 "   HT: <https://github.com/jgm/dotvim/blob/master/doc/vimtips.txt>
 "   set makeprg=jikes -nowarn -Xstdout +E %
 "   set errorformat=%f:%l:%c:%*\d:%*\d:%*\s%m
+
+" See <http://cscope.sourceforge.net> and `:h *cscope-suggestions*`
+" Note: cscope is strictly for C; for C++ or any other language,
+" just use some modern version of ctags.
+" Note: All these options are global-only.  Default values shown in parens.
+"if has('cscope')
+"  set cscopeprg=           " string('cscope')  The program to run.
+"  set cscoperelative       " boolean(off)      When no prefix(-P) something something
+"  set cscopepathcomp=      " number(0)         # of path components to show
+"  if has('quickfix')
+"    set cscopequickfix=    " comma-list('')    Which :lcs subcommands use loclist?
+"  endif
+"  set cscopetag            " boolean(off)      Have `:tag` and <C-]> use :cstag
+"  set cscopetagorder=      " number(0)         First search 0:cscope, 1:ctags
+"  set cscopeverbose        " boolean(off)
+"endif
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
