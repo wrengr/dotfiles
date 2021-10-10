@@ -2291,6 +2291,7 @@ endif
 "set keywordprg=man\ -s
 
 " Unmap <S-k>, since I keep hitting it accidentally and never want/need it.
+" (N.B., below we actually decide to remap it to something else.)
 map <S-k> <Nop>
 
 " The thing `:grep` uses.
@@ -2799,6 +2800,24 @@ nnoremap <leader>s :call wrengr#SynStack()<CR>
 " Insert blank line, without entering insert-mode.
 nnoremap <leader>o o<ESC>
 nnoremap <leader>O O<ESC>
+
+" Universal opposite of <J>
+" HT: <https://gist.github.com/romainl/3b8cdc6c3748a363da07b1a625cfc666>
+" TODO: depending on options, we should get this to detect comments
+"   and add the necessary prefix too.
+fun! s:BreakHere()
+  " TODO: figure a way to use the substitute() function instead;
+  "   to avoid depending on user settings for this.
+  keeppatterns s/^\(\s*\)\(.\{-}\)\s*\(\%#\)\s*/\1\2\r\1\3
+  call histdel('/', -1)
+endfun
+" This choice of mapping makes sense as a pun on the duality between
+" <j>/<Down> vs <k>/<Up>, and it can also be thought of as 'cut' vs
+" 'join'.  No, I don't remember why I spelled it <S-k> when unbinding
+" it above; I can't imagine why a simple `K` wouldn't do the exact
+" same thing.
+nnoremap <S-k> :<C-u>call <SID>BreakHere()<CR>
+
 
 " <https://github.com/jgm/dotvim/blob/master/doc/vimtips.txt> has
 " a nice tip about using `<C-R>=expand("%:p:h")` to get the path
