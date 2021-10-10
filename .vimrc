@@ -2095,7 +2095,7 @@ endif
 "  set omnifunc=
 "endif
 "   See also: *ins-completion-menu*, *complete-popuphidden*
-"set completeopt=menu,preview
+set completeopt=menu,preview,noselect,longest
 "if has('textprop') || has('quickfix')
 "  " See also: *complete-popup*
 "  set completepopup=
@@ -2296,14 +2296,7 @@ map <S-k> <Nop>
 
 " The thing `:grep` uses.
 "set grepprg=grep\ -nHr\ $*
-" TODO: cf., <https://robots.thoughtbot.com/faster-grepping-in-vim>,
-"   the comment to <https://stackoverflow.com/a/4889864/358069>
-" TODO: try <https://github.com/BurntSushi/ripgrep> maybe?
-" TODO: see also <https://github.com/cypher/dotfiles/blob/master/vim/extensions.vim#L177>
-"if executable('rg')
-"  set grepprg=rg\ --vimgrep\ --no-heading
-"  set grepformat=%f:%l:%m
-"endif
+" TODO: see WIP <~/.vim/autoload/wrengr/grepprg.vim>
 
 " The thing `:make` uses.
 "set makeprg=make
@@ -2552,13 +2545,24 @@ if has('multi_byte')
   "let g:airline_left_sep           = '▶' " '»'
   "let g:airline_right_sep          = '◀' " '«'
   "let g:airline_symbols.crypt      = '🔒︎'  " beware to keep the \uFE0E there!
-  "let g:airline_symbols.linenr     = '¶' " '␊', '␤'
-  "let g:airline_symbols.maxlinenr  = '' " '☰'
-  "let g:airline_symbols.branch     = '⎇'
-  "let g:airline_symbols.paste      = 'ρ' " 'Þ', '∥'
-  "let g:airline_symbols.spell      = 'Ꞩ'
-  "let g:airline_symbols.notexists  = '∄'
-  "let g:airline_symbols.whitespace = 'Ξ'
+    " Beware that many programs (e.g., gmail) and processing tools
+    " will silently discard the \uFE0E selector, consequently forcing
+    " the emoji variant on us.  Also, alas, not all fonts seem to
+    " respect the selector either.
+  "let g:airline_symbols.colnr              "           default: ' ℅:'
+  "let g:airline_symbols.linenr     = '¶' " '␊', '␤'    default: ' ㏑:'
+  "let g:airline_symbols.maxlinenr  = ''    "           default: '☰'
+  "let g:airline_symbols.branch     = '⎇ '  "           default: 'ᚠ'
+  "let g:airline_symbols.paste      = 'ρ' " 'Þ', '∥'    default: 'PASTE'
+  "let g:airline_symbols.spell      = 'Ꞩ'   "           default: 'SPELL'
+  "let g:airline_symbols.notexists  = '∄'   "           default: 'Ɇ'
+  "let g:airline_symbols.space              "           default: ' '
+  "let g:airline_symbols.whitespace = 'Ξ'   "           default: '☲'
+  "let g:airline_symbols.ellipsis   = '…' " '⋯'         default: '...'
+  "let g:airline_symbols.modified           "           default: '+'
+  "let g:airline_symbols.dirty              "           default: '!'
+  "let g:airline_symbols.readonly           "           default: '⊝'
+  "let g:airline_symbols.keymap             "           default: 'Keymap:'
 endif
 
 " Other themes to bear in mind: tomorrow, wombat, luna, jellybeans, zenburn.
