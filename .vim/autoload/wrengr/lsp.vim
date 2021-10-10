@@ -149,13 +149,14 @@ fun! wrengr#lsp#BufferEnabled() abort
   " and `gD` (goto decl of global variable).  So our mappings above
   " are similar in spirit, though rather different in the details.
   " We may want to also take over the default mappings for `[i [I [d [D` etc
+  " BUG: this overrides the builtin virtual-replace-char operator.
   nnoremap <buffer> gr :LspReferences<CR>
   " Other mappings suggested in the readme
   " TODO: decide which of these I'd like
   " Warning: mapping clashes; normally:
   "   `gs` => :sleep
   "   `gi` => a variant of `^i
-  "   `gt` => :tabnext
+  "   `gt` => :tabnext (Though we've bound something else to do that)
   "map  <buffer> gs <plug>(lsp-document-symbol-search)    " :LspDocumentSymbol (shows not searches)
   "nmap <buffer> gS <plug>(lsp-workspace-symbol-search)   " :LspWorkspaceSymbol, :LspWorkspaceSymbolSearch
   "nmap <buffer> gi <plug>(lsp-implementation)            " :LspImplementation, :LspPeekImplementation; this is for 'implementations of interfaces' whatever that means...

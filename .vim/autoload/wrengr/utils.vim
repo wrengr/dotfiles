@@ -1,7 +1,7 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " Name:     autoload/wrengr/utils.vim
-" Modified: 2021-10-05T14:01:31-07:00
-" Version:  4
+" Modified: 2021-10-09T16:58:30-07:00
+" Version:  5
 " Author:   wren romano
 " Summary:  Utility functions for writing plugins.
 " License:  [0BSD] Permission to use, copy, modify, and/or distribute
@@ -16,6 +16,8 @@
 "           negligence or other tortious action, arising out of or
 "           in connection with the use or performance of this software.
 "
+" Version 5: added shellescape(), moved IncludeSyntax() and
+"   MarkdownIncludeCodeblock() off to wrengr#syntax# instead.
 " Version 4: Major bugfixing in vlet()
 " Version 3: added error(), warn(), ShowIndentOptions(), ShowFoldOptions(),
 "   IncludeSyntax(), MarkdownIncludeCodeblock().
@@ -74,6 +76,23 @@ fun! wrengr#utils#DisableIndent()
 endfun
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+" TODO: when calling `:setl` with no arguments it'll list all the
+" local options which differ from the default; but it'll also use
+" prefix "--" for bool options to indicate when they're inheriting
+" from the global value.  We might should try to do that too.
+" The only case I can see this happening is with &autoread, and for
+" that option at least we can detect this state via &l:autoread==-1;
+" and indeed for other options like &ai we can cause this state by
+" using `let &l:ai = -1`
+" TODO: Alternatively, we may consider just using `:setl!` itself
+" and then filtering out the options we don't care about?
+" TODO: we may also consider writing some function to zip together
+" the outputs from `:setl!` and `:setg!` (both of which only show
+" those global-local options where the local option differs from the
+" global; it's just that one shows the local value whereas the other
+" shows the global value.)
+
+" BUG: why did I have this use str2nr() ?
 fun! s:showBoolOption(opt)
   exec 'let l:bool = &' . a:opt
   return (str2nr(l:bool) ? '  ' : 'no') . a:opt
@@ -92,6 +111,8 @@ endfun
 
 " Note: The :echo command will happily interpret "\n"
 " (even though :echomsg and :echoerr won't).
+" Note: all these options are buffer-local only, except &smarttab
+" and &shiftround which are global-only.
 fun! wrengr#utils#ShowIndentOptions()
   let l:lines = []
   call add(l:lines, s:showBoolOption('autoindent'))
@@ -185,6 +206,26 @@ endfun
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+" ~~~~~ A smarter shellescape()
+" HT: <https://github.com/mhinz/vim-signify/issues/15>
+" Note: &shellslash is global-only.
+fun! wrengr#utils#shellescape(path)
+  try
+    if has('+shellslash')
+      let l:old_ssl = &shellslash
+      set noshellslash
+    endif
+    let l:path = shellescape(a:path)
+  finally
+    if exists('l:old_ssl')
+      let &shellslash = l:old_ssl
+    endif
+  endtry
+  return l:path
+endfun
+
+
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Autovivification for `:let`
 
 let s:t_string = type('')
@@ -229,9 +270,10 @@ fun! wrengr#utils#vlet(var, op, val) abort
     if a:op ==# '+='
       " BUGFIX: Vim 8.1.2269 doesn't have the list-function append(), it
       "   only has the append() function which is like the `:append` command.
-      " BUG: how to requote a:val if/as necessary?
       " TODO: supposedly `+` and `:let+=` work on lists, but istr that
       "   not working for me in the past...
+      " Note: see <https://gist.github.com/romainl/56f0c28ef953ffc157f36cc495947ab3>
+      "   re `+` being faster than extend() at times.
       exec 'call extend(' . a:var . ', a:val)'
       return 1
     elseif a:op ==# '^='
@@ -268,83 +310,6 @@ fun! wrengr#utils#vlet(var, op, val) abort
   endif
 endfun
 
-
-" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" HT: <https://github.com/junegunn/dotfiles/blob/master/vimrc#L748>
-" This is something I've always wanted from syntax highlighting,
-" that no other editor seems able to give!! :) :) :)
-
-" ~~~~~ Syntax highlighting in code snippets.
-fun! wrengr#utils#IncludeSyntax(lang, start, end, inclusive)
-  " First, find an appropriate syntax file.
-  let l:syns = split(globpath(&runtimepath, 'syntax/'.a:lang.'.vim'), "\n")
-  if empty(l:syns) | return | endif
-  " Stash away the knowledge of this buffer's syntax, so that the
-  " included file doesn't see it and finish immediately.
-  if exists('b:current_syntax')
-    let l:csyn = b:current_syntax
-    unlet b:current_syntax
-  endif
-  " Search for a suitable pattern delimiter.  So long as it's not
-  " in the pattern itself, the choice doesn't matter (:help :syn-pattern).
-  let l:q = "'"
-  if a:start =~ l:q || a:end =~ l:q
-    for l:nr in range(char2nr('a'), char2nr('z'))
-      let l:char = nr2char(l:nr)
-      " Pretty sure :syn-pattern doesn't depend on &ignorecase and
-      " isn't case sensitive either, but play it safe anyways.
-      if a:start !~? l:char && a:end !~? l:char
-        let l:q = l:char
-        break
-      endif
-    endfor
-  endif
-  " Now, import the syntax file...
-  silent! exec printf('syntax include @%s %s', a:lang, l:syns[0])
-  " ...And declare the region it occurs in:
-  if a:inclusive
-    exec printf('syntax region %sSnip '
-      \ . 'start=%s\(%s\)\@=%s end=%s\(%s\)\@<=\(\)%s '
-      \ . 'contains=@%s containedin=ALL'
-      \ , a:lang, l:q, a:start, l:q, l:q, a:end, l:q, a:lang)
-  else
-    exec printf('syntax region %sSnip matchgroup=Snip '
-      \ . 'start=%s%s%s end=%s%s%s '
-      \ . 'contains=@%s containedin=ALL',
-      \ a:lang, l:q, a:start, l:q, l:q, a:end, l:q, a:lang)
-  endif
-  " Now, restore knowledge of this buffer's syntax.
-  if exists('l:csyn')
-    let b:current_syntax = l:csyn
-  endif
-endfun
-
-" ~~~~~ Have Markdown files support fenced code-blocks.
-" TODO: see also 'Shougo/context_filetype.vim'
-fun! wrengr#utils#MarkdownIncludeCodeblock()
-  " junegunn also had 'mkd\|' added to this; but I don't think any
-  " of our plugins use that...
-  if &filetype !~? 'markdown' | return | endif
-  " junegunn had 'bash=sh' and 'json=javascript'; but we do indeed
-  " have syntax files for those; at least under vim-8.2.  Maybe
-  " we should add additional code to search for them and if they're
-  " not found then to fallback?
-  "
-  " TODO: see also g:markdown_fenced_languages from 'vim-markdown'
-  for l:lang in ['bash', 'c', 'clojure', 'clj=clojure', 'gnuplot', 'java',
-      \ 'json', 'python', 'ruby', 'scala', 'sh', 'sql', 'vim', 'yaml']
-    let l:langs = split(l:lang, '=')
-    call wrengr#utils#IncludeSyntax(l:langs[-1], '```'.l:langs[0], '```', 0)
-  endfor
-  highlight default link Snip Folded
-endfun
-
-" TODO: additional stuff junegunn had that we haven't needed yet:
-" elseif &ft =~ 'jinja' && &ft != 'jinja'
-"   call wrengr#utils#IncludeSyntax('jinja', '{{', '}}', 1)
-"   call wrengr#utils#IncludeSyntax('jinja', '{%', '%}', 1)
-" elseif &ft == 'sh'
-"   call wrengr#utils#IncludeSyntax('ruby', '#!ruby', '/\%$', 1)
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Clean Up ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

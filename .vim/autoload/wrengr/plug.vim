@@ -1,7 +1,7 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " Name:     autoload/wrengr/plug.vim
-" Modified: 2021-09-22T22:15:51-07:00
-" Version:  2
+" Modified: 2021-09-26T21:18:03-07:00
+" Version:  3
 " Author:   wren romano
 " Summary:  vim-plug functions extracted from my ~/.vimrc
 " License:  [0BSD] Permission to use, copy, modify, and/or distribute
@@ -19,8 +19,8 @@
 " To abbreviate the very long urls below, pretend we have:
 "   let $VIMPLUG_URL='https://github.com/junegunn/vim-plug'
 "
+" Version 3: moved s:shellescape() to wrengr#utils#
 " Version 2: added UseGitUrls(), UseHttpsUrls(), and WIP: OpenURL().
-"
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 " ~~~~~ Preamble (See `:h use-cpo-save` and `:h :set-&vim`)
@@ -51,32 +51,9 @@ let s:MYVIMDIR =
   \ : has('win32') || has('win64') ? expand('~/vimfiles')
   \ :                                expand('~/.vim')
 
-
 " The default is just cuz that's what vim-plug's documentation uses.
 fun! wrengr#plug#DataDir(...)
   return s:MYVIMDIR . '/' . get(a:, 1, 'plugged')
-endfun
-
-
-" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" ~~~~~ A smarter shellescape()
-" HT: <https://github.com/mhinz/vim-signify/issues/15>
-" Note: &shellslash is global-only.
-" TODO: move to ~/.vim/autoload/wrengr.vim and public/exported?
-
-fun! s:shellescape(path)
-  try
-    if has('+shellslash')
-      let l:old_ssl = &shellslash
-      set noshellslash
-    endif
-    let l:path = shellescape(a:path)
-  finally
-    if exists('l:old_ssl')
-      let &shellslash = l:old_ssl
-    endif
-  endtry
-  return l:path
 endfun
 
 
@@ -106,8 +83,9 @@ fun! wrengr#plug#Bootstrap() abort
     "   to curl, nor set GIT_SSL_NO_VERIFY to true).
     " TODO: should we double-escape, using fnameescape() for :exe ?
     silent execute
-      \ '!curl -fLo ' . s:shellescape(s:vimplug_file) . ' --create-dirs'
-      \ 'https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+      \ '!curl -fLo ' wrengr#utils#shellescape(s:vimplug_file)
+      \ ' --create-dirs'
+      \ ' https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
     " TODO: really ought to check for errors here, rather than
     "   relying on `abort`.
     if has('autocmd')
@@ -265,16 +243,15 @@ endfun
 
 " WIP:
 fun! wrengr#plug#OpenURL()
-  let l:winview  = winsaveview()
-  let l:contents = getreg('a')
-  let l:type = getregtype('a')
+  let l:winview = winsaveview()
+  let l:reg     = getreginfo('"')
   try
     " TODO: should be able to use the textobject i' rather than T't'
     " (N.B., the textobject is listed as for n_ and v_ modes; it's
     " not phrased as being o_ mode)
-    normal! T'"ayt'
+    normal! T'yt'
     " TODO: validate that that selection is well-formed before continuing!!
-    let l:url = 'https://github.com/' . @a
+    let l:url = 'https://github.com/' . @"
     " BUG: has('mac') is *false* for the Vim 8.0 that ships with OSX 10.14.6!!
     "   (2016 Sep 12; patches: 1-503, 505-680, 682-1283, 1365)
     "   For now we'll just buggily assume `open` does what we mean.
@@ -292,7 +269,7 @@ fun! wrengr#plug#OpenURL()
     endif
   finally
     call winrestview(l:winview)
-    call setreg('a', l:contents, l:type)
+    call setreg('"', l:reg)
   endtry
 endfun
 

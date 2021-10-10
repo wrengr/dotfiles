@@ -17,7 +17,7 @@
 "           in connection with the use or performance of this software.
 "
 " Version 2a: updated commentary, silenced ClearUndoHistory(), moved
-"   s:error/s:warn to wrengr#utils, and moved OpenPlugURL() to wrengr#plug,
+"   s:error/s:warn to wrengr#utils#, and moved OpenPlugURL() to wrengr#plug#,
 "   added WIP: mkdir
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -191,10 +191,9 @@ endfun
 "   getreg()/setreg() over just using :let and the usual @/ spelling?
 " TODO: add handling for taking in a range, rather than always being global.
 fun! wrengr#RemoveTrailingSpace()
-  let l:winview    = winsaveview()
-  let l:fen        = &foldenable    " N.B., window-local only.
-  let l:query      = getreg('/')
-  let l:query_type = getregtype('/')
+  let l:winview = winsaveview()
+  let l:fen     = &foldenable    " N.B., window-local only.
+  let l:query   = getreginfo('/')
   try
     " Per `:h winsaveview()` we disable &fen so we don't accidentally
     " open any folds while moving about.
@@ -203,14 +202,16 @@ fun! wrengr#RemoveTrailingSpace()
     "   since :s depends quite a lot on user settings.  See `:h
     "   :s_flags` for what exactly the 'e' flag does, to get an idea
     "   of how to emulate it when using substitute() instead.
-    " TODO: also, use histnr()/histdel()/histget() to clean this
-    "   out of the search history; or use :keeppatterns to avoid
-    "   adding it in the first place.
-    silent! %s/[[:space:]]\+$//e
+    " TODO: is `:keepp` sufficient to:
+    " (a) keep this out of the history?  If not, then we'll need
+    "   to use histnr()/histdel()/histget() to clean up after ourselves.
+    " (b) to keep from clobbering @/ without us explicitly saving
+    "   and restoring it?  If so, then we can elide that code :)
+    silent! keeppatterns %s/[[:space:]]\+$//e
   finally
     let &foldenable = l:fen
     call winrestview(l:winview)
-    call setreg('/', l:query, l:query_type)
+    call setreg('/', l:query)
   endtry
 endfun
 
@@ -423,6 +424,8 @@ endfun
 "   <https://www.arp242.net/effective-vimscript.html>
 "   Or maybe just explicitly build the string up via for loop.
 " TODO: Really ought to provide a <Plug> for this...
+" TODO: should move this to wrengr#syntax#, ne?
+
 fun! wrengr#SynStack()
   " Vim 7.0 is required for synID(), synIDattr(), and synIDtrans().
   " (Or at least it's sufficient...)
@@ -457,14 +460,14 @@ endfun
 " TODO: see also <https://vi.stackexchange.com/a/7723> for a lot of
 "   really useful info on debugging mappings.
 fun! wrengr#CtrlMap()
-  let l:contents = getreg('a')
-  let l:type = getregtype('a')
+  let l:reg   = getreginfo('"')
+  let l:query = getreginfo('/')
   try
     " TODO: we can use execute() to get rid of the :redir, but
     " execute() only returns a string whereas the :put below requires
     " a register.  I guess we could use setreg()? seems like such
     " a hack though...
-    redir @a
+    redir @"
       silent map | call feedkeys("\<CR>")
     redir END
     " TODO: replace :vnew by wrengr#Page() instead!  Since that'll
@@ -477,13 +480,13 @@ fun! wrengr#CtrlMap()
     "   by `:h map-listing`)  Also, should use built-in functions
     "   rather than Ex-commands, since the latter often have more
     "   side-effects and are more dependent on user settings.
-    " TODO: also, use histnr()/histdel()/histget() to clean this
-    "   out of the search history; or use :keepp to avoid adding
-    " it in the first place (at least, I think :v// adds to the search history)
-    v/<C-/d
+    " TODO: See the comment in RemoveTrailingSpace() about not
+    "   polluting the search history; we'll want to do that here too.
+    silent keeppatterns v/<C-/d
     %!sort -k1.4,1.4
   finally
-    call setreg('a', l:contents, l:type)
+    call setreg('"', l:reg)
+    call setreg('/', l:query)
   endtry
 endfun
 
@@ -540,6 +543,7 @@ fun! wrengr#mkdir(path,...)
     return 0
   endif
   let l:p   = get(a:, 0, 0) ? 'p' : ''
+  " BUG: 'vim-jp/vim-vimlparser' (used by vint) can't parse this octal literal.
   let l:mod = get(a:, 1, 0o755)
   " Cf., <https://vi.stackexchange.com/a/20213>
   if empty(glob(a:path)) " no file-or-directory exists there.
