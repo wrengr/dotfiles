@@ -238,6 +238,8 @@ Plug 'vim-airline/vim-airline-themes'
 "Plug 'brailsmt/vim-plugin-minibufexpl'
 "   Delete buffers & close windows without ruining layout!
 "Plug 'moll/vim-bbye'
+"   TODO: compare vim-bbye to this one:
+"Plug 'qpkorr/vim-bufkill'
 
 
 " ~~~~~ Git & other VCSes  ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{2
@@ -274,7 +276,7 @@ Plug 'mhinz/vim-signify', (has('patch-8.0.902') ? {} : { 'tag': 'legacy' })
 "   Just the function gitbranch#name() but implemented smartly.
 "   For a clever use, see: <https://github.com/mhinz/vim-startify/wiki/Example-configurations>
 "Plug 'itchyny/vim-gitbranch'
-" <https://gist.github.com/romainl/a3ddb1d08764b93183260f8cdf0f524f>
+" <https://gist.github.com/romainl/a3ddb1d08764b93183260f8cdf0f524f> " 'git-jump'
 "
 " This defines a command `:Diff [githash]`
 " See: <https://gist.github.com/romainl/7198a63faffdadd741e4ae81ae6dd9e6>
@@ -342,13 +344,41 @@ Plug 'mhinz/vim-startify'
 
 "Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 "  Plug 'junegunn/fzf.vim'              " Better default wrappers for fzf.
-"Plug 'Shougo/unite.vim'
+"Plug 'Shougo/unite.vim'                " deprecated: > Shougo/denite.nvim > Shougo/ddu.vim
 "Plug 'ctrlpvim/ctrlp.vim'
 "Plug 'wincent/command-t'
     " N.B., command-t's wildignore works differently than vim's builtin:
     " <https://github.com/octref/RootIgnore/issues/5>
     " <https://github.com/wincent/command-t/blob/7364a410bc4f0d7febc183678cd565066dfd1e73/doc/command-t.txt#L1102>
-"Plug 'rking/ag.vim'                    " use :Ag instead of :grep
+"Plug 'Yggdroot/LeaderF',               " fuzzy + ctags + gtags + ripgrep +...
+"  \ { 'do': ':LeaderfInstallCExtension' }  " Use C innstead of Python
+"   <https://github.com/Yggdroot/LeaderF/wiki/Leaderf-rg>
+"   <https://github.com/Yggdroot/LeaderF/wiki/Leaderf-gtags>
+
+" ~~~~~ Grep replacements
+"Exec <https://beyondgrep.com>          " The `ack` replacement for `grep` (sloooow)
+"Exec 'ggreer/the_silver_searcher'      " The `ag` replacement for `ack`
+"Exec 'BurntSushi/ripgrep'              " The `rg` replacement for `ag`
+"Exec 'Genivia/ugrep'                   " The `ug`, faster even than `rg` (on ugrep's benchmarks; rg wins on some of rg's benchmarks)
+" TODO: see WIP <~/.vim/autoload/wrengr/grepprg.vim>
+" experimental, about the same speed as ripgrep; probably not production-ready but worthwhile to look at...
+"Exec 'stealth/grab'
+"Exec 'sampson-chen/sack'               " Wrapper around Ack/Ag to reduce repetition in searching & opening files.
+
+"Plug 'wookayin/fzf-ripgrep.vim'        " fzf + rg
+    " See also <https://medium.com/@crashybang/supercharge-vim-with-fzf-and-ripgrep-d4661fc853d2>
+"Plug 'rking/ag.vim'                    " Use :Ag instead of :grep (deprecated!)
+    " <https://github.com/rking/ag.vim/issues/124#issuecomment-227038003>
+"Plug 'mileszs/ack.vim'                 " Use :Ack (for `ack` or `ag`)
+    " <https://github.com/mileszs/ack.vim#can-i-use-ag-the-silver-searcher-with-this>
+"Plug 'chrisjohnson/vim-grep'           " minor variation on 'mileszs/ack.vim'
+    " 'vim-grep' has terrible mappings that clobber useful things; so don't use it but maybe copy stuff from it.
+"Plug 'jremmen/vim-ripgrep'             " Prolly not the best one? (last: 2018)
+"Plug 'wincent/ferret'                  " :Ack command for ack, ag, rg.
+"Plug 'jesseleite/vim-agriculture'
+    " See also <https://jesseleite.com/posts/4/project-search-your-feelings>
+
+" ~~~~~
 "Plug 'vim-scripts/IndexedSearch'
 "Plug 'vim-scripts/SmartCase'
 "Plug 'vim-scripts/gitignore'
@@ -361,6 +391,7 @@ Plug 'mhinz/vim-startify'
 "   Exec 'koron/cmigemo'                    " Dependency
 "   Plug 'Shougo/vimproc.vim'               " Dependency
 "Plug 'romainl/vim-cool'
+"Plug <https://vimawesome.com/plugin/traces-vim-left-unsaid>
 
 " ~~~~~ Enhancing `* #`
 " <https://stackoverflow.com/a/13682379>
@@ -412,11 +443,14 @@ Plug 'mhinz/vim-startify'
     " BUG: cterm-239 is #4e4e4e; whereas the closest to #616161 is cterm-241 (#626262)
     " Note: we already use cterm-239 for AbsoluteLineNr, fwiw
 
-"   For more reliable indenting and performance
-"   (&fdm=syntax is notoriously slow)
+" Make &fdm faster by only updating folds as needed (instead of far
+" too often).  This also provides enhancements for `:windo` and
+" corrects several bugs therein.
 "Plug 'Konfekt/FastFold'
-  "set foldmethod=indent
-  "set fillchars='fold: '
+"Plug 'Konfekt/FoldText'    " Fancy &foldtext
+"Plug 'zhimsel/vim-stay'    " Automatically call `:mkview` and `:loadview`
+"Plug 'wsdjeg/vim-fetch'    " (has integration with vim-stay)
+"Plug 'kaile256/vim-foldpeek'   " Yet another version of fancy &foldtext
 
 
 " ~~~~~ Simple text editing. ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{2
@@ -529,6 +563,10 @@ Plug 'prabirshrestha/vim-lsp'
 "   <https://github.com/vim-php/phpctags>
 "Plug 'soramugi/auto-ctags.vim'
 
+" TODO: see also "gtags" (GNU Global)
+" <https://www.gnu.org/software/global/download.html>
+" <https://github.com/Yggdroot/LeaderF/wiki/Leaderf-gtags>
+
 
 " ~~~~~ Linting                                                  {{{3
 "Plug 'vim-syntastic/syntastic'
@@ -556,6 +594,16 @@ Plug 'prabirshrestha/vim-lsp'
 " (Cf., <https://github.com/vim-syntastic/syntastic/issues/699#issuecomment-284994550>
 " and <https://github.com/ErikBjare/dotfiles/commit/2b946b5d0f95ba056ce99bf0487c3ff414ce3c51>)
 "Plug 'w0rp/ale'
+"
+"Plug 'vim-vdebug/vdebug', (has('python3') ? {} : {'tag': 'v1.5.2'})
+
+" Async syntax checking.
+"Plug 'osyo-manga/vim-watchdogs'
+"   Plug 'thinca/vim-quickrun'                  " dependency (verified)
+"   Plug 'Shougo/vimproc.vim', {'do' : 'make'}  " dependency (they say...)
+"   Plug 'osyo-manga/shabadou.vim'              " dependency (they say...)
+"   Plug 'jceb/vim-hier'                        " dependency? extension?
+"   Plug 'dannyob/quickfixstatus'               " dependency? extension?
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -583,7 +631,20 @@ Plug 'prabirshrestha/vim-lsp'
 
 
 " ~~~~~ {for: vim} ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{3
-"Exec 'Vimjas/vint'             " [#lint] 'vint' for syntastic.
+" ~~~~~ [#lint]
+"Exec 'Vimjas/vint'             " 'vint' for syntastic.
+"Plug 'syngan/vim-vimlint'      " Easily usable by TravisCI; last mod: 2018-12-27
+"   Plug 'ynkdir/vim-vimlparser'    " dependency
+"   " N.B., since vimlint is written in vimscript(+python) the devs
+"   " themselves say it's *very slow*; so while it can work with syntastic,
+"   " they recommend using 'osyo-manga/vim-watchdogs' instead since it
+"   " provides asynchronous syntax checking.
+" The following three are alternatives mentioned by @syngan:
+"Plug 'ujihisa/vimlint'         " written in Clojure; last mod: 2013-07-23
+    " Is forked from 'Shougo/neocomplcache.vim'
+"Plug 'dbakker/vim-lint'        " written in Python;  last mod: 2013-11-20
+"Plug 'dahu/VimLint'            " pure VimScript;     last mod: 2010-08-11
+" ~~~~~
 "Plug 'junegunn/vader.vim'      " [#test] unit-testing.
 
 
@@ -751,6 +812,7 @@ Plug 'rhysd/vim-llvm'
 "  Plug 'neoclide/coc.nvim',
 "    \ {'branch': 'release', 'do': { -> coc#util#install() }}
 "endif
+"Plug 'markdownlint/markdownlint'   " [#lint] the `mdl` program
 " ~~~~~ {for: markdown.pandoc} ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 "Plug 'vim-pandoc/vim-pandoc'
 "Plug 'vim-pandoc/vim-pandoc-syntax'
@@ -764,6 +826,14 @@ Plug 'rhysd/vim-llvm'
 " In part because they use Statement for all the keywords (alebeit
 " Keyword just links to Statement).
 Plug 'vito-c/applescript.vim'
+
+" ~~~~~ {for: bash}  ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{3
+"Exec 'koalaman/shellcheck'     " [#lint] usable by syntastic, Ale, and Neomake
+    " Or, for manual usage (cf., <https://vimways.org/2018/runtime-hackery/>):
+    "makeprg=shellcheck\ -s\ bash\ -f\ gcc\ --\ %:S
+    "errorformat=%f:%l:%c:\ %m\ [SC%n]
+    " Or use `:compiler shellcheck` and see: </opt/sw/share/vim/vim82/compiler/shellcheck.vim>
+    " shellcheck also has `-f diff` for use with `git apply` etc.
 
 " ~~~~~ {for: [c, cpp]}  ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{3
 " [#syntax]
@@ -862,6 +932,9 @@ Plug 'jvoorhis/coq.vim'
 " ~~~~~ {for: python}  ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{3
 "Plug 'jmcantrell/vim-virtualenv'   " for Python virtualenvs (what about venv?)
 "Plug 'tmhedberg/SimpylFold'        " Fancy folding so you can still see docstrings
+"Plug 'abarker/cyfolds',            " Similarly fancy syntax-aware folding.
+"  \ wrengr#plug#Cond(has('python3') && has('timers'))
+"   Also requires actually compiling the Cython code.
 
 " ~~~~~ {for: ruby}  ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{3
 "Plug 'tpope/vim-bundler', { 'for': 'ruby' } " [#jg]
@@ -888,10 +961,22 @@ Plug 'jvoorhis/coq.vim'
 "Plug 'christoomey/vim-tmux-navigator'  " Navitate freely between tmux and vim
 " <https://gist.github.com/mikeboiko/b6e50210b4fb351b036f1103ea3c18a9>
 
+" ~~~~~ Quickfix                                                 {{{3
+"Plug 'romainl/vim-qf'                  " like our bracketoids, and more
+"Plug 'romainl/vim-qlist'               " Improve `:{i,d}list` and associated bracketoids
+"Plug 'tomtom/quickfixsigns_vim'
+"Plug 'stefandtw/quickfix-reflector.vim' " For editing qflists
+"Plug 'mh21/errormarker.vim'
+"Plug 'Konfekt/vim-compilers'
+"Plug 'jceb/vim-hier'                   " Highlight qf/loclist entries in the buffer
+"Plug 'jceb/vim-editqf'                 " For editing qflists
+"Plug 'dannyob/quickfixstatus'          " Alternative highlighting for qf/loclist
+    " Warning: both 'vim-hier' and 'quickfixstatus' were last touched
+    " in 2011.  Whereas 'vim-editqf' was last touched in 2014.
+"Plug 'salsifis/vim-qfmanip'
 
 " ~~~~~ Completely unsifted                                      {{{3
 "Plug 'tpope/vim-sensible'              " More-sensible defaults
-"Plug 'tomtom/quickfixsigns_vim'
 "Plug 'gcmt/taboo.vim'
 "Plug 'vim-ctrlspace/vim-ctrlspace'
 "Plug 'edkolev/promptline.vim'
@@ -906,6 +991,7 @@ Plug 'jvoorhis/coq.vim'
 " and <https://github.com/nicdumz/dotfiles/blob/master/.vimrc>
 " and <https://github.com/AntJanus/my-dotfiles/blob/master/.vimrc>
 " and <https://github.com/sunaku/.vim> re neovim
+" and <https://github.com/JesseLeite/dotfiles/blob/54fbd7c5109eb4a8e8a9d5d3aa67affe5c18efae/.vimrc#L444-L456>
 "Plug 'wellle/targets.vim'
 "Plug 'sheerun/vim-polyglot'
 "Plug 'terryma/vim-expand-region'
@@ -931,7 +1017,10 @@ Plug 'jvoorhis/coq.vim'
 "Plug 'kana/vim-fakeclip'               " Emulate '+clipboard'
 "Plug 'nacitar/terminalkeys.vim'        " Improved support for rxvt
     " See also 'godlygeek/vim-files'
-"Plug 'romainl/vim-qf'                  " taming quickfix stuff
+"Plug 'jeffkreeftmeijer/vim-nightfall'  " Adjust &background based on OSX's dark mode.
+    " The applescript doesn't look like it handles the new 'Auto' mode; but oh well.
+"Plug 'justinmk/vim-ipmotion'           " Improve the <{> <}> motions
+"Plug 'chrisbra/NrrwRgn'
 call plug#end()
 unlet s:vimplug_dir
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
