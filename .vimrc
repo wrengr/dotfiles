@@ -1763,7 +1763,7 @@ set lazyredraw
 "set fileformat=unix
 "set path=$HOME/,.      " Set the basic path
     " Actually, for &path see <https://gist.github.com/romainl/7e2b425a1706cd85f04a0bd8b3898805>
-"set tags=tags,$HOME/.vim/ctags
+"set tags=tags,$HOME/.vim/_ctags
 "set browsedir=buffer   " :browse e starts in %:h, not in $PWD
 
 " Don't recognize octal numbers for <C-a> and <C-x>.
@@ -1815,7 +1815,7 @@ endif
 "  set backupskip=....
 "endif
 set backupcopy=auto             " Create backups via copy or move?
-set backupdir=$HOME/.vim/backup " Where to put backup files? (comma-list)
+set backupdir=$HOME/.vim/_backup " Where to put backup files? (comma-list)
 " Note: must use $HOME or expand('~'); can't just use '~'.
 " Warning: if none of the directories in &backupdir exist/writable,
 " then vim won't make backups; which means, if the other options say
@@ -1823,14 +1823,14 @@ set backupdir=$HOME/.vim/backup " Where to put backup files? (comma-list)
 
 " See: `:h *swap-file*`
 set swapfile                    " Create swapfiles? (default: yes; buffer-local)
-set directory=$HOME/.vim/swap   " Where to put swapfiles? (comma-list)
+set directory=$HOME/.vim/_swap  " Where to put swapfiles? (comma-list)
 "set nofsync swapsync=          " DANGEROUS: save power by never syncing to disk
 
 " TODO: consider &undoreload too
 " TODO: consider this option
 "if has('persistent_undo')
 "  set nobackup noswapfile nowritebackup history=10000 undolevels=10000
-"    \ undofile undodir=$HOME/.vim/undo
+"    \ undofile undodir=$HOME/.vim/_undo
 "endif
 
 " TODO: May want to check that &backupdir, &directory, and &undodir
@@ -2331,7 +2331,7 @@ if has('folding')
   " TODO: might should use wrengr#plug#DataDir(), but I've no idea
   "   what NeoVim uses for this.
   "if has('mksession')
-  "  set viewdir=$HOME/.vim/view  " Where to put `:mkview` files
+  "  set viewdir=$HOME/.vim/_view  " Where to put `:mkview` files
   "  set viewoptions={...todo...}
   "  set sessionoptions={...todo...}
   "endif
