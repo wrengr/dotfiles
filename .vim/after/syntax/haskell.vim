@@ -3,6 +3,7 @@
 " For additional ideas, cf:
 " <http://vim.wikia.com/wiki/Highlight_unwanted_spaces>
 " TODO: check to make sure this plays nice with raichoo's plugin
+" TODO: replace this with our .vimrc's whiteError
 
 syn cluster hsRegions add=hsImport,hsLineComment,hsBlockComment,hsPragma
 syn cluster hsRegions add=cPreCondit,cCppOut,cCppOut2,cCppSkip
