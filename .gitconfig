@@ -61,6 +61,7 @@
 [merge]
     ff = only
     # Print conflicts with the original as well as "ours" and "theirs"
+    # (like passing --conflict=diff3 to git-checkout)
     conflictstyle = diff3
 # I don't actually like this exact setup, but the fact that we can
 # do things like this is good to bear in mind, in case I come up with a
