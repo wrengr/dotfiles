@@ -1348,7 +1348,10 @@ if has('diff')
   "set diffopt=internal,filler,closeoff " Default on Fink's vim-nox 8.2.3404
   " 'closeoff' == when closing penultimate window-in-tab-with-&diff, do :diffoff
   set diffopt+=vertical             " prefer vertical splitting
-  set diffopt+=followwrap           " leave &wrap alone
+  " <https://groups.google.com/g/vim_dev/c/fHjMJxVnSRg>
+  if has('patch-8.2.2490')
+    set diffopt+=followwrap         " leave &wrap alone
+  endif
   set diffopt+=algorithm:patience
   " see also *fold-diff*, *diff-diffexpr*, &diffexpr, &vimdiff, &cursorbind
 endif
