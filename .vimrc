@@ -306,6 +306,30 @@ Plug 'mhinz/vim-signify', (has('patch-8.0.902') ? {} : { 'tag': 'legacy' })
 " TODO: Also, I kinda feel like the <q-mods> aren't being handled
 "   entirely appropriately... Not that I know much about that.
 "Plug 'homogulosus/vim-diff'
+" HACK: and WIP.  Also, probably want to use `:SignifyDiff` instead.
+command! -nargs=1 HgDiff call s:HgDiff(<q-mods>, <q-args>)
+fun! s:HgDiff(mods, revision)
+  if empty(a:mods) && &diffopt =~ 'vertical'
+    let l:mods = 'vertical'
+  else
+    let l:mods = a:mods
+  endif
+  execute l:mods . ' new'
+  setlocal bufhidden=wipe buftype=nofile nobuflisted noswapfile
+  " BUG: need to validate that a:revision is well-formed; or at least shellquote it.
+  execute 'read !hg cat -r' a:revision '#'
+  " N.B., that's `:0<CR>:d _<CR>` which is equivalent to normal-mode
+  " `gg"_dd` with :keepjumps.
+  silent 0d_
+  let &filetype = getbufvar('#', '&filetype')
+  augroup HgDiff
+    autocmd!
+    autocmd BufWipeout <buffer> diffoff!
+  augroup END
+  diffthis
+  wincmd p
+  diffthis
+endfun
 
 
 " ~~~~~ Picking up where you left off  ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{2
