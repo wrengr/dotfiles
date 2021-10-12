@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" wren gayle romano's vim config                    ~ 2021.10.09
+" wren gayle romano's vim config                    ~ 2021.10.11
 "
 " This file uses &foldmethod=marker, but I refuse to add a modeline
 " to say that; because modelines are evil.
@@ -245,11 +245,17 @@ Plug 'vim-airline/vim-airline-themes'
 " ~~~~~ Git & other VCSes  ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{2
 Plug 'airblade/vim-gitgutter', wrengr#plug#Cond(has('signs'))
 " Like gitgutter, but for several VCSes
+" Note: since PR#307 (2019-10-01) you can use `:SignifyHunkUndo` to
+" revert hunks a~la gitgutter (n.b., the command was renamed since that PR).
+" Not sure if there's a command for staging hunks, but see:
+"   <https://github.com/mhinz/vim-signify/issues/119>
 " BUG: We cannot use the `||` operator in that conditional; something
 "   about how the :Plug command (or any user-defined command?) handles
 "   <Bar> causes it to break in an inscrutable manner.  So if we want
 "   to re-add the condition that has('nvim') also works, then we'll need
 "   to break the whole condition out as a function.
+" Note: You also cannot use `s:` scoped variables in the conditions; see:
+"   <https://www.reddit.com/r/neovim/comments/omrcje/using_vim_variables_in_vimplugs_arguments/>
 Plug 'mhinz/vim-signify', (has('patch-8.0.902') ? {} : { 'tag': 'legacy' })
   " HACK: Signify's README.md is wrong, 'legacy' is a 'tag' not a 'branch'.
   " TODO: should we add {'tag':'stable'} for the async case?
@@ -2706,22 +2712,48 @@ if has('signs')
   "let g:gitgutter_grep = 'grep --color=never' " gitgutter can't handle ANSI codes
   "let g:gitgutter_max_signs = 500 " default=500 if Vim < 8.1.0614; else -1
   "let g:gitgutter_map_keys  = 0   " don't set up default mappings
-  " Default mappings:
+  " Defaults:
   "     nmap ]c         <Plug>(GitGutterNextHunk)
   "     nmap [c         <Plug>(GitGutterPrevHunk)
   "     nmap <Leader>hp <Plug>(GitGutterPreviewHunk)
   "     nmap <Leader>hs <Plug>(GitGutterStageHunk)
+  "     xmap <Leader>hs <Plug>(GitGutterStageHunk)
   "     nmap <Leader>hu <Plug>(GitGutterUndoHunk)
   "     omap ic         <Plug>(GitGutterTextObjectInnerPending) " all lines in hunk
   "     xmap ic         <Plug>(GitGutterTextObjectInnerVisual)
   "     omap ac         <Plug>(GitGutterTextObjectOuterPending) " also trailing empty lines
   "     xmap ac         <Plug>(GitGutterTextObjectOuterVisual)
+  " TODO: at the very least we should rename their <leader>h{p,s,u} to match our <leader>{z,d} idiom.
   " TODO: the readme has all sorts of function suggestions
   " TODO: It looks like I've fixed the SignColumn stuff, but maybe
   "     check out the documentation for g:gitgutter_set_sign_backgrounds.
   " TODO: maybe also check out `:h gitgutter-statusline` for
   "     something to put into airline's section Z. (Though it looks
   "     like we already get that in section B)
+  "
+  " TODO: figure out a nicer scheme for toggling between gitgutter
+  " mappings (as above or whatever we change those to) vs `:h *signify-mappings*`:
+  " Defaults:
+  "     nmap ]c <Plug>(signify-next-hunk)
+  "     nmap [c <Plug>(signify-prev-hunk)
+  "     nmap ]C " this gets the last hunk, but :map doesn't list it...
+  "     nmap [C " this gets the first hunk, but :map doesn't list it...
+  "     omap ic <Plug>(signify-motion-inner-pending)
+  "     xmap ic <Plug>(signify-motion-inner-visual)
+  "     omap ac <Plug>(signify-motion-outer-pending)
+  "     xmap ac <Plug>(signify-motion-outer-visual)
+  " HACK: !!
+  if !g:gitgutter_enabled && !g:signify_disable_by_default
+    " Since gitgutter does the mappings even when !g:gitgutter_enabled
+    let g:gitgutter_map_keys = 0
+    " TODO: SignifyHunkDiff actually opens a preview-window (to show
+    " the changes inline) rather than at the bottom of the screen.
+    " That's awesome, but after the last character of each line in this
+    " preview-window the background is changed into a nasty grey; so we
+    " need to fix our colorscheme to handle popup-windows correctly.
+    nnoremap <Leader>zc :SignifyHunkDiff<CR>
+    nnoremap <Leader>dc :SignifyHunkUndo<CR>
+  endif
 endif
 
 
