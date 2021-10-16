@@ -170,6 +170,7 @@ endfun
 " BUGFIX: because :[cl]getexpr only use &g:efm for some reason.
 " HT: <https://gist.github.com/romainl/56f0c28ef953ffc157f36cc495947ab3>
 " In particular see <#gistcomment-3245556> <#gistcomment-3246562>
+" TODO: inform 'syngan/vim-vimlint' that we do in fact use a:expr
 fun! wrengr#qf#getexpr(k, expr) abort
   if a:k !=# 'c' && a:k !=# 'l'
     call wrengr#utils#error('E492: Not an editor command: :' . a:k . 'getexpr')

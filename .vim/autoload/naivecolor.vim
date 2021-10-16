@@ -1,7 +1,8 @@
+scriptencoding utf-8
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " Name:     autoload/naivecolor.vim
-" Modified: 2021-09-08T10:53:45-07:00
-" Version:  1
+" Modified: 2021-10-11T00:11:45-07:00
+" Version:  1a
 " Author:   wren romano
 " Summary:  Standardly errant mapping from GUI hexstrings to cterm codepoints.
 " License:  [0BSD] Permission to use, copy, modify, and/or distribute
@@ -42,6 +43,8 @@
 "
 " [1]: For example, they are also found in
 "   <https://github.com/vim-scripts/guicolorscheme.vim>
+"
+" Version 1a: added the scriptencoding
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 "
 "

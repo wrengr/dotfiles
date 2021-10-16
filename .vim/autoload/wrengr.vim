@@ -543,7 +543,9 @@ fun! wrengr#mkdir(path,...)
     return 0
   endif
   let l:p   = get(a:, 0, 0) ? 'p' : ''
-  " BUG: 'vim-jp/vim-vimlparser' (used by vint) can't parse this octal literal.
+  " BUG: 'vim-jp/vim-vimlparser' (used by 'Vimjas/vint') can't parse
+  " this octal literal.  Neither can 'ynkdir/vim-vimlparser' (used
+  " by 'syngan/vim-vimlint').
   let l:mod = get(a:, 1, 0o755)
   " Cf., <https://vi.stackexchange.com/a/20213>
   if empty(glob(a:path)) " no file-or-directory exists there.

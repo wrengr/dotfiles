@@ -211,6 +211,9 @@ endfun
 " Note: &shellslash is global-only.
 fun! wrengr#utils#shellescape(path)
   try
+    " TODO: inform syngan/vim-vimlint that we don't care about
+    "   EVL108 for this, since this feature is only ever for
+    "   MS-Windows and that's precisely what we're checking for.
     if has('+shellslash')
       let l:old_ssl = &shellslash
       set noshellslash

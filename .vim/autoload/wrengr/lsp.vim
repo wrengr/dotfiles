@@ -51,6 +51,7 @@ fun! wrengr#lsp#EnableFolding()
     " Just let the caller know we did nothing.
     return 0
   endif
+  " TODO: 'syngan/vim-vimlint' thinks bufnr() can't have zero arguments.
   let l:key  = win_getid() . '_' . bufnr()
   if !(has_key(s:cache, l:key) && get(g:, 'lsp_fold_enabled', 0))
     " Either it's already enabled, or g:lsp_fold_enabled is disabled;
@@ -78,6 +79,7 @@ fun! wrengr#lsp#DisableFolding()
     " Just let the caller know we did nothing.
     return 0
   endif
+  " TODO: 'syngan/vim-vimlint' thinks bufnr() can't have zero arguments.
   let l:key  = win_getid() . '_' . bufnr()
   let l:fold = get(s:cache, l:key, {})
   if empty(l:fold)
