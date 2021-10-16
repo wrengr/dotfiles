@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" wren gayle romano's vim config                    ~ 2021.10.11
+" wren gayle romano's vim config                    ~ 2021.10.16
 "
 " This file uses &foldmethod=marker, but I refuse to add a modeline
 " to say that; because modelines are evil.
@@ -646,7 +646,7 @@ Plug 'prabirshrestha/vim-lsp'
 "   " they recommend using 'osyo-manga/vim-watchdogs' instead since it
 "   " provides asynchronous syntax checking.
 " The following three are alternatives mentioned by @syngan:
-"Plug 'ujihisa/vimlint'         " written in Clojure; last mod: 2013-07-23
+"Exec 'ujihisa/vimlint'         " written in Clojure; last mod: 2013-07-23
     " Is forked from 'Shougo/neocomplcache.vim'
 "Plug 'dbakker/vim-lint'        " written in Python;  last mod: 2013-11-20
 "Plug 'dahu/VimLint'            " pure VimScript;     last mod: 2010-08-11
@@ -1354,8 +1354,7 @@ if has('diff')
   "set diffopt=internal,filler,closeoff " Default on Fink's vim-nox 8.2.3404
   " 'closeoff' == when closing penultimate window-in-tab-with-&diff, do :diffoff
   set diffopt+=vertical             " prefer vertical splitting
-  " <https://groups.google.com/g/vim_dev/c/fHjMJxVnSRg>
-  if has('patch-8.2.2490')
+  if has('patch-8.2.2490') " <https://groups.google.com/g/vim_dev/c/fHjMJxVnSRg>
     set diffopt+=followwrap         " leave &wrap alone
   endif
   set diffopt+=algorithm:patience

@@ -172,6 +172,11 @@ fun! wrengr#plug#Window()
   execute 'vertical resize ' . l:width
   " We don't need linenumbers here, so save a bit of space.
   setlocal norelativenumber nonumber
+  " Probably should use '+signcolumn' instead; but here we don't
+  " really care whether the option works, just so long as it exists
+  " enough for us to set it.  Maybe should guard for has('signs') instead?
+  " TODO: 'dbakker/vim-lint' doesn't recognize this option; granted
+  "   that repo was last touched in 2013.
   if exists('&signcolumn')
     setlocal signcolumn=no
   endif
