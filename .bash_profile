@@ -390,6 +390,7 @@ alias legate='eval $(command legate)'
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ Add a new colon-delimited value to the front of a variable
 #       Usage: `_push varname value`
+# TODO: Compare vs the version in "$finkpath/bin/init.sh"
 _push() {
     # Get the old value by double evaluation.
     # BUG: should use printf instead
@@ -408,6 +409,7 @@ _push() {
 
 # ~~~~~ Add a new colon-delimited value to the back of a variable
 #       Usage: `_copush varname value`
+# TODO: Compare vs the version in "$finkpath/bin/init.sh"
 _copush() {
     # Get the old value by double evaluation.
     # BUG: should use printf instead
@@ -437,6 +439,12 @@ if [ "${_hostname}" = 'mayari' ]; then
 
     # Let Fink munge our paths etc.
     [ -r "$finkpath/bin/init.sh" ] && source "$finkpath/bin/init.sh"
+    # N.B., that init.sh will also source "/opt/sw/etc/profile.d/*.sh";
+    # of which, git-prompt.sh will define shell functions: _git_eread,
+    # __git_ps1_colorize_gitstring, __git_sequencer_status, __git_ps1,
+    # __git_ps1_show_upstream; which we may consider using for our
+    # own PS1.  Read the documentation there for the fine details;
+    # tldr: configure output via env vars: GIT_PS1_*
 
     # This is needed for some linkers, like Cabal which can't
     # correctly pass -optl-L* to GHC (which would pass -L* to ld)
@@ -844,13 +852,20 @@ function ll.() {
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ Other basic aliases
 
-# TODO: verify that this has the same effect as the following
-#   aliases, and that it works on both OSX and Linux/GNU.
-# N.B., git-secrets clears this variable before calling grep!
+# Warning: GNU grep abandoned GREP_OPTIONS because of nonportability.
+# Also, git-secrets explicitly clears GREP_OPTIONS before calling
+# grep (when it calls external grep rather than using git-grep).
+# So even though that env var exists, we're reverting to setting
+# aliases again.  (Though we're leaving the env var around for now,
+# just in case some programs honor it.  Since the aliases are easily
+# lost.)
+# If we switch to using something like <https://github.com/Genivia/ugrep>
+# or <https://github.com/BurntSushi/ripgrep>, then they support
+# configuration files to handle things like this much nicer.
 export GREP_OPTIONS='--color=auto'
-#alias grep='grep --color'
-#alias egrep='egrep --color=auto'
-#alias fgrep='fgrep --color=auto'
+alias grep='grep --color'
+alias egrep='egrep --color=auto'
+alias fgrep='fgrep --color=auto'
 
 case "${_hostname}" in
     mayari | miller | banks )
@@ -861,9 +876,9 @@ case "${_hostname}" in
     elsamelys | UNKNOWN )
         # stupid grep, no color
         export GREP_OPTIONS=''
-        #unalias grep
-        #unalias egrep
-        #unalias fgrep
+        unalias grep
+        unalias egrep
+        unalias fgrep
     ;;
     google )
         case "${_uname}" in
@@ -1053,7 +1068,7 @@ fi
 # <https://unix.stackexchange.com/a/194348>
 alias rm-ds-store='find . -name .DS_Store -exec rm {} \;'
 
-alias _find_writable='find . -perm +022'
+alias _ls_writable='find . -perm +022'
 alias _ls_writable_dirs='find . -type d -perm +022 ! -name '\''*.app'\'' -exec ls -1d {} \;'
 
 # TODO: just learn to use dc & bc already
