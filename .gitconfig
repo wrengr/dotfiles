@@ -61,7 +61,7 @@
 [merge]
     ff = only
     # Print conflicts with the original as well as "ours" and "theirs"
-    #conflictstyle = diff3
+    conflictstyle = diff3
 # I don't actually like this exact setup, but the fact that we can
 # do things like this is good to bear in mind, in case I come up with a
 # particular command/flow that does capture my workflow.
@@ -109,11 +109,11 @@
 # Also, cf: <https://stackoverflow.com/a/28256977/358069>
 # Alas, `git config --get-regexp --name-only color.*` only shows the non-default ones!
 [color]
-    ui = true
-    branch = auto
-    diff = auto
+    ui          = true
+    branch      = auto
+    diff        = auto
     interactive = auto
-    status = auto
+    status      = auto
     # N.B., this also affects the colorization of git-secrets (if no
     # files passed or if any of the --cached, --untracked, --no-index
     # options are passed; otherwise they use the non-git version of grep)
@@ -121,20 +121,20 @@
     # others to set: pager, decorate, showbranch
 [color "branch"]
     # TODO: is there any way to colorize the hash (a la color.diff.commit)?
-    current = cyan bold
+    current  = cyan bold
     upstream = magenta bold
-    local = green bold
-    remote = blue bold
+    local    = green bold
+    remote   = blue bold
 [color "decorate"]
     # TODO: is there any way to actually state the following desired equivalences?
     #     color.decorate.head         = color.branch.current
     #     color.decorate.branch       = color.branch.local
     #     color.decorate.remoteBranch = color.branch.remote
-    head = cyan bold
-    branch = green bold
+    head         = cyan bold
+    branch       = green bold
     remoteBranch = blue bold
-    tag = yellow bold
-    stash = red bold
+    tag          = yellow bold
+    stash        = red bold
     # <log-tree.c> also has a "grafted" color (default: bold blue),
     # but there's no way we can change that color from here.
 [color "diff"]
@@ -144,11 +144,11 @@
     # will use! This seems to only be discoverable by looking at the
     # source code for <pretty.c>
     commit = yellow
-    frag = magenta bold
+    frag   = magenta bold
     # Seems like "func" is everything else on the same line as "frag"...
-    func = magenta
-    old = red
-    new = green
+    func   = magenta
+    old    = red
+    new    = green
     whitespace = red reverse
 [color "grep"]
     # These current settings are a~la the default GREP_COLORS
@@ -207,12 +207,12 @@
 #[color "interactive"]
 #    prompt =
 #    header =
-#    help =
-#    error =
+#    help   =
+#    error  =
 [color "status"]
-    branch = magenta bold
-    added = yellow
-    changed = green
+    branch    = magenta bold
+    added     = yellow
+    changed   = green
     untracked = cyan
     #unmerged =
 
@@ -279,11 +279,36 @@
     lol   = log --color --graph --pretty=oneline --abbrev-commit --decorate
     lola  = log --color --graph --pretty=lola
     # Automatically filter to only show new things since parent.
-    # (Alas, seems no way to get the whole tree rooted at the parent, a la rofl)
+    # (Alas, seems no way to get the whole tree rooted at the parent,
+    # a~la rofl)
+    # BUG: this can crash on shallowly cloned repos (when the PARENT^
+    #   commit isn't there).  The error message is clear enough about
+    #   the problem, but we may want to massage things.
     ll    = "!git lol --first-parent $(git parent)^.."
     # This one also shows stashes and abandoned branches/heads.
-    rofl  = "!git lol  $(git rev-list -g --all)"
-    rofla = "!git lola $(git rev-list -g --all)"
+    # (The --all says to include --branches, --tags, and --remotes;
+    # the -g/--walk-reflogs says to use the reflog for tracing things,
+    # rather than relying on the parent pointers alone.)
+    # Note: using --walk-reflogs is incompatible with a number of
+    # other things, like:
+    # (1) using any of the git-rev-list exclusions (`^A`, `A..B`,
+    #   `A...B`, `--not`, etc); thus there seems to be no non-trivial
+    #   way to make an equivalent of our `ll` alias for this tree view.
+    #   TODO: maybe `git fsck` can help us out here?  Relatedly, see:
+    #   <https://yashints.dev/blog/2020/04/05/git-logs>
+    # (2) the --graph flag to git-log; this is why we use a shell
+    #   substitution to separate the call to git-log (within lol)
+    #   and the call to git-rev-list, even though normally you can
+    #   pass all the flags of git-rev-list directly to git-log.
+    #   Warning: doing things this way can easily exceed the
+    #   commandline-length limit.  I haven't run into that problem
+    #   yet, but should find some way to mitigate that problem.
+    #   Perhaps the discussion at <https://www.py4u.net/discuss/1721875>
+    #   would help.
+    # TODO: perhaps not entirely relatedly, see:
+    #   <https://stackoverflow.com/a/49181420>
+    rofl  = "!git lol  $(git rev-list --walk-reflogs --all)"
+    rofla = "!git lola $(git rev-list --walk-reflogs --all)"
     # Show more details of the most recent patch:
     # (To show the diff, use `-p`, `git show`, or `git diff --cached HEAD^`)
     top   = log --stat -1
