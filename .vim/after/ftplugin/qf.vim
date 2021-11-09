@@ -19,7 +19,8 @@ let b:undo_ftplugin =
   \ . (&relativenumber  ? '' : 'no') . 'relativenumber '
 
 " Is already buftype=quickfix bufhidden=hide noswapfile (on Mayari at least).
-setlocal nobuflisted nowrap number norelativenumber
+" Also, apparently I really like/need &wrap here; at least for Google
+setlocal nobuflisted wrap number norelativenumber
 
 " Unmap our vimrc#s:LineNrToggle()
 nnoremap <buffer> <C-n> <Nop>
