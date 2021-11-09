@@ -20,9 +20,19 @@ evolve =
 
 
 [commands]
+# Make `hg resolve -m` abort if there are conflict markers in the file
+resolve.mark-check = abort
+# Require destination for `hg update` and `hg rebase`
 update.requiredest = true
 rebase.requiredest = true
 
+# N.B., Mercurial essentially requires the -FRX flags (afaict, the -X is
+# mainly just because of the -F; though there may be something else
+# going on that I'm missing).  It would use them by default if both
+# $PAGER and $LESS are unset, but since we set $PAGER we need to
+# explicitly override/extend it here.
+[pager]
+pager = less -isqFRX
 
 [alias]
 # This is the most common meaning for which I use the `git oo` alias.

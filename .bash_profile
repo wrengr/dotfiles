@@ -1,4 +1,4 @@
-# wren gayle romano's bash login script             ~ 2021.09.23
+# wren gayle romano's bash login script             ~ 2021.11.09
 #
 # It's fairly generic (with weirder things at the bottom),
 # but it's designed to be usable for all my accounts with no(!)
@@ -644,12 +644,14 @@ export PATH MANPATH LD_LIBRARY_PATH JAVA_HOME
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ Set up other common env variables
 
-# BUG: for some reason, setting LESS breaks git-log (unless we include -r).
+# BUG: for some reason, setting $LESS breaks git-log (unless we include -r or -R).
+# Note: Mercurial basically requires -FRX flags.  We don't want those
+# globally, so we override/extend this in ~/.hgrc
 export PAGER="less -isq"
 export MANPAGER="${PAGER}"
-# TODO: set/export MANWIDTH. Or even hook $PROMPT_COMMAND (or
+# TODO: set/export $MANWIDTH. Or even hook $PROMPT_COMMAND (or
 # SIGWINCH) to re-set it via `tput cols`/$COLUMNS. (BUG: though
-# MANWIDTH doesn't seem to do anything if set to 66 or greater...)
+# $MANWIDTH doesn't seem to do anything if set to 66 or greater...)
 
 
 # What's the difference between EDITOR and VISUAL?
