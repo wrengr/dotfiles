@@ -8,14 +8,6 @@ servers = (
     autoconnect = "yes";
   },
   {
-    # BUG: apparently this is dead now...
-    address = "irc.soic.indiana.edu";
-    chatnet = "soic";
-    port = "6667";
-    password = "SEEKRIT";
-    autoconnect = "yes";
-  },
-  {
     # Never use freenode again
     address = "irc.libera.chat";
     chatnet = "libera";
@@ -29,13 +21,16 @@ servers = (
     autoconnect = "yes";
   },
   {
-    # Run by @NekoArc
-    # Apparently SSL handshakes are timing out... Is this still alive?
-    address = "irc.tsukihi.me";
-    chatnet = "tsukihime";
+    # See: <https://www.oftc.net/NickServ/CertFP/>, and again:
+    # <https://feeding.cloud.geek.nz/posts/tls_authentication_freenode_and_oftc/>
+    # Or, can use "irc4.oftc.net" if you need to force IPv4.
+    address = "irc.oftc.net";
+    chatnet = "OFTC";
+    # Or, can use alternative port 9999 (still using TLS)
     port = "6697";
-    use_ssl = "yes";
-    ssl_verify = "no";
+    use_tls = "yes";
+    tls_cert = "~/.irssi/user.pem";
+    tls_verify = "yes";
     autoconnect = "yes";
   },
   { address = "irc.stealth.net";  chatnet = "IRCnet";     port = "6668"; },
@@ -59,9 +54,6 @@ chatnets = {
     type = "IRC";
     autosendcmd = "/^msg NickServ regain wrengr SEEKRIT;wait 700;/^msg NickServ identify SEEKRIT";
   };
-  soic = {
-    type = "IRC";
-  };
   libera = {
     type = "IRC";
     max_kicks = "4";
@@ -76,8 +68,17 @@ chatnets = {
     # so there must be a better command to use...
     autosendcmd = "/ghost wrengr SEEKRIT 700";
   };
-  tsukihime = {
+  OFTC = {
     type = "IRC";
+    max_kicks = "4";
+    max_modes = "4";
+    max_msgs = "1";
+    max_whois = "1";
+    # No SASL yet: <https://www.oftc.net/FAQ/Services/#do-you-provide-sasl>
+    # Warning: OFTC uses a very idiosyncratic NickServ,
+    #   the commands and argument orders are totally
+    #   different than Libera, Freenode, etc.  See also:
+    #   <https://www.oftc.net/NickServ/CertFP/#irssi-does-not-join-some-channels-on-connect>
     autosendcmd = "/ghost wrengr SEEKRIT 700";
   };
   IRCnet = {
@@ -180,10 +181,8 @@ channels = (
   { name = "##typetheory";       chatnet = "libera";    autojoin = "yes"; },
   { name = "#categorytheory";    chatnet = "libera";    autojoin = "yes"; },
   { name = "#chromium";          chatnet = "libera";    autojoin = "no"; },
-  { name = "#transgender";       chatnet = "tsukihime"; autojoin = "no"; },
-  { name = "#kink";              chatnet = "tsukihime"; autojoin = "no"; },
-  { name = "#soic";              chatnet = "soic";      autojoin = "yes"; },
-  { name = "#nlp";               chatnet = "soic";      autojoin = "yes"; },
+  # <https://llvm.org/docs/GettingInvolved.html#irc>
+  { name = "#llvm";              chatnet = "OFTC";      autojoin = "yes"; },
   {
     name = "#meow";
     chatnet = "cat";
@@ -464,14 +463,14 @@ hilights = (
   { text = "wrengr";   nick = "no"; word = "yes"; },
   { text = "wren";     nick = "no"; word = "yes"; },
 );
+
 ignores = (
   { level = "JOINS PARTS QUITS KICKS"
   ; channels = (
     "#meow", "#freegeek", "#haskell", "#haskell-ops",
     "#haskell-in-depth", "#numerical-haskell", "#ghc", "#darcs",
     "#hakyll", "#coq", "#agda", "##dependent", "##typetheory",
-    "#categorytheory", "##dependent", "#transspace",
-    "#transgender", "#kink", "#star", "#soic", "#nlp" ); },
+    "#categorytheory", "#chromium", "#llvm" ); },
   { mask = "ghcbot";         level = "ALL"; channels = ( "#ghc" ); },
   { mask = "darcscommitbot"; level = "ALL"; channels = ( "#darcs" ); },
   # HACK: to try and fix brokenness of hilightwin
@@ -603,20 +602,8 @@ windows = {
       {
         type = "CHANNEL";
         chat_type = "IRC";
-        name = "#soic";
-        tag = "soic";
-      }
-    );
-    sticky = "yes";
-    parent = "1";
-  };
-  13 = {
-    items = (
-      {
-        type = "CHANNEL";
-        chat_type = "IRC";
-        name = "#nlp";
-        tag = "soic";
+        name = "#llvm";
+        tag = "OFTC";
       }
     );
     sticky = "yes";
