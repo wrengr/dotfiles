@@ -13,7 +13,7 @@
 # TODO: fix that.
 # TODO: at the very least, warn if run from ~ and ~/.git doesn't exist
 if [ "$#" -ne 1 ]; then
-    echo "Usage: ${0::*/} <relative-path>"
+    echo "Usage: ${0##*/} <relative-path>"
     exit 1
 fi
 relfile="$1"
