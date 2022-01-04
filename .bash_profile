@@ -1,4 +1,4 @@
-# wren gayle romano's bash login script             ~ 2021.11.09
+# wren gayle romano's bash login script             ~ 2021.11.30
 #
 # It's fairly generic (with weirder things at the bottom),
 # but it's designed to be usable for all my accounts with no(!)
@@ -868,6 +868,8 @@ export GREP_OPTIONS='--color=auto'
 alias grep='grep --color'
 alias egrep='egrep --color=auto'
 alias fgrep='fgrep --color=auto'
+
+export RIPGREP_CONFIG_PATH="${HOME}/.ripgreprc"
 
 case "${_hostname}" in
     mayari | miller | banks )

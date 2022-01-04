@@ -152,6 +152,7 @@
     new    = green
     whitespace = red reverse
 [color "grep"]
+    # Except for the column numbers,
     # These current settings are a~la the default GREP_COLORS
     # 'ms=01;31:mc=01;31:sl=:cx=:fn=35:ln=32:bn=32:se=36'
     # <https://www.gnu.org/software/grep/manual/html_node/Environment-Variables.html>
@@ -200,7 +201,8 @@
     # GREP_COLORS bn=32
     #   byte offsets prefixing any content line (git: when using --column)
     # TODO: I think that's the equivalent, despite the naming difference.
-    column = green
+    # Intentionally making this different from linenumber; unlike GREP_COLORS.
+    column = yellow
     #
     # GREP_COLORS se=36
     #   separators ':', '-', '--'

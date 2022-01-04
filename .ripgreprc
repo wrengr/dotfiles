@@ -1,0 +1,82 @@
+# README: <https://github.com/BurntSushi/ripgrep/blob/master/GUIDE.md#configuration-file>
+# In particular, don't forget to set RIPGREP_CONFIG_PATH to point to this file.
+# Ripgrep uses Rust regexes: <https://docs.rs/regex/1.5.4/regex/#syntax>
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# TODO: don't forget to download <https://burntsushi.net/stuff/1995-watson.pdf>
+
+# TODO: figure out a good setting for this (unless ripgrep's default is good enough)
+#--threads=
+# TODO: or enable this (alas, will disable parallelism; cf:
+#   <https://github.com/BurntSushi/ripgrep/issues/152>)
+#--sort=path
+
+--smart-case
+
+# Don't forget to use -w/--word-regexp (or -x/--line-regexp)
+# we don't set --word-regexp in here because there isn't a
+# --no-word-regexp to disable the setting after the fact.
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~ Standard includes and excludes
+
+# Exclude version-control metadata.
+# N.B., ripgrep automatically honors .gitignore
+--glob=!_darcs/*
+--glob=!.svn/*
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~ Pretty output
+
+# Limit line length, but still show a preview.
+--max-columns=150
+--max-columns-preview
+
+# Show file-name above each group of matches in that file.
+--heading
+# The 1-based line number.
+--line-number
+# The 1-based column of the first match in the line. (implies --line-number)
+--column
+# The 0-based byte offset **from the beginning of the file**
+#--byte-offset
+
+# README: <https://github.com/BurntSushi/ripgrep/blob/master/FAQ.md#colors>
+# Syntax: --colors={path,line,column,match}:{none,{fg,bg,style}:$value}
+#   style values: {,no}{bold,intense,underline}
+#   fg/bg values: {black,red,green,yellow,blue,magenta,cyan,white}
+#                 or "$n,$n,$n" where $n = {0..255} or {0x00..0xFF}
+#                 (N.B., that means "0x33,0x66,0xFF" not "0x3366FF"!)
+# WARNING: if you kill ripgrep (e.g., via <C-c>) you'll need to manually do:
+#           $> echo -ne "\033[0m"
+--color=auto
+
+# Near as I can tell, the closest equivalents we have are:
+# RipGrep           GREP_COLORS     GIT color.grep.*    GREP_COLORS default
+# --colors=path:    fn=             filename=           35 / magenta
+# --colors=line:    ln=             linenumber=         32 / green
+# --colors=column:  bn=             column=             32 / green
+# --colors=match:   mt=             match=              01;31 / red bold
+#
+#   * ripgrep doesn't seem to make the ms/matchSelected vs
+#       mc/matchContext distinction that grep/git do.
+#   * ripgrep also has no equivalents for:
+#       ?/selected, ?/context, ?/function, se/separator
+#   * the defaults for path, line, and match equal those of GREP_COLORS
+#   * the default column:none does not match GREP_COLORS however.
+
+# Not the GREP_COLORS default (which I've set git to emulate), but intentionally different from line numbers.
+--colors=column:fg:yellow
+
+# Apparently this is what SilverSearcher uses:
+#--colors=match:fg:black
+#--colors=match:bg:yellow
+#--colors=match:style:nobold
+#--colors=line:fg:yellow
+#--colors=line:style:bold
+#--colors=path:fg:green
+#--colors=path:style:bold
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ fin.
