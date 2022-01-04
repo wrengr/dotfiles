@@ -39,6 +39,9 @@ pager = less -isqFRX
 # (N.B., mercurial does have `co` as an alias for update; and `oo`
 # originated as a simplification of typing `co` anyways.)
 oo = update
+# Override the usual `st` abbreviation to ignore untracked (:= unknown |
+# ignored) files.
+st = status -q
 # Note: there's also (apparently) an alias 'record'='commit --interactive'
 # BUG: hg normally has `ci` mean the equivalent of `git commit -a`;
 #   not sure if this alias will override that or no.
