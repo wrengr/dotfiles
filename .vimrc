@@ -76,6 +76,10 @@ endif
 " 'vi' as a shorthand will almost surely give you a different version
 " of Vim than the one you want.
 
+" TODO: maybe try using `uname -s` to see if it's "Darwin"; and
+" then if/as needed check `uname -r` for the particular version.
+" Is there a good way to script that up for use here?
+
 " See also: <https://stackoverflow.com/q/2842078>   " asked in 2010!
 
 
@@ -1350,14 +1354,39 @@ endif
 " ~~~~~ Tabpages, Windows/Splits, Buffers, Diffs, & bracketoids  {{{1
 " ~~~~~ Diff ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{2
 if has('diff')
-  " Comma-separated list of settings for diff-mode.
-  "set diffopt=internal,filler,closeoff " Default on Fink's vim-nox 8.2.3404
+  " `diffopt` == Comma-separated list of settings for diff-mode.
+  " The defaults are:
+  " * Fink           8.2.3404                    : `internal,filler,closeoff`;
+  " * Debian Rodete  8.2.4793-1+gl0              : `internal,filler,closeoff`;
+  " * Catalina/10.15 8.1.1312 (minus 504 and 681): `internal,filler`;
+  " * Monterey/12.4  8.2.4113                    :          `filler,closeoff`;
+  " Warning: Apple's versions of vim remove xdiff support and
+  " therefore don't allow `internal`.  This causes all sorts of
+  " problems including E474 about not supporting `algorithm:patience`,
+  " and on older macOS issues about still including `internal` in
+  " the default despite it not actually being supported.  For all
+  " the gory details, see:
+  " <https://github.com/agude/dotfiles/issues/2#issuecomment-843639956>
+  " <https://github.com/thoughtbot/dotfiles/issues/655#issuecomment-605019271>
+  " <https://www.micahsmith.com/blog/2019/11/fixing-vim-invalid-argument-diffopt-iwhite/>
+  "
   " 'closeoff' == when closing penultimate window-in-tab-with-&diff, do :diffoff
+  "
+  " HACK: Try to detect when we're using Apple's Vim, so we can
+  " remove `internal` if we're on an old buggy version that still
+  " includes it in the default.
+  " BUG: has('mac') is unreliable! (see above)
+  if has('mac') && $VIM == '/usr/share/vim'
+	set diffopt-=internal
+  elseif has('patch-8.1.0360') " HT: <https://stackoverflow.com/a/63079135>
+    " Even though `internal` is part of the default (except on Apple),
+    " we include it since it's necessary for `algorithm:patience`.
+    set diffopt+=internal,algorithm:patience
+  endif
   set diffopt+=vertical             " prefer vertical splitting
   if has('patch-8.2.2490') " <https://groups.google.com/g/vim_dev/c/fHjMJxVnSRg>
     set diffopt+=followwrap         " leave &wrap alone
   endif
-  set diffopt+=algorithm:patience
   " see also *fold-diff*, *diff-diffexpr*, &diffexpr, &vimdiff, &cursorbind
 endif
 
