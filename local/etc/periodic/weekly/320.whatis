@@ -1,12 +1,20 @@
 #!/bin/bash
-# Must use Bash in order to safely source our ~/.bash_profile !
-# Also, this script must be run as root, else it won't work!
-
+# Must use Bash in order to safely source our ~/.bash_profile (to
+# get our standard MANPATH) !!
+#
 # The built-in periodic whatis script seems to be somewhat buggy,
-# so we do it ourselves. N.B., this doesn't entirely replace the
+# so we do it ourselves.  N.B., this doesn't entirely replace the
 # old script, since we don't bother doing anything with locales.
 # We may want to add that in the future.
+#
+#   wren gayle romano                               ~ 2021.12.31
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+# This script must be run as root, else it won't work!
+if [[ $EUID -ne 0 ]]; then
+    >&2 echo "${0##*/}: ERROR: Must be run as root"
+    exit 2
+fi
 
 # We source my Bash profile to make sure we get everything in my
 # standard setup. We might want to factor out the part that sets
@@ -15,14 +23,13 @@
 # TODO: liberalize this to use $HOME or ~ rather than hard-coding it.
 bash_profile='/Users/wren/.bash_profile'
 # Guard against the file not existing (or not having read permissions).
-[ ! -r "$bash_profile" ] && exit 2
+[[ ! -r "$bash_profile" ]] && exit 2
 # BUG: this complains about my `l.` functions not being valid identifiers!
-. $bash_profile || exit 2
+source "$bash_profile" || exit 2
 
 
 echo ''
 echo 'Rebuilding whatis database (for real this time):'
-# TODO: detect if we're not root and print a warning if we're not...
 
 # The original uses MANPATH=`/usr/bin/manpath -q` rather than
 # trusting the environment variable. What is the force of doing
@@ -33,12 +40,12 @@ echo 'Rebuilding whatis database (for real this time):'
 # not existing. I'm not sure if that's because of tilde-expansion not
 # working or because it actually doesn't exist. Either way, we need
 # to improve this cleaning to handle such things.
-cleaned_manpath="`echo "$MANPATH" |
+cleaned_manpath="$(echo "$MANPATH" |
     sed 's/:/\n/g' |
     sort |
     uniq |
     grep -v '^$' |
-    paste -s -d':' -`"
+    paste -s -d':' -)"
 # TODO: use `sed -e :a -e 'N;s/\n/,/;ba'` (or perhaps with `ta` in
 # lieu of `ba`) in lieu of the paste command? Or maybe use tr in
 # lieu of paste?
@@ -50,7 +57,8 @@ cleaned_manpath="`echo "$MANPATH" |
 #   while read line; do [ -d "$line" ] && echo "$line"; done |
 # N.B., we'll need to do ~-expansion first, since [-d] doesn't...
 
-# TODO: detect when being run as non-root, and print a better error message.
 rc=0
 /usr/libexec/makewhatis.local "$cleaned_manpath" || rc=3
 exit $rc
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ fin.

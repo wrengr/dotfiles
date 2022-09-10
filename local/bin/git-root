@@ -1,0 +1,62 @@
+#!/bin/bash
+# Print out the absolute path to the repo's root directory (like `hg root`)
+# wren gayle romano <wrengr@cpan.org>               ~ 2022.09.11
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# The built-in `git rev-parse --show-toplevel` has two infelicities.
+# First, when not in a git repo it prints an error message to stderr
+# (which we often want to silence for scriptinng purposes).  Second,
+# it requires to be in the worktree half of the repo and will fail
+# if in the .git/ half of the repo.  This script aims to correct
+# both of those.
+
+# TODO: to simplify error-munging in scripts using this one, we
+# should add flags to: (1) not silence the error about not being
+# in a git repo, (2) specify an alternative program name to use in
+# lieu of ${0##*/}  ---Since proper error messaging depends on
+# whether they're calling this to determine whether in a repo vs
+# to actually get the root path.  So in may be sufficient to have
+# a single flag for (2) and have that entail the semantics of (1).
+
+# TODO: compare to the wrappers defined in
+# <https://github.com/git/git/blob/master/git-sh-setup.sh>
+# namely `cd_to_toplevel`, `require_work_tree_exists`, `require_work_tree`,
+# `git_dir_init`, etc.
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# First, detect if we're in a repo (even a "bare" one).
+# If this passes successfully, then we shouldn't need to bother
+# closing stderr for any of the other checks.
+# (N.B., the 2>- syntax seems to only work for perl, not bash)
+if ! git rev-parse 2>/dev/null ; then
+  # Intentionally gobble up the stderr message from the above command.
+  # TODO: add a flag to generate output for this case if requested.
+  exit 128
+fi
+
+# TODO: how should we really handle bare repos?
+if [[ "$(git rev-parse --is-bare-repository)" = "true" ]]; then
+  # TODO: add a flag to silence output for this case if requested?
+  >&2 echo -e "\033[1;31m${0##*/}:\033[0m \033[1mCan't handle bare repos\033[0m"
+  exit 1
+fi
+
+# N.B., --is-inside-git-dir will be "true" for bare repos too!
+# <https://groups.google.com/g/git-users/c/dWc23LFhWxE/m/8hsKlYFwdCgJ>
+if [[ "$(git rev-parse --is-inside-git-dir)" = "true" ]]; then
+  # Alas, `git rev-parse --show-cdup` doesn't work properly when
+  # in this case; it'll return the null string (not even a trailing
+  # newline), instead of what we want.  So we'll try to figure
+  # it out ourselves:
+  cd "$(git rev-parse --git-dir)/.."
+fi
+
+if [[ "z$(git rev-parse --is-inside-work-tree)" != "ztrue" ]]; then
+  # This indicates a scripting error on our part, so don't gobble it
+  # TODO: add a flag to silence output for this case if requested?
+  >&2 echo -e "\033[1;31m${0##*/}:\033[0m \033[1mThe impossible happened\033[0m"
+  exit 1
+fi
+
+git rev-parse --show-toplevel
+exit 0

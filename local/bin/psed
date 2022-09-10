@@ -39,6 +39,8 @@ while (@ARGV) {
 	}
 }
 
+# If all you wanted to do was run a program and exchange their
+# stderr/stdout, then you can use: `foo 3>&1 1>&2 2>&3 3>&-`
 my ($PARENT_OUT, $PARENT_ERR)
 	= $ExchangePipes
 	? (*STDERR, *STDOUT)

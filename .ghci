@@ -1,6 +1,6 @@
--- wren gayle romano's ghci login script            ~ 2018.02.05
+-- wren gayle romano's ghci login script            ~ 2021.11.13
 --
--- N.B., this file doesn't understand block-comments (<= 8.0.2 at least)
+-- N.B., this file doesn't understand block-comments (<= 9.2.1 at least)
 
 -- For more inspiration, see:
 -- <http://www.haskell.org/pipermail/haskell-cafe/2007-September/032260.html>
@@ -77,8 +77,14 @@
 :def ghc_pkg    \str -> return $ ":!ghc-pkg " ++ str
 
 -- * Run a Test.Framework test (HT: gnezdo)
-:def testc \t -> return $ "Test.Framework.defaultMain [testCase \"" ++ t ++ "\"" ++ t ++ "]"
-:def testp \t -> return $ "Test.Framework.defaultMain [testProperty \"" ++ t ++ "\"" ++ t ++ "]"
+:{
+:def testc \t -> return $ "Test.Framework.defaultMain "
+                        ++ "[testCase \"" ++ t ++ "\" " ++ t ++ "]"
+:}
+:{
+:def testp \t -> return $ "Test.Framework.defaultMain "
+                        ++ "[testProperty \"" ++ t ++ "\" " ++ t ++ "]"
+:}
 
 -- * With GOA (for reference, rather than actual use)
 -- :m - Prelude
@@ -134,8 +140,8 @@
 ----------------------------------------------------------------
 :set editor vim
 
--- * If in a Cabal directory, be sure to auto-include Cabal's CPP macros
-:set -optP-include -optPdist/build/autogen/cabal_macros.h
+-- * If in a Cabal directory, be sure to auto-include Cabal's CPP macros.
+:!_ghci_include_cabal_macros
 
 -- * Other helpful notes:
 -- Use -fobject-code            to compile modules before loading.

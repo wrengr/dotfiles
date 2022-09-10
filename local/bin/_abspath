@@ -2,6 +2,10 @@
 # Clean up a path to be absolute and (if desired) canonical
 # wren gayle romano <wren@cpan.org>                 ~ 2008.08.08
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# If you're canonicalizing paths for the sake of checking equality,
+# then see <https://superuser.com/a/1396926> for a few alternative
+# implementations with slightly differing semantics.
+#
 # See also _shell_quote for handling spaces
 
 use warnings;

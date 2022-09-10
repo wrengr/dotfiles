@@ -2,3 +2,22 @@ Reread: <https://gist.github.com/romainl/2f748f0c0079769e9532924b117f9252>
     re setting &makeprg, &formatprg, &errorformat, ...
 
 Set all the b:undo_ftplugin for things in this directory
+
+Adjust YAML. The &indentexpr set by /opt/sw/share/vim/vim82/indent/yaml.vim
+does some very annoying reindent on `:` stuff (akin to the old
+&smartindent); in particular the annoying thing is that it does
+that reindentation when the character is typed in a comment line!
+* It may be sufficient to replace <:> with : in &indentkeys...
+  Though the plain : might not work since it depends on following
+  a "label or case statement", so we'd have to make sure to configure
+  that right for YAML.
+* Alternatively, the problem may be how GetYAMLIndent() handles
+  comment lines.  On the one hand, if both the current and previous
+  lines are comments, then the current line is set to match the
+  previous (which is good).  But otherwise it will try to set the
+  comment line to match the previous non-blank non-comment line; which
+  is no good when we want a comment *above* the next line which is
+  outdented relative to the previous.  To fix this, it may be sufficient
+  to just add our own check first and if the current line is a comment
+  line and the last typed character is : then leave it alone; otherwise
+  fallback to GetYAMLIndent().

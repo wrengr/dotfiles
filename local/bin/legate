@@ -1,6 +1,6 @@
 #!/bin/bash
 # A smarter `ssh-agent` (and other daily login certs)
-# wren gayle romano <wren@cpan.org>                 ~ 2021.08.09
+# wren gayle romano <wren@cpan.org>                 ~ 2021.11.14
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # BUG: I suspect this does not work well with ssh forwarding; so
@@ -21,7 +21,7 @@
 #   more helpful once we start adding other things mentioned above.
 
 _usage() {
-cat << __END_USAGE__
+>&2 cat << __END_USAGE__
 Usage: ${0##*/} [options]
 
 This script helps ensure there is only one ssh-agent running, and

@@ -2,6 +2,9 @@
 # Convert seconds since epoch to W3C in local timezone or UTC
 # wren gayle romano <wren@cpan.org>                 ~ 2018.02.23
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# W3C datetime format is a specific instance of the general class
+# of ISO 8601 formats: <https://www.w3.org/TR/NOTE-datetime>
+#
 # TODO: Assuming @ARGV is empty, then all this jazz is equivalent to
 # simply running:
 # $> date +'%Y-%m-%dT%H:%M:%S%:z'

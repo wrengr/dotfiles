@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" wren gayle romano's vim config                    ~ 2021.10.16
+" wren gayle romano's vim config                    ~ 2022.09.11
 "
 " This file uses &foldmethod=marker, but I refuse to add a modeline
 " to say that; because modelines are evil.
@@ -1377,7 +1377,7 @@ if has('diff')
   " includes it in the default.
   " BUG: has('mac') is unreliable! (see above)
   if has('mac') && $VIM == '/usr/share/vim'
-	set diffopt-=internal
+    set diffopt-=internal
   elseif has('patch-8.1.0360') " HT: <https://stackoverflow.com/a/63079135>
     " Even though `internal` is part of the default (except on Apple),
     " we include it since it's necessary for `algorithm:patience`.
@@ -1476,10 +1476,10 @@ if has('quickfix')
   "   :c{*} commands that don't error when they reach end of list.
   " Note: these understand v:count=0 just fine; it's just a bit
   "   unsightly to be echoed that way.
-  nnoremap <expr> [q ':<C-u>' . v:count . 'cprev<CR>zz'
-  nnoremap <expr> ]q ':<C-u>' . v:count . 'cnext<CR>zz'
-  nnoremap        [Q :<C-u>cfirst<CR>zz
-  nnoremap        ]Q :<C-u>clast<CR>zz
+  nnoremap <expr> [q  wrengr#qf#BracketExpr(1, 'cprev')
+  nnoremap <expr> ]q  wrengr#qf#BracketExpr(1, 'cnext')
+  nnoremap <expr> [Q  wrengr#qf#BracketExpr(0, 'cfirst')
+  nnoremap <expr> ]Q  wrengr#qf#BracketExpr(0, 'clast')
   " TODO: should we also have stuff for :c{above,below,before,after,older,newer}
   "   For a handly reference, see <https://stackoverflow.com/a/55117681>
   "   Re :c{older,newer} beware of getting E380; cf., <https://vimways.org/2018/colder-quickfix-lists/>
@@ -1496,10 +1496,10 @@ if has('quickfix')
   " See also: <#gistcomment-3881035> therein.
 
   " ~~~~~ Quickfix/locations                                     {{{3
-  nnoremap <expr> [l         ':<C-u>' . v:count . 'lprev<CR>zz'
-  nnoremap <expr> ]l         ':<C-u>' . v:count . 'lnext<CR>zz'
-  nnoremap        [L          :<C-u>lfirst<CR>zz
-  nnoremap        ]L          :<C-u>llast<CR>zz
+  nnoremap <expr> [l          wrengr#qf#BracketExpr(1, 'lprev')
+  nnoremap <expr> ]l          wrengr#qf#BracketExpr(1, 'lnext')
+  nnoremap <expr> [L          wrengr#qf#BracketExpr(0, 'lfirst')
+  nnoremap <expr> ]L          wrengr#qf#BracketExpr(0, 'llast')
   nnoremap <expr> <leader>zl ':<C-u>lopen ' . (v:count ? v:count : '') . '<CR>'
   nnoremap        <leader>dl  :<C-u>lclose<CR>
   " TODO: ditto everything from above (though it's :ll ~ :cc because
@@ -2035,8 +2035,13 @@ set tabstop=4       " Display real <Tab> characters as if N characters wide.
 set softtabstop=0   " (0=)Don't pretend N positions are a <Tab> character
                     " (-1: Pretend &ts positions are a <Tab> character).
 set shiftwidth=4    " Indent by N positions for shift commands (0: use &ts)
-set shiftround      " Make `>` and `<` operators round to a multiple of &sw
+set noshiftround    " Make `>` and `<` operators round to a multiple of &sw
                     " (like i_<C-t> and i_<C-d> always do).
+
+" Note(2021-11-28): apparently I despise &shiftround.  For
+" indentation-sensitive languages like Haskell it totally breaks
+" the relative-indentation structure because it applies the rounding
+" separately to each line.
 
 " if has('vartabs'), then there are two other options of note:
 " &vartabstop and &varsofttabstop.  Both of these override their
@@ -2263,6 +2268,17 @@ if v:version > 700 && has('spell')
   " BUG: we need to have spell enabled in order to use `[s`, `]s`,
   " etc. Is there a way to enable it and instead just toggle whether
   " they're highlighted or not?
+  " BUG: (2021-10-03T00:13:15-07:00) For some reason just now this
+  " mapping broke (when I wasn't doing anything in this part of the
+  " file!).  It started doing the equivalent of <w> instead.  After
+  " some investigating I tried disabling iTerm2's "Profiles >> Keys
+  " >> Apps can change how keys are reported" and that fixed it.  I
+  " don't recall having had that setting enabled before; so if I
+  " didn't, then I'm not sure how it got set; and if I did, then I'm
+  " not sure what I did in vim that would've caused it to suddenly
+  " decide to start remapping <C-@> to <w>.  Fwiw, the only thing
+  " I was doing at the time it broke was messing around with the
+  " quickfix bracketoids.
 
   " An interesting idea that I don't really like,
   " HT: <http://stackoverflow.com/a/5041384/358069>
@@ -2563,7 +2579,7 @@ if has('autocmd')
   filetype indent on
 
   " Help the default filetype.vim improve its guesswork.
-  let g:filetype_pl = 1       " *.pl are always always Perl (unnecessary so far)
+  let g:filetype_pl = 'perl'  " *.pl are always always Perl (unnecessary so far)
   let g:bash_is_sh  = 1       " *.sh are almost always Bash
   let g:tex_flavor  = 'latex' " Help choose between LaTeX, ConTeXt, & PlainTeX.
 

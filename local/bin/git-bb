@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 # An enhanced version of `git branch -vv`
-# wren gayle romano <wrengr@google.com>             ~ 2018.04.05
+# wren gayle romano <wrengr@cpan.org>               ~ 2022.09.11
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 use warnings;
 use strict;
@@ -14,14 +14,20 @@ use strict;
 # * filtering the tree (by last-modified, etc), maybe? cf.,
 #   <https://github.com/MarkLodato/scripts/blob/master/git-recent-branches>
 
-# TODO: we may want to take some pointers from <https://github.com/git/git/blob/35f6318d44379452d8d33e880d8df0267b4a0cd0/perl/Git.pm>. We shouldn't use that directly, since it has the same profoundly terribad UI issues that the git executable does, but it may help for discovering helpful commands or discovering more hidden gotchas and corner cases.
+# TODO: we may want to take some pointers from
+# <https://github.com/git/git/blob/35f6318d44379452d8d33e880d8df0267b4a0cd0/perl/Git.pm>.
+# We shouldn't use that directly, since it has the same profoundly
+# terribad UI issues that the git executable does, but it may help
+# for discovering helpful commands or discovering more hidden gotchas
+# and corner cases.
 
 # Could use C<Getopt::Long>, but that generates a bit too free-form of
 # a CLI for my tastes.
 my $UseColor = 1;
 { # Block is to limit the scope of variables.
     my %UseColorValues =
-        # TODO: might should change these to "always" and "never", to match the names git uses...
+        # TODO: might should change these to "always" and "never",
+        # to match the names git uses...
         ( 'no'  => sub { $UseColor = 0; },
         , 'yes' => sub { $UseColor = 1; },
         );
@@ -56,6 +62,9 @@ sub withPipe {
     # to be longer than the command, so this way is prettier overall.
     my $block = pop;
 
+    # TODO: guard against @_ being empty or singleton before
+    # performing the C<open>.
+
     # Require the command to be explicitly tokenized, to minimize
     # problems about correctness, security, and quotation hell.
     open my $FH, '-|', @_
@@ -63,10 +72,12 @@ sub withPipe {
 
     # N.B., this seems surprisingly fragile for some reason. See the
     # comment in C<backticks>.
-    # TODO: use C<wantarray> to determine the return type of &$block, rather than assuming scalar.
+    # TODO: use C<wantarray> to determine the return type of &$block,
+    # rather than assuming scalar.
     my $ret = &$block($FH);
 
     # N.B., it's the C<close> call itself which sets both C<$!> and C<$?>
+    # Because on pipes, C<close> calls C<waitpid>.
     if (close $FH) { # Both the syscall and the child process exit cleanly.
         # If the continuation returned anything, forward that along to callers.
         return $ret;
@@ -80,7 +91,7 @@ sub withPipe {
         die "withPipe: @_\n\tCouldn't execute: $!\n";
     } elsif ($? & 127) {
         my $signal = $? & 127;
-        my $core   = ($? & 128) ? "with" : "without";
+        my $core   = ($? & 128) ? 'with' : 'without';
         die "withPipe: @_\n\tKilled by signal $signal ($core coredump)\n";
     } elsif ($? >> 8) { # extract the actual exit-code.
         my $exit = $? >> 8;
@@ -88,7 +99,7 @@ sub withPipe {
     } else {
         # The C<close> syscall succeeded, the child process exited
         # cleanly, and the child's exit code was zero, so...
-        die "withPipe: @_\n\twtf?\n";
+        die "withPipe: @_\n\tThe impossible happened\n";
     }
 }
 
@@ -96,7 +107,7 @@ sub withPipe {
 # security/correctness and to avoid quotation hell.
 sub backticks {
     my $line = withPipe @_, sub {
-        # HACK: this is surprisingly fragile. If we try to inline C<$_[0]>
+        # HACK: this is surprisingly fragile. If we try to use C<$_[0]>
         # rather than using C<shift>, then we'll always get "killed by
         # signal 13". I have no idea how the heck that can be...
         my $FH = shift;
@@ -104,6 +115,7 @@ sub backticks {
         # then when we close the file handle, that'll send SIGPIPE to the
         # child process. If the child can't handle SIGPIPE, then when it
         # dies it'll kill us too (via C<withPipe>'s checks).
+        # TODO: properly handle multi-line outputs.
         my $line = <$FH>;
         return $line;
     };
@@ -120,9 +132,102 @@ sub backticks {
     }
 }
 
-# N.B., since later on we'll be using C<$Git> as the first argument to
-# C<backticks>, it's especially crucial that we chomp here.
+# Run a program, discarding stdout and stderr, and if the program
+# exits successfully then return the logical exit value (i.e.,
+# true if exit-code is zero, false if exit-code is non-zero).  If
+# the program does not exit successfully (e.g., the program cannot
+# be executed, or is killed by a signal, etc), then we die.
+sub exitsOK {
+    # Zero arguments will cause C<system> to crash.
+    die "exitsOK: empty argument list\n" unless @_;
+    # Single argument will cause C<system> to do shell string
+    # processing (which we don't want).
+    die "exitsOK: singleton argument list\n" unless $#_ > 0;
+    # We can't use C<system> directly since it inherits stdout/stderr
+    # (and I'm not sure how to swap the filehandles around to do what
+    # we want); so instead we manually call C<fork>, C<exec>, and
+    # C<waitpid>.
+    # N.B., this discarding of stdout/stderr is required for the
+    # "Not in a git repo" check.  Otherwise it's just a nicety.
+    defined(my $pid = fork())
+        or die "exitsOK @_\n\tCouldn't fork: $!\n";
+    unless ($pid) { # Child
+        # TODO: for portability use C<File::Spec->devnull> instead.
+        # (Or it should also be fine to just close them; since most
+        # git commands do the right thing)
+        open STDOUT, '>', '/dev/null'
+            or die "exitsOK @_\n\t[child] Couldn't discard stdout: $!\n";
+        open STDERR, '>&', \*STDOUT
+            or die "exitsOK @_\n\t[child] Couldn't discard stderr: $!\n";
+        exec @_
+            or die "exitsOK @_\n\t[child] Couldn't exec: $!\n";
+    }
+    # Parent
+    (waitpid($pid, 0) == $pid)
+        or die "exitsOK @_\n\t[parent] Couldn't wait: $!\n";
+    # N.B., C<system> also returns C<$?> in addition to setting it.
+    if ($? == -1) {
+        die "exitsOK: @_\n\tCouldn't execute: $!\n";
+    } elsif ($? & 127) {
+        my $signal = $? & 127;
+        my $core   = ($? & 128) ? 'with' : 'without';
+        die "exitsOK: @_\n\tKilled by signal $signal ($core coredump)\n";
+    } else {
+        return 0 == ($? >> 8); # extract the actual exit-code, and check it.
+    }
+}
+
+# TODO: I think the following should work for messing around with
+# filehandles so that we can call C<system> directly.  Dunno if
+# it's really any better or worse than the above though (neither
+# re style nor re performance).
+#
+#   # We'd want to float these out of the function in order to avoid
+#   # making these syscalls over and over.  Should also prolly dup
+#   # stdin, so that the subprocesses can't take/see our input (not
+#   # that we have any).
+#   open my $stdout, '>&', \*STDOUT or die "Couldn't dup STDOUT: $!\n";
+#   open my $stderr, '>&', \*STDERR or die "Couldn't dup STDERR: $!\n";
+#   open my $devnull, '>', '/dev/null' or die "Couldn't open devnull: $!\n";
+#
+#   # And then this is what we'd do for each call to C<exitsOK>.
+#   # Dunno if we should really be duping $devnull, vs opening it each time...
+#   # But if duping is okay (and actually faster/better), then we might
+#   # consider doing that even with the C<fork>/C<exec> version above.
+#   open STDOUT, '>&', $devnull or die "Couldn't redirect STDOUT: $!\n";
+#   open STDERR, '>&', $devnull or die "Couldn't redirect STDERR: $!\n";
+#   system @_;
+#   # Need to save $! and $? before we call the next two.
+#   open STDOUT, '>&', $stdout or die "Couldn't redirect STDOUT: $!\n";
+#   open STDERR, '>&', $stderr or die "Couldn't redirect STDERR: $!\n";
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Since we'll be using C<$Git> as the first argument to subsequent
+# calls to C<backticks>, it's especially crucial that this call to
+# C<backticks> chomps the string result.
 my $Git = backticks 'which', 'git';
+
+# Detect whether we're even in a git repo, and give a decent
+# error message if not.  This should absolutely be done before
+# populating C<%BranchInfo> (since the C<withPipe> would exit
+# ungracefully); but for promptness, we should do it before populating
+# C<%Color> too (since there's no point of taking the time to do
+# that if we're just going to exit).
+#
+# Running `git rev-parse` with no arguments will exit true for all
+# three cases of: in a bare repo, in the working-tree, in the git-dir.
+exitsOK $Git, 'rev-parse'
+    or die "Not in a git repo\n";
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+sub isValidRef ($) {
+    return exitsOK $Git, 'show-ref', '--quiet', '--verify', '--', $_[0];
+}
+
+sub isValidBranch ($) {
+    return isValidRef "refs/heads/$_[0]";
+}
 
 # Return ahead/behind info like the '%(upstream:track)' format does,
 # but for an arbitrary pair of branches/commits rather than just a
@@ -144,37 +249,6 @@ sub getDivergence ($$) {
     } else {
         die "Couldn't get divergence between $here and $there\n";
     }
-}
-
-# Run a program and return whether it exited successfully: that is,
-# we return a true value when the exit code is zero, and a false value
-# if the exit code is non-zero. If we cannot execute the child or it is
-# killed by a signal, then we die.
-sub exitsOK {
-    # TODO: we should guard against (a) the list being empty and
-    # therefore making things crash, and (b) the list being singleton
-    # which invokes DWIM parsing of the string.
-    # TODO: should redirect stdout and stderr to make sure they don't
-    # dump anything our users might see.
-    system @_;
-    # N.B., C<system> also returns C<$?> in addition to setting it.
-    if ($? == -1) {
-        die "exitsOK: @_\n\tCouldn't execute: $!\n";
-    } elsif ($? & 127) {
-        my $signal = $? & 127;
-        my $core   = ($? & 128) ? "with" : "without";
-        die "exitsOK: @_\n\tKilled by signal $signal ($core coredump)\n";
-    } else {
-        return 0 == ($? >> 8); # extract the actual exit-code, and check it.
-    }
-}
-
-sub isValidRef ($) {
-    return exitsOK $Git, 'show-ref', '--quiet', '--verify', '--', $_[0];
-}
-
-sub isValidBranch ($) {
-    return isValidRef "refs/heads/$_[0]";
 }
 
 # HT: <https://stackoverflow.com/a/3879077>
@@ -222,6 +296,8 @@ sub hasMergeInProgress () {
 #   # The same idea except for whatever the "$GIT_CHERRYPICK_HEAD_FILE" name is:
 #   # cf: <https://github.com/libgit2/libgit2/blob/585b5dacc7f440a163c20117cfa35fb714a7ba7b/src/repository.c#L2733>
 #}
+# TODO: see also the version of this predicate defined at:
+# <https://github.com/git/git/blob/master/git-sh-setup.sh>
 #sub requireCleanWorkTree () {
 #    die "Rebase in progress. Please finish that first.\n"
 #        if hasRebaseInProgress();
@@ -243,14 +319,13 @@ sub hasMergeInProgress () {
 #    die "Please commit or stash them.\n" if $err;
 #}
 
-
 # To test for the other billiondy ways things can be out of sync
 # (unmerged, unpushed,...), cf.:
 # <http://0xfe.blogspot.com/2010/04/improved-git-enabled-shell-prompt.html>
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# ~~~~~ Color configuration
+# ~~~~~ Gather color configuration
 
 # TODO: is there any way to make this faster? i.e., to get all the
 # colors in one go, rather than firing off a process for each one?

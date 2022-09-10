@@ -1,0 +1,11 @@
+BUG: in filetype detection/setting, the following autocmds use `:set filetype=` rather than `:setfiletype`
+filetypedetect  BufNewFile,BufRead
+    *.hsc     set filetype=haskell
+    *.bpk     set filetype=haskell
+    *.hsig    set filetype=haskell
+    *.bsv     set filetype=bsv
+    lit.*cfg  set filetype=python
+    *.ll      set filetype=llvm
+    *.mlir    set filetype=mlir
+    *.td      set filetype=tablegen
+    *.v       set filetype=coq

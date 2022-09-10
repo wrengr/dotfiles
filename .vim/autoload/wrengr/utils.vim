@@ -116,6 +116,7 @@ endfun
 fun! wrengr#utils#ShowIndentOptions()
   let l:lines = []
   call add(l:lines, s:showBoolOption('autoindent'))
+  " TODO: &copyindent, &preserveindent (which only apply if not &expandtab)
   if has('lispindent')
     call add(l:lines, s:showBoolOption('lisp'))
   endif

@@ -56,12 +56,19 @@
     # While there does exist a command `git push --tags` which will
     # also push unannotated-tags, it's strongly disrecommended.
     #followTags = True
-#[pull]
-#    ff = only
+    #
+    # TODO: is there any config option for always passing the
+    # `--atomic` flag?  Cf., <https://stackoverflow.com/a/28523050>,
+    # <https://stackoverflow.com/a/28523050>
+[pull]
+    ff = only
+    # TODO: consider <https://medium.com/the-scale-factory/configure-git-to-merge-using-ort-92fc0d450169>
 [merge]
     ff = only
-    # Print conflicts with the original as well as "ours" and "theirs"
+    # Print conflicts with the (merged)original as well as "ours" and "theirs"
     # (like passing --conflict=diff3 to git-checkout)
+    # [git-2.25 (2020Q1)]: has `git apply --3way` honor merge.conflictstyle
+    # [git-2.35 (2022Q1)]: introduces zdiff3 <https://github.com/git/git/commit/4496526f80b3e4952036550b279eff8d1babd60a>
     conflictstyle = diff3
 # I don't actually like this exact setup, but the fact that we can
 # do things like this is good to bear in mind, in case I come up with a
@@ -87,6 +94,7 @@
     # git diff --cached         # c vs i
     # git diff HEAD:file1 file2 # o vs w
     mnemonicPrefix = true
+    # TODO: consider setting `colorMoved`: <https://git-scm.com/docs/git-diff#Documentation/git-diff.txt---color-movedltmodegt>; also `colorMovedWS`
 [branch]
     # Have newly-created branches starting from a branch, set their
     # start point as upstream (as oppose to the default 'true' setting
@@ -151,6 +159,7 @@
     old    = red
     new    = green
     whitespace = red reverse
+    # TODO: if we set `diff.colorMoved` then we should set `{new,old}Moved` and `{old,new}MovedAlternative` here.
 [color "grep"]
     # Except for the column numbers,
     # These current settings are a~la the default GREP_COLORS
@@ -346,24 +355,44 @@
     kc    = cherry-pick --continue
     ks    = cherry-pick --skip
     ss    = secrets --scan
-    # A paltry attempt to commute a child's patches over new patches in
-    # the parent.
+    # Shorthand to `rebase --onto` the parent branch.
+    #
+    # This was originally intended as a paltry attempt to commute
+    # a child's patches over new patches in the parent.  However,
+    # afaict now (2022-03-12): if the parent merely adds new patches,
+    # then you should use vanilla `rebase`; whereas, if the parent
+    # rebased/rewrote the shared history, then that's when `--onto`
+    # becomes necessary.  In particular, for the `--onto` version to
+    # work properly, you need to pass `HEAD~N` where `N` is the number
+    # of patches in the child branch since diverging from the original
+    # version of the parent before the parent got rebased.  Alas,
+    # there's no good way to auto-detect what that `N` should be, so
+    # you gotta be sure to look it up before rebasing the parent!
+    # You can, of course, pass other arguments that also serve to
+    # identify where the child changes start; in particular, if you
+    # set up a new branch name for the parent before rebasing the
+    # parent, then you can use that branch name.
     #
     # Supposedly this should look at "branch.<name>.remote" and
     # "branch.<name>.merge" (just like the no-argument `git pull` does),
     # select all the commits between then (exclusive) and the most recent
     # one (inclusive), commute them to occur after the parent branch,
-    # and set the current branch to point to that new end-of-commits. I
-    # say "supposedly" because frequently it just drops all those commits
-    # on the floor and sets the current branch to point directly to the
-    # parent. I've no idea why that happens; but when it does, just using
-    # a vanilla `git rebase` seems to work (because it uses the parent
-    # as the <exclude-from> point, rather than trying to determine it from
-    # "branch.<name>.{remote,merge}").
+    # and set the current branch to point to that new end-of-commits.
+    # I say "supposedly" because frequently it just drops all those
+    # commits on the floor and sets the current branch to point
+    # directly to the parent.  I've no idea why that happens; but
+    # when it does, just using a vanilla `git rebase` often works
+    # (because it uses the parent as the <exclude-from> point, rather
+    # than trying to determine it from "branch.<name>.{remote,merge}").
     #
     # BUG: Write a heavy-duty script to do the right thing already!
-    # TODO: until we do the script, adding --no-ff seems to help...
-    # TODO: perhaps it'd help to use:
+    # TODO: Until we write that heavy-duty script, add some code
+    #   to force the alias to fail when `HEAD~N` (or other revision)
+    #   isn't passed in.  Should help to keep from dropping changes
+    #   on the floor.
+    # TODO: Until we write that heavy-duty script, adding --no-ff
+    #   seems to help... (don't recall how reliably though)
+    # TODO: For writing that heavy-duty script, perhaps it'd help to use:
     #   --keep-base instead of --onto?
     #   --reapply-cherry-picks (in lieu of default --no-reapply-cherry-picks)?
     #       *** This seems like it might be the problem, since the
@@ -378,8 +407,6 @@
     #   form. The manpage doesn't show it as an option, but if --onto
     #   supports that sytax, then we should use it here.
     rop   = "!git rebase --onto $(git-parent)"
-    # BUG: this won't tab-complete the branch name, unlike `oo` itself
-    oorop = "!f(){ git oo $1 && git rop ; }; f"
     wdiff = diff --color-words
     # For when you want orphan branches
     unparent = branch --unset-upstream
@@ -450,7 +477,18 @@
     # out into a separate script to allow more programmatic things
     # like filtering out the annotated-tags vs unannotated-tags.
     # TODO: See also <https://stackoverflow.com/q/6900328> <https://stackoverflow.com/a/6270112>
-    tags = for-each-ref --format='%(refname:short) %(objecttype)' refs/tags/
+    # N.B., for-each-ref has its own "format" language for things
+    # like color and alignment <https://git-scm.com/docs/git-for-each-ref>,
+    # which is unrelated to the usual git-log "format" language
+    # <https://git-scm.com/docs/pretty-formats>
+    # TODO: for my own repos %(align:10) is sufficient to ensure
+    # alignment / avoid collision. But some other repos have longer
+    # tag names. We nudged it up here, but really it'd be ideal to
+    # dynamically compute what the necessary alignment is.
+    tags = "for-each-ref \
+        --sort='-authordate' \
+        --format='%(color:yellow bold)%(align:15)%(refname:short)%(end)%(color:reset)%(color:green)%(align:6)%(objecttype)%(end)%(color:reset) %(contents:subject)' \
+        refs/tags"
     # List the modification date of files in the current directory (in order of file name).
     # BUG: there's some kind of typo here re the quoting. What's wrong?
     #lslm = "!git ls-tree -z --name-only HEAD | xargs -0 -n1 -I{} -- git log -1 --format='%aI {}' {} | sed -re 's/^([^T]+)T\S+(.*)/\1\2/'"

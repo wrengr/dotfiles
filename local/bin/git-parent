@@ -1,6 +1,6 @@
 #!/bin/bash
 # Figure out the parent of a git branch
-# wren gayle romano <wrengr@x.com>                  ~ 2017.06.22
+# wren gayle romano <wrengr@cpan.org>               ~ 2021.11.14
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # N.B., by naming this as we have and having it on our path, this
 # script will be automagically run if someone says `git parent`;
@@ -19,7 +19,7 @@ elif [[ $# -eq 1 ]]; then
         exit 2
     fi
 else
-    cat << __END_USAGE__
+    >&2 cat << __END_USAGE__
 Usage: ${0##*/} [CHILD_REFNAME]
 
 Returns the short refname of the child's parent branch. If no child is

@@ -6,4 +6,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 " Override the &fo=cro that the builtin forces upon us.
+" TODO: should undo this in b:undo_ftplugin
 call wrengr#utils#DisableHardWrapping()

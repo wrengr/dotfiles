@@ -1,0 +1,53 @@
+#!/bin/sh
+# Print out the version of XCode IDE and CLTools
+# wren gayle romano <wren@cpan.org>                 ~ 2021.03.08
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# From <https://apple.stackexchange.com/a/384291>
+# See also <https://apple.stackexchange.com/a/181953> re gcc, llvm, clang.
+# And for what versions match to which os-version, see <https://xcodereleases.com>
+#
+# Finally, to use the XCode IDE installation as if it were CLTools
+# (without redundantly installing both), see
+# <https://cutecoder.org/software/get-rid-xcode-command-line-tools/>
+
+
+# TODO: will this refactoring still work right if we have multiple
+# versions of the same package installed? Is that even possible?
+getPkgVersion() {
+    if [ "$#" -ne 1 ]; then
+        >&2 printf "\e[01;31mERROR\e[00m getPkgVersion() requires exactly one argument\n"
+        exit 1
+    fi
+    # TODO: also check against the one argument being empty string!
+    # A quick and dirty way to check is `: ${2:?errormessage}`
+    # (without the backticks, just what's between them)
+
+    # If the package exists/is installed, then `pkgutil --pkgs=`
+    # will print the packageID back to you (with no further info),
+    # whereas `pkgutil --pkg-info=` will also print the version,
+    # install location, etc.  If the package doesn't exist/isn't
+    # installed, then `pkgutil --pkgs=` prints nothing, whereas
+    # `pkgutil --pkg-info=` will print a warning to stderr; and
+    # both will exit 1.
+    if pkgutil --pkgs="$1" >/dev/null; then
+        pkgutil --pkg-info="$1" | awk '/^version:/ {print $2}'
+    else
+        echo 'not installed'
+    fi
+    # TODO: try using this golfed version to see if the fewer
+    # processes actually does help performance:
+    # > pkgutil --pkg-info="$1" 2>/dev/null | awk '/^version:/ {print $2; x=1; exit} END{if (! $x) {print "not installed"}}'
+}
+
+# This info is also available via `xcodebuild -version`, but only
+# if you've set xcode-select to point to an Xcode.app; otherwise it'll
+# complain about not working with the CLTools.  Prolly opther caveats too.
+echo "XCode IDE: $(getPkgVersion 'com.apple.pkg.Xcode')"
+
+# Command Line Tools for Xcode
+# For 10.8 (and earlier?), the name was DeveloperToolsCLI
+# For 10.9~10.15, the name is CLTools_Executables
+# For 11.0, I'm not sure.
+echo "XCode CLI: $(getPkgVersion 'com.apple.pkg.CLTools_Executables')"
+
+exit 0

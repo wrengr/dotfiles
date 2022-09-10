@@ -1,32 +1,38 @@
 #!/bin/sh
 # Perform some regular Fink maintinence
+#   wren gayle romano                               ~ 2021.12.31
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 FINK='/opt/sw/bin/fink'
 
-# Since these scripts are part of my dotfiles repo, but not all my
-# machines use fink, we guard against fink not being installed.
+# Since this periodic-script is part of my dotfiles repo, but not
+# all my machines use fink, we guard against fink not being installed.
 # Since we don't consider this an error, we use rc=0.
 [ ! -x $FINK ] && exit 0
 
-# BUG: sometimes one of the following commands requires entering
-# my password, thus they're no good as actual cron jobs. They didn't
-# used to (or they already had credentials from somewhere else for
-# some reason), so what changed?
-#
-# In any case, we print this stuff here so that at least we'll know
-# who/why it's asking for passwords.
+# If run as non-root then fink will prompt the user for a password.
+# So to be a valid cron job, we bail out early.
+if [ $EUID -ne 0 ]; then
+    # TODO: does Bourne have an equivalent of "${0##*/}" ?
+    >&2 echo 'ERROR: Must be run as root'
+    exit 2
+fi
+
 echo ''
-echo 'Self-updating Fink:'
-
-rc=0
+echo 'Fink cleanup:'
 # TODO: maybe also consider running cleanup with the --deb flag
-$FINK cleanup || rc=3
-[ $rc -ne 0 ] && exit $rc
+$FINK cleanup || exit 3
 
-$FINK selfupdate || rc=3
-exit $rc
+echo ''
+echo 'Fink self-update:'
+$FINK selfupdate || exit 3
 
 # TODO: consider also: `fink index -f` and `fink scanpackages`.
 # Though they shouldn't need to be run regularly, and are more for
 # debugging purposes or for when changing the package tree we're
 # using (e.g., unstable).
+
+# All good.  (Just to make it explicit)
+exit 0
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ fin.

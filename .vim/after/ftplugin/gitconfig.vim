@@ -1,8 +1,12 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" wren romano's ~/.vim/after/ftplugin/gitconfig.vim ~ 2021.09.25
+" wren romano's ~/.vim/after/ftplugin/gitconfig.vim ~ 2021.10.16
 "
 " For ~/.gitconfig and a few other things detected as the same.
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-setlocal expandtab " always use spaces please!
-" BUG: We should set b:undo_ftplugin to undo everything we changed.
+let b:undo_ftplugin =
+  \ (exists('b:undo_ftplugin') ? b:undo_ftplugin . ' | ' : '')
+  \ . 'setlocal '
+  \ . (&expandtab ? '' : 'no') . 'expandtab '
+
+setlocal expandtab
