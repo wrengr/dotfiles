@@ -500,6 +500,9 @@ endfun
 " TODO: Check out <https://github.com/inkarkat/vim-mark> for a more
 "   powerful variant of this idea (albeit, solving a somewhat
 "   different problem).
+" TODO: Should also really have a variant of this which just runs the
+"   commend to set @/ but without the whole augroup stuff to continuously
+"   reupdate it.
 " TODO: Really ought to provide a <Plug> for this...
 " TODO: should we be using echomsg in lieu of plain echo?
 " HT: <https://stackoverflow.com/a/26088438>

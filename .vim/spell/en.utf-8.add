@@ -3,8 +3,11 @@ applicative
 applicatives
 arity
 buganizer
+cardinalities
+cardinality
 combinators
 contravariant
+denotational
 Frobenius
 functor
 functors

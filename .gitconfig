@@ -326,13 +326,23 @@
     top   = log --stat -1
     # List the files modified by a given commit (defaults to HEAD)
     # TODO: use perl/sed/awk to translate repo-absolute paths to relative paths.
-    # TODO: For scripting purposes, we should instead prefer using something
-    # like `git diff-tree --no-commit-id --name-only $COMMIT_RANGE -r`
+    # TODO: For scripting purposes, prefer using the "plumbing" command
+    # `git diff-tree --no-commit-id --name-only -r $REV` instead of
+    # the "porcelain" command `git show --name-only --format='' $REV`
+    # <https://stackoverflow.com/a/424142>
+    # Albeit, the diff-tree command requires explicitly passing the
+    # revision, unlike the show command which defaults to HEAD if not
+    # passed a revision.  Also note that the diff-tree command can be
+    # passed two revisions, to list the files that diff between them
+    # (the one-revision form defaults to using the parent commit).
     show-files = show --name-only --format=''
     unpushed = log @{u}..
     # Show all untracked files.
     untracked = ls-files --others --exclude-standard
     # Most of the time we already know about untracked files, and don't care.
+    # (N.B., sometimes arcanist and git-clang-format will spuriously mark
+    # a branch as being dirty; this `st` alias won't clear that up, but if
+    # we use the standard `status` command then that will clear things up.)
     st    = status --branch --untracked-files=no
     # What we really want most of the time.
     ci    = commit --patch
@@ -343,11 +353,14 @@
     #
     # N.B., we do *not* pass the --all flag here! Instead we use --patch
     # to selectively choose changes.
-    # TODO: do we want to add the --no-edit flag?
-    amend = commit --amend --patch
+    amend = commit --amend --patch --no-edit
+    # TODO: figure out a way to reword the commit message but without
+    # adding any outstanding changes.
+    #
     # Since I can never remember the flag that allows us to avoid
     # spelling the new email out on the commandline, and it's impossible
-    # to google for.
+    # to google for.  Beware that this mayn't work as desired if you
+    # have any outstanding changes!
     amend-author = commit --amend --no-edit --reset-author
     # We use "oo" rather than the standard "co" to avoid typo issues vs "ci".
     oo    = checkout
@@ -417,8 +430,11 @@
     # <https://stackoverflow.com/a/19267103>
     # (for more inspiration, see: <https://stackoverflow.com/a/12395245>)
     #
-    # TODO: Try to recover our old 'rediff' alias for verifying
-    # that rebases worked correctly.
+    # Diff HEAD against the given revision, but considering only files
+    # in that revision.
+    # TODO: figure out some way to support passing additional flags to
+    # the outer diff; namely `--name-only` in particular
+    rediff = "!f(){ git diff $1 -- $(git diff-tree --no-commit-id --name-only -r $1) ; }; f"
     #
     wdiff = diff --color-words
     # For when you want orphan branches
@@ -460,12 +476,15 @@
     #    git checkout -b \"$1\" \"$old\" ; \
     #    git branch --set-upstream-to=\"$old\"; \
     #    }; f"
-    # TODO: according to <https://git-scm.com/docs/gitcli> it's preferred to use the "--foo=bar" form rather than the "--foo bar" form. The manpage doesn't show it as an option, but if --set-upstream supports that sytax, then we should use it here.
+    # TODO: according to <https://git-scm.com/docs/gitcli> it's preferred
+    # to use the "--foo=bar" form rather than the "--foo bar" form.  The
+    # manpage doesn't show it as an option, but if --set-upstream supports
+    # that sytax, then we should use it here.
     push-new-branch = push --set-upstream origin
     # BUG: this should also update children to see this branch's upstream
     # as their new upstream, rather than orphaning the children as this
     # version does.
-    # N.B., can use -D as a shorthand for -d --force
+    # N.B., can use `-D` as a shorthand for `-d --force`
     del-branch = branch -d
     push-del-branch = push origin --delete
     # List branches in order last modified:

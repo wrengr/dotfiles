@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" wren gayle romano's vim config                    ~ 2024-01-28
+" wren gayle romano's vim config                    ~ 2024-02-05
 "
 " This file uses &foldmethod=marker, but I refuse to add a modeline
 " to say that; because modelines are evil.
@@ -1534,6 +1534,14 @@ if has('quickfix')
   "autocmd QuickFixCmdPost [^l]* cwindow
   " See also: <#gistcomment-3881035> therein.
 
+  if has('autocmd') && has('localmap')
+    augroup wrengr_vimrc
+      autocmd FileType qf
+        \ nnoremap <silent> <buffer> dd
+          \ :call wrengr#qf#RemoveQuickfixItemUnderCursor()<CR>
+    augroup END
+  endif
+
   " ~~~~~ Quickfix/locations                                     {{{3
   nnoremap <expr> [l          wrengr#qf#BracketExpr(1, 'lprev')
   nnoremap <expr> ]l          wrengr#qf#BracketExpr(1, 'lnext')
@@ -1574,6 +1582,7 @@ nnoremap        [B          :<C-u>bfirst<CR>
 nnoremap        ]B          :<C-u>blast<CR>
 nnoremap        <leader>zb  :<C-u>ls<CR>
 " TODO: would we want to have <leader>db for wrengr#BufferDelete()?
+" TODO: we should also define some easy thing for <C-6> since that's impossible to reach.
 
 " ~~~~~ Argument List                                            {{{3
 " TODO: unlike the others, I got these actually from 'tpope/vim-unimpaired'.
@@ -2369,21 +2378,42 @@ fun! s:HighlightWhiteError()
   if &expandtab
     call add(w:whiteErrorID, matchadd('Error', '\t'))
   endif
-  " \s matches only <Space> and <Tab>.
+  " \s matches only <Space> (\x20) and <Tab> (\x09).
+  let l:slash_ess='\u0009\u0020'
+  " We want to highlight any <Space> before <Tab>.  (The \ze ends the
+  " highlighted portion of the match, thus the <Tab> isn't highlighted.)
+  " TODO: should we actually '[\u0020'.l:ascii_extra.']\+\ze\t' instead?
+  call add(w:whiteErrorID, matchadd('Error', '\ \+\ze\t'))
   " [[:space:]] matches all ASCII whitespace, as per C's isspace()
   "     That is: <Space>, <Tab>, <NL>, VertTab, <FF>, <CR>
   "     C0 notation:      ^I     ^J    ^K       ^L    ^M
   "     ASCII hex:        \x09   \x0A  \x0B     \x0C  \x0D
   "     Moreover, beware that since Vim uses the code \x0A in buffers
-  "     as a representation of the code \x00 in files, that means
-  "     [[:space:]] will also match <Nul>; which seems okay for our
-  "     purposes here.
-  " I don't think it's smart enough to handle Unicode, since
-  " 'ntpeters/vim-better-whitespace' explicitly defines their own
-  " group for: '\u0020\u00a0\u1680\u180e\u2000-\u200b\u202f\u205f\u3000\ufeff'
-  call add(w:whiteErrorID, matchadd('Error', '[[:space:]]\+$'))
-  " The \ze ends the match, so that only the spaces are highlighted.
-  call add(w:whiteErrorID, matchadd('Error', '\ \+\ze\t'))
+  "     as a representation of the code \x00 in files, that means [[:space:]]
+  "     will also match <Nul> (\x00, ^@); which seems okay for our purposes.
+  " So this is everything in [[:space:]] that's not in \s
+  " TODO: Should we highlight these everywhere, like we do for l:unicode_white?
+  let l:ascii_extras='\u000A-\u000D'
+  " Unicode horizontal whitespace other than <Space> and <Tab> are as follows
+  " (HT: 'ntpeters/vim-better-whitespace')
+  "     \u00A0  NBSP                \u1680  OghamSpace
+  "     \u180E  MVS                 \u2000  EnQuad
+  "     \u2001  EmQuad              \u2002  EnSpace
+  "     \u2003  EmSpace             \u2004  3PerEmSpace
+  "     \u2005  4PerEmSpace         \u2006  6PerEmSpace
+  "     \u2007  FigureSpace         \u2008  PunctSpace
+  "     \u2009  ThinSpace           \u200A  HairSpace
+  "     \u200B  ZWSP                \u202F  NarrowNBSP
+  "     \u205F  MMSP                \u3000  IdeographicSpace
+  "     \uFEFF  BOM, ZWNBSP
+  let l:unicode_extras='\u00A0\u1680\u180E\u2000-\u200B\u202F\u205F\u3000\uFEFF'
+  " We want these characters to be highlighted anywhere they occur.
+  " TODO: Should guard this so that it only applies when has('multi_byte')
+  " and when &encoding/&fileencodings are utf-8 (I'm not sure which one
+  " is the correct one to check).
+  call add(w:whiteErrorID, matchadd('Error', '[' . l:unicode_extras . ']\+'))
+  " At EOL we want to also include the rest of [[:space:]]
+  call add(w:whiteErrorID, matchadd('Error', '[' . l:slash_ess . l:ascii_extras . l:unicode_extras . ']\+$'))
 endfun
 command! -nargs=0 NoHighlightWhiteError call s:NoHighlightWhiteError()
 fun! s:NoHighlightWhiteError()

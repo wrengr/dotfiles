@@ -842,6 +842,8 @@ alias lla='ls -Alh'
 # N.B., proper `sh` doesn't like these function names. Only Bash allows them.
 # BUG: the function() combo is a Bashism... But we should rename
 #      these before fixing that...
+# BUG: the `..?*` pattern gives warnings when it doesn't match anything.
+#      Why did we want that pattern anyways?
 function l.() {
     if [ "$1" = '' ] ; then d='.' ; else d="$1" ; fi
     ( cd $d && ls -d .[^.]* ..?* )

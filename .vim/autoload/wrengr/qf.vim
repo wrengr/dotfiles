@@ -199,19 +199,28 @@ endfun
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " HT: <https://github.com/JesseLeite/dotfiles/blob/54fbd7c5109eb4a8e8a9d5d3aa67affe5c18efae/.vimrc#L444-L456>
+" and <https://github.com/TamaMcGlinn/quickfixdd/commit/cc1adb7e7e9f4827cd655f6b1c05fadedaa87f45>
+" or for a golfed version: <https://stackoverflow.com/a/56122471>
+"
 " When using `dd` in the quickfix list, remove the item from the quickfix list.
 " <https://stackoverflow.com/q/42905008>
 " TODO: see also `:h *quickfix-index*` re other ways of getting the
 "   currently selected 'idx' as well as other ways to updating the
 "   'idx' afterwards.
-"fun! wrengr#qf#RemoveQuickfixItemUnderCursor()
-"  let l:idx = line('.') - 1
-"  let l:list = getqflist()
-"  call remove(l:list, l:idx)
-"  call setqflist(l:list, 'r')
-"  execute l:idx + 1 . 'cfirst'
-"  copen
-"endfun
+fun! wrengr#qf#RemoveQuickfixItemUnderCursor()
+  let l:list = getqflist()
+  if len(l:list) > 0 " Avoid warnings when the list is empty.
+    let l:idx = line('.') - 1
+    call remove(l:list, l:idx)
+    call setqflist(l:list, 'r')
+  endif
+  if len(l:list) > 0
+    execute l:idx + 1 . 'cfirst'
+    copen
+  else " Close the window if we just deleted the last one.
+    cclose
+  endif
+endfun
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -35,6 +35,7 @@ rebase.requiredest = true
 pager = less -isqFRX
 
 [alias]
+rollback = !echo 'ERROR: `rollback` is deprecated. You prolly meant to use `backout` instead'
 # This is the most common meaning for which I use the `git oo` alias.
 # (N.B., mercurial does have `co` as an alias for update; and `oo`
 # originated as a simplification of typing `co` anyways.)
@@ -42,6 +43,8 @@ oo = update
 # Override the usual `st` abbreviation to ignore untracked (:= unknown |
 # ignored) files.
 st = status -q
+# Diff HEAD against a given change, considering only those files in that change
+rediff = !$HG diff -r $1 -- $($HG status --change $1 -n)
 # Note: there's also (apparently) an alias 'record'='commit --interactive'
 # BUG: hg normally has `ci` mean the equivalent of `git commit -a`;
 #   not sure if this alias will override that or no.
@@ -54,12 +57,12 @@ ca = commit
 ai = amend --interactive
 aa = amend
 ra = rebase --abort
-rc = rebase --continue
+rc = !$HG resolve --mark && $HG rebase --continue
 # TODO: would we ever want a short name for `hg rebase --stop`?
 ea = evolve --abort
-ec = evolve --continue
+ec = !$HG resolve --mark && $HG evolve --continue
 ma = merge --abort
-mc = merge --continue
+mc = !$HG resolve --mark && $HG merge --continue
 
 # Note: this is quite different from `hg summary`, but you may be
 #   interested in that command too.
@@ -74,9 +77,18 @@ top = log --stat --limit 1 --rev .
 #   command: `hg tip -p`, which runs a bit faster and doesn't use $PAGER.
 # TODO: For more on this topic, see: <https://stackoverflow.com/a/3547662>
 #   and <https://stackoverflow.com/a/39867096> plus others on the same page.
-# BUG: got to make this smarter so that when we forget to pass an
-#   argument it'll use the current/latest revision.
-show = diff -c
+# We use the Bash wrappering in order to provide a default argument `.`
+# when the commit is not provided (to better mimic `git show`).
+# FIXME: Make this less fragile against things like `hg show -- FILE`
+# BUG: the `${:-}` doesn't seem to be working as intended! That is, when we provide an actual argument it's still being overwritten with the period!  How come using `$1` works for the 'rediff' alias but not here? Aha, that's because the hg-alias stuff has its own version of `$1` separate from the things interpolated by bash, and those are expanded before running the bash code; cf., <https://www.selenic.com/mercurial/hgrc.5.html#alias>
+show = !$HG diff -c ${1:-'.'}
+
+# TODO: an alias for `hg log -pr {commit} -- {file}` which is the
+# equivalent of `git show {commit} -- {file}`. Though the big question
+# is how to spell the alias so that we can provide both the commit and the
+# file(s) separately (e.g., to default the {commit} to `.` if not provided).
+# I suppose we could just use `show = log -pr`, assuming that has the
+# same force as the alias above when no files are specified.
 
 # TODO: how does the builtin `hg blame` compare to `hg annotate --user
 # --number`?  Also, what's a good alias for `blame -u -c -l`?
