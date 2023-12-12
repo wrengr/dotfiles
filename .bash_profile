@@ -1,4 +1,4 @@
-# wren gayle romano's bash login script             ~ 2021.11.30
+# wren gayle romano's bash login script             ~ 2024.12.08
 #
 # It's fairly generic (with weirder things at the bottom),
 # but it's designed to be usable for all my accounts with no(!)
@@ -146,7 +146,8 @@ case "${_hostname}" in
     nlp.indiana.edu)                      _hostname='miller'    ;;
     # TODO: *.karst.uits.iu.edu x86_64 GNU/Linux
     *.haskell.org | lun)                  _hostname='haskell'   ;;
-    *.corp.google.com | *.c.googlers.com)
+    *.corp.google.com | *.c.googlers.com | *.roam.internal )
+        # NOTE(2023-12-08): the new mac desktop shows up as that "roam.internal"
         # BUG: doesn't distinguish between maracuya & ciruela
         # (both Goobuntu), vs my laptop (OSX).
         _hostname='google'
