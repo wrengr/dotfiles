@@ -1,5 +1,5 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# wren gayle romano's GNU Screen config             ~ 2021.09.02
+# wren gayle romano's GNU Screen config             ~ 2024.01.11
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # <http://aperiodic.net/screen/appearance>
@@ -23,11 +23,19 @@ shell $SHELL           # The shell to use (prepend `-` to make it a login-shell)
 term "screen-256color-bce" # The $TERM used inside screen.
 # BUG: really we should set term based on whatever the incoming $TERM is,
 # or use some other sort of color autodetection capability.
-# N.B., if you want to support BCE then you should use
-# "screen-256color-bce" instead.  And if you want to additionally
-# support dsl/fsl/tsl then use "screen-256color-bce-s" (use
-# `man 5 terminfo` to see what the heck those mean).  Also see
-# <https://superuser.com/a/906505> re things like "xterm+256color"
+#
+# N.B., if you want to support BCE (background color erase) then
+# you should use "screen-256color-bce" instead.  And if you want
+# to additionally support dsl/fsl/tsl then use "screen-256color-bce-s"
+# (use `man 5 terminfo` to see what the heck those mean).
+# And for italics (sitm/ritm), we may have to roll our own terminfo; cf:
+# <https://alex.pearwin.com/2014/05/italics-in-iterm2-vim-tmux/>
+#
+# For Vim, beware that if your $TERM starts with "xterm" then vim'll
+# assume various things without consulting termcap/terminfo:
+# <https://github.com/vim/vim/issues/11716>
+#
+# Also see <https://superuser.com/a/906505> re things like "xterm+256color"
 # as an alternative to the older `man 7 term` naming strategy.  And
 # finally, you can use `infocmp` to compare different $TERM settings,
 # and `toe` to list all the available terminfos on your system.
@@ -99,6 +107,7 @@ nethack on
 #
 # N.B., even with defutf8 on, the caption really doesn't like having unicode!
 # Alas, I'm not sure where that default grey background came from, so I can't recover it vs the changes %w makes; but we can embrace the black background and color in general.
+# TODO: Need to also have a variant of this for light backgrounds...
 caption always "%{= kw}  %{+b c}%H%{-}:%{+b g}%S%{-}:%{+b M}%2n*%f %t%{-}%{y}%?(%u)%?%{-}  [%?%-Lw%?||%?%+Lw%?]%=<%{r}%l%{-}>  %{c}%M %d (%D) %0c%{-}  "
 
 # Aha! That's how we change it:
