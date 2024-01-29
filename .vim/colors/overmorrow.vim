@@ -1,7 +1,7 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " Name:     colors/overmorrow.vim
-" Modified: 2021-09-22T22:12:47-07:00
-" Version:  1b
+" Modified: $$
+" Version:  2
 " Author:   wren romano
 " Summary:  My own personal colorscheme.
 " License:  This program is free software; you can redistribute it and/or
@@ -14,6 +14,12 @@
 " by Tomorrow-Night-Bright (hereafter abbreviated TNB); however, we've
 " made various changes to that palette, and the actual code (per se)
 " is entirely new.
+"
+" Version 2: Added preliminary support for &background=light
+"   For now, I'm just copying the palette from
+"   <https://github.com/NLKNguyen/papercolor-theme>
+"   Though since that's not working out so well, might try copying
+"   this one instead <https://github.com/sainnhe/everforest>
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " TODO: change this entirely, so as to use colors more like Conor McBride's schema
 "   * terms/constants   = red
@@ -22,7 +28,6 @@
 "   * variables         = magenta (both tyvars and tmvars)
 "   * parens, forall, colon, "Type"/"*" = black (on white)
 "   ...Maybe not everything exactly as such, but just vaguely along those lines.
-" TODO: we should also add a &background=light variant, to reduce eyestrain.
 
 " TODO: see <https://github.com/tweekmonster/helpful.vim> for when various features got added.
 
@@ -83,12 +88,15 @@ endif
 "   (assuming they still has('syntax') etc).
 
 
-" ~~~~~ This colorscheme is for dark terminals.
-" (N.B., we must set this before calling `:hi clear`)
-set background=dark
 " ~~~~~ Clear user-defined highlighting, and reload the defaults.
-" (N.B., which default is loaded depends on the current &background.)
-" As for what the default actually *is* (since the only thing
+" NOTE: For colorschemes that can only support one &bg setting,
+" they must `set bg=foo` *before* calling `:hi clear`.  Because the
+" &bg variable is hooked so that changing it automagically reloads
+" the color profile; thus, we'd want to get those side-effects out
+" of the way prior to resetting things to the default.
+"
+" NOTE: Which default gets loaded depends on the current &background.
+" As for what the default actually *is*... (since the only thing
 " /usr/share/vim/vim80/colors/default.vim does is this same
 " `:hi clear | syntax reset` dance, not actually setting anything),
 " see <https://askubuntu.com/a/24548> and the comments below it.
@@ -151,8 +159,8 @@ let g:overmorrow#cterm_bold = get(g:, 'overmorrow#cterm_bold', 'bold')
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Our Hex (GUI) colors
-" Most of this color *palette* came from TNB; however, most of the
-" color *scheme* in the rest of the file did not.
+" Most of the dark color *palette* came from TNB; however, most of
+" the color *scheme* in the rest of the file did not.
 "
 " The cterm values are cached from autoload/naivecolor.  If we
 " change the hex codes (or the color-space mapping) then these'll
@@ -163,7 +171,7 @@ let g:overmorrow#cterm_bold = get(g:, 'overmorrow#cterm_bold', 'bold')
 "   call the autoload functions.  We'd have to pay the cost for
 "   computing them the once, but we'd still cache them to avoid the
 "   overhead of recomputing them all the time like TNB does.
-" BUG: I've changed autoload/naivecolor, so we need to recache the values.
+" FIXME: I've changed autoload/naivecolor, so we need to recache the values.
 "   (Or nudge the GUI colors until they agree.)
 
 " Note To Self: you can use the command `:put a` to insert the
@@ -215,20 +223,53 @@ let g:overmorrow#cterm_bold = get(g:, 'overmorrow#cterm_bold', 'bold')
 
 
 " ~~~~~ Specific shades of named colors.
-"   (The system colors mentioned in comments are based on the
-"   mnemonic of the variable name, not on the actual shade that
-"   variable stores!)
-let s:black          = {'hex':'000000', 'cterm256':16}  " system~0,8
-let s:white          = {'hex':'ffffff', 'cterm256':231} " system~7,15
-let s:red            = {'hex':'d54e53', 'cterm256':167} " system~1,9    ; TODO: d54e53 -> 167; 167 -> d75f5f
-let s:orange         = {'hex':'e78c45', 'cterm256':172} " {no system}   ; TODO: e78c45 -> 173; 172 -> d78700
-let s:yellow         = {'hex':'e7c547', 'cterm256':184} " system~3,11   ; TODO: e7c547 -> 185; 184 -> d7d700
-let s:green          = {'hex':'b9ca4a', 'cterm256':148} " system~2,10   ; TODO: b9ca4a -> 149; 148 -> afd700
-let s:cyan           = {'hex':'70c0b1', 'cterm256':73}  " system~6,14   ; TODO: 70c0b1 ->  73;  73 -> 5fafaf
-    " s:cyan was called s:aqua in TNB.
-let s:blue           = {'hex':'7aa6da', 'cterm256':110} " system~4,12   ; TODO: 7aa6da -> 110; 110 -> 87afd7
-let s:lavender       = {'hex':'c397d8', 'cterm256':176} " {no system}   ; TODO: c397d8 -> 176; 176 -> d787d7
-let s:violet         = {'hex':'870087', 'cterm256':90}  " {no system}
+"   Note to self, the mnemonics for system colors are (in order): KRGYBMCW
+"   NOTE: You cannot use EOL comments in the middle of a multiline command!
+"
+" FIXME(wrengr): Now that we've adjusted the infrastructure to
+" handle &bg='light', we need to actually change the color palate
+" to look decent for light backgrounds!
+let s:black =
+            \ {'dark':  {'hex':'000000', 'cterm256':16}
+            \ ,'light': {'hex':'000000', 'cterm256':16}}
+let s:white =
+            \ {'dark':  {'hex':'ffffff', 'cterm256':231}
+            \ ,'light': {'hex':'eeeeee', 'cterm256':255}}
+let s:red =
+            \ {'dark':  {'hex':'d54e53', 'cterm256':167}
+            \ ,'light': {'hex':'af0000', 'cterm256':124}}
+            " TODO: d54e53 -> 167; 167 -> d75f5f
+let s:orange =
+            \ {'dark':  {'hex':'e78c45', 'cterm256':172}
+            \ ,'light': {'hex':'d75f00', 'cterm256':166}}
+            " TODO: e78c45 -> 173; 172 -> d78700
+let s:yellow =
+            \ {'dark':  {'hex':'e7c547', 'cterm256':184}
+            \ ,'light': {'hex':'e7c547', 'cterm256':184}}
+            " TODO: e7c547 -> 185; 184 -> d7d700
+            " FIXME: papercolor doesn't have any equivalent of yellow for light!
+let s:green =
+            \ {'dark':  {'hex':'b9ca4a', 'cterm256':148}
+            \ ,'light': {'hex':'008700', 'cterm256':28}}
+            " TODO: b9ca4a -> 149; 148 -> afd700
+            " FIXME: papercolor's green looks really washed out against the s:bg
+" s:cyan was called s:aqua in TNB.
+let s:cyan =
+            \ {'dark':  {'hex':'70c0b1', 'cterm256':73}
+            \ ,'light': {'hex':'0087af', 'cterm256':31}}
+            " TODO: 70c0b1 ->  73;  73 -> 5fafaf
+let s:blue =
+            \ {'dark':  {'hex':'7aa6da', 'cterm256':110}
+            \ ,'light': {'hex':'005faf', 'cterm256':25}}
+            " TODO: 7aa6da -> 110; 110 -> 87afd7
+let s:lavender =
+            \ {'dark':  {'hex':'c397d8', 'cterm256':176}
+            \ ,'light': {'hex':'d70087', 'cterm256':162}}
+            " TODO: c397d8 -> 176; 176 -> d787d7
+            " FIXME: this is actually a lot closer to magenta, since papercolor has no lavender.
+let s:violet =
+            \ {'dark':  {'hex':'870087', 'cterm256':90}
+            \ ,'light': {'hex':'8700af', 'cterm256':91}}
 " TODO: come up with a decent 'magenta' (system 5,13) color that
 " goes with the rest of the above palette; especially such that it
 " meshes well with s:lavender without causing it to washout to pink.
@@ -242,17 +283,41 @@ let s:violet         = {'hex':'870087', 'cterm256':90}  " {no system}
 "   'DeepPink3' = cd1076 -> 162 -> d70087
 "       this is a lot more actual magenta; though probably doesn't
 "       mesh well, or causes poor visibility.
-let s:sienna         = {'hex': 'a0522d', 'cterm256':130}
+let s:sienna =
+            \ {'dark':  {'hex': 'a0522d', 'cterm256':130}
+            \ ,'light': {'hex': 'a0522d', 'cterm256':130}}
     " 130 <-> af5f00; alas it was the a0522d that really drew me.
     " This is really pretty, but doesn't necessarily mesh well with
     " the other colors.
+            " FIXME: papercolor doesn't have any equivalent of sienna
 
 " ~~~~~ Semantically named color choices.
-let s:fg             = {'hex':'e4e4e4', 'cterm256':254} " 89.41% ; TNB was #eaeaea (91.76%)
-let s:bg             = s:black
-let s:selection      = {'hex':'424242', 'cterm256':237} " 25.88%    ; TODO: 424242 -> 238 == 444444 (26.66%); 237 == 3a3a3a (22.75%)
-let s:comment        = {'hex':'969896', 'cterm256':245} " ~58.82%   ; TODO: 969896 -> 246 == 949494 (58.03%); 245 == 8a8a8a (54.11%)
-let s:window         = {'hex':'4d5057', 'cterm256':59} "            ; TODO: 4d5057 -> 59; 59 -> 5f5f5f -> 241 == 626262
+let s:fg =
+            \ {'dark':  {'hex':'e4e4e4', 'cterm256':254}
+            \ ,'light': {'hex':'005f87', 'cterm256':24}}
+            " dark  = 89.41% ; TNB was #eaeaea (91.76%)
+            " FIXME: I'm using papercolor's 'cursor_bg' here
+let s:bg =
+            \ {'dark':  {'hex':'000000', 'cterm256':16}
+            \ ,'light': {'hex':'eeeeee', 'cterm256':255}}
+            " light = 93.33%
+            " FIXME: I'm using papercolor's 'cursor_fg' here; it's certainly better  than using true-white, but it's making everything look really washed out (on my laptop's LED screen that is)
+            " TODO: Consider using LemonChiffon3(cdc9a5) a la CarlRJ's comment on <https://www.reddit.com/r/vim/comments/xmag1j/light_mode_color_scheme_recs/>; also consider writing up some scripts to do the random background thing he mentions there.
+let s:selection =
+            \ {'dark':  {'hex':'424242', 'cterm256':237}
+            \ ,'light': {'hex':'d0d0d0', 'cterm256':252}}
+            " dark  = 25.88% ; TODO: 424242 -> 238 == 444444 (26.66%); 237 == 3a3a3a (22.75%)
+            " NOTE: I'm  using  papercolor's popupmenu_bg here; though we use  this color in several places not quite matching their scheme.  Also, they have a different popup_fg rather than reusing the usual fg.
+let s:comment =
+            \ {'dark':  {'hex':'969896', 'cterm256':245}
+            \ ,'light': {'hex':'3a3a3a', 'cterm256':237}}
+            " dark  ~ 58.82% ; TODO: 969896 -> 246 == 949494 (58.03%); 245 == 8a8a8a (54.11%)
+            " FIXME: This doesn't line up to anything in papercolor
+let s:window =
+            \ {'dark':  {'hex':'4d5057', 'cterm256':59}
+            \ ,'light': {'hex':'005f87', 'cterm256':24}}
+            " TODO: 4d5057 -> 59; 59 -> 5f5f5f -> 241 == 626262
+            " NOTE: We only really use this for VertSplit; which papercolor gives a different fg/bg to...
 " TODO: do we want to use the so-called 'SlateGrey'=#708090 anywhere?
 " TODO: figure out something better to do with s:preproc.
 "   s:violet is too dark for this
@@ -264,15 +329,27 @@ let s:window         = {'hex':'4d5057', 'cterm256':59} "            ; TODO: 4d50
 " BUG: this value of s:preproc may be acceptable for SpecialComment
 "   (i.e., haskell pragmas); but it's not at all acceptable for other
 "   forms of PreProc
-let s:preproc        = {'hex':'5f5f87', 'cterm256':60}
+let s:preproc =
+            \ {'dark':  {'hex':'5f5f87', 'cterm256':60}
+            \ ,'light': {'hex':'5f5f87', 'cterm256':60}}
 
 " ~~~~~ Group-specific colors.
-let s:CursorLine     = {'hex':'1c1c1c', 'cterm256':234} " 10.98% ; TNB was #2a2a2a (16.47%)
-let s:AbsoluteLineNr = {'hex':'4e4e4e', 'cterm256':239} " 30.58% ; TNB was 237 (22.75%)
+let s:CursorLine =
+            \ {'dark':  {'hex':'1c1c1c', 'cterm256':234}
+            \ ,'light': {'hex':'eeeeee', 'cterm256':255}}
+            " dark  = 10.98% ; TNB was #2a2a2a (16.47%)
+let s:AbsoluteLineNr =
+            \ {'dark':  {'hex':'4e4e4e', 'cterm256':239}
+            \ ,'light': {'hex':'4e4e4e', 'cterm256':239}}
+            " 30.58% ; TNB was 237 (22.75%)
 let s:RelativeLineNr = s:violet
 " A pleasant but high-contrast color:
-let s:ColorColumn    = {'hex':'e5786d', 'cterm256':173} "           ; TODO: e5786d -> 173; 173 -> d7875f
-    " N.B., is very close to s:orange, but definitely not interchangeable.
+" N.B., the version for &bg=dark is very close to s:orange, but
+" definitely not interchangeable.
+let s:ColorColumn =
+            \ {'dark':  {'hex':'e5786d', 'cterm256':173}
+            \ ,'light': {'hex':'e5786d', 'cterm256':173}}
+            " TODO: e5786d -> 173; 173 -> d7875f
 
 " TODO: I also rather like airline's (default?) fg/bg pairing:
 " 	ctermfg=85 ctermbg=234 guifg=#9cffd3 guibg=#202020
@@ -498,15 +575,15 @@ fun! s:Hi(group, fg, bg, sp, attrs) abort
   " crash too.
   let l:hi = ''
   if !empty(a:fg)
-    let l:hi .= ' guifg=#'  . a:fg['hex']
-    let l:hi .= ' ctermfg=' . a:fg[s:ctermColor]
+    let l:hi .= ' guifg=#'  . a:fg[&bg]['hex']
+    let l:hi .= ' ctermfg=' . a:fg[&bg][s:ctermColor]
   endif
   if !empty(a:bg)
     " TODO: support NONE for gvim & neovim's transparent
     "   backgrounds.  But cf., <https://vi.stackexchange.com/a/3061>
     "   (according to `:h highlight-guibg`, Vim supports NONE for transparency too)
-    let l:hi .= ' guibg=#'  . a:bg['hex']
-    let l:hi .= ' ctermbg=' . a:bg[s:ctermColor]
+    let l:hi .= ' guibg=#'  . a:bg[&bg]['hex']
+    let l:hi .= ' ctermbg=' . a:bg[&bg][s:ctermColor]
   endif
   " TODO: might should check that we actually have undercurl etc
   "   after rewriting a:attrs.
@@ -518,7 +595,7 @@ fun! s:Hi(group, fg, bg, sp, attrs) abort
     " if they support setting the underline/undercurl color:
     " <https://stackoverflow.com/a/66816085>.
     " (I'm unsure if that requires &termguicolors or not)
-    let l:hi .= ' guisp=#' . a:sp['hex']
+    let l:hi .= ' guisp=#' . a:sp[&bg]['hex']
     " Very new versions of Vim add ctermul for color terminals
     " that support setting the underline/undercurl color:
     " <https://stackoverflow.com/a/27859297>
@@ -527,7 +604,7 @@ fun! s:Hi(group, fg, bg, sp, attrs) abort
       " Per `:h has-patch` that new version+patch syntax was
       " added in 7.4.237 so we're fine to use it here.
       " TODO: should we add an additional has() for ctermul itself?
-      let l:hi .= ' ctermul=' . a:sp[s:ctermColor]
+      let l:hi .= ' ctermul=' . a:sp[&bg][s:ctermColor]
     endif
   endif
   "
