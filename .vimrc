@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" wren gayle romano's vim config                    ~ 2022.09.11
+" wren gayle romano's vim config                    ~ 2024-01-28
 "
 " This file uses &foldmethod=marker, but I refuse to add a modeline
 " to say that; because modelines are evil.
@@ -205,6 +205,17 @@ call plug#begin(s:vimplug_dir)
 "Plug 'luochen1990/rainbow'
 "Plug 'mhinz/vim-janah'
 "Plug 'arzg/vim-colors-xcode'   " Port of Xcode 11's dark and light schemes.
+
+" TODO(2024.01.28): Need to sort through these to figure out which
+" one works best for &bg=light; so that we can update our own
+" overmorrow's light palette (or perhaps even the scheme per se).
+"Plug 'NLKNguyen/papercolor-theme'
+"Plug 'sainnhe/everforest'
+"Plug 'cormacrelf/vim-colors-github'
+"Plug 'cocopon/iceberg.vim'
+"Plug 'junegunn/seoul256.vim'           " Low-contrast color scheme
+" https://vimcolorschemes.com/catppuccin/nvim/
+" https://vimcolorschemes.com/olimorris/onedarkpro.nvim/
 
 " ~~~~~ Tools for designing/debugging colorschemes
 "Plug 'RRethy/vim-hexokinase'
@@ -1224,7 +1235,13 @@ if has('syntax') && (&t_Co > 2 || has('gui_running'))
   " result in a bizarre mishmash of colors.
   " cf., <https://vi.stackexchange.com/a/13089>
   " <http://peterodding.com/code/vim/colorscheme-switcher/#known_problems>
+  "
+  " First we set a default value, in case wrengr#SetBackground() bails out.
   set background=dark
+  " TODO: Add this to an augroup, a~la 'jeffkreeftmeijer/vim-nightfall';
+  " so that it's called automatically every so often, but not too
+  " terribly often.
+  call wrengr#SetBackground()
 
   " WIP: using my own new colorscheme
   " TODO: May also want to take a look at the source code for:
@@ -1324,6 +1341,11 @@ fun! s:LineNrToggle()
     set relativenumber
     if v:version >= 704 | set number | endif
   endif
+  " BUG: (2023-01-03) When using CRD>gWindows this gives E117;
+  " whereas when using ssh>gWindows it works fine. So we need to
+  " update some sort of path setting somewhere; dunno if we can do
+  " that from within vim, or if it needs to be done on the gWindows
+  " machine...
   call OvermorrowRelinkLineNr()
 endfun
 
@@ -1472,6 +1494,10 @@ set splitbelow          " :sp puts the new window (and focus!) to the bottom.
 
 if has('quickfix')
   " ~~~~~ Quickfix/errors                                        {{{3
+  " BUG: (2023-01-03) All of a sudden my BracketExpr() isn't working
+  "   anymore!  Instead of interpreting/executing the string (and
+  "   hence the <C-u> and <CR> codes as well), it just prints it to
+  "   the cmdline!
   " TODO: see also 'vim-qf' for nicer wrappers around the builtin
   "   :c{*} commands that don't error when they reach end of list.
   " Note: these understand v:count=0 just fine; it's just a bit
@@ -1480,13 +1506,23 @@ if has('quickfix')
   nnoremap <expr> ]q  wrengr#qf#BracketExpr(1, 'cnext')
   nnoremap <expr> [Q  wrengr#qf#BracketExpr(0, 'cfirst')
   nnoremap <expr> ]Q  wrengr#qf#BracketExpr(0, 'clast')
-  " TODO: should we also have stuff for :c{above,below,before,after,older,newer}
+  " My names for these two are punning off the meaning of line(".")
+  " TODO: these have default v:count=1 so do they actually allow v:count=0 ?
+  " TODO: the :c{above,below} commands best match line(".") but
+  " maybe we'd prefer to bind these to :c{before,after} instead
+  " (ala getpos("."))?
+  nnoremap <expr> [.q  wrengr#qf#BracketExpr(1, 'cabove')
+  nnoremap <expr> ].q  wrengr#qf#BracketExpr(1, 'cbelow')
+  " And these two are based off the patterning of the names in:
+  " <https://github.com/tpope/vim-unimpaired/issues/195#issuecomment-921453951>
+  " Though imo they should have different names instead...
+  nnoremap <expr> [.Q  wrengr#qf#BracketExpr(1, 'cpfile')
+  nnoremap <expr> ].Q  wrengr#qf#BracketExpr(1, 'cnfile')
+  " TODO: should we also have stuff for :c{older,newer}?
   "   For a handly reference, see <https://stackoverflow.com/a/55117681>
   "   Re :c{older,newer} beware of getting E380; cf., <https://vimways.org/2018/colder-quickfix-lists/>
   " TODO: others we might consider just to avoid using the cmdline
   "   so much include :cc, :cclose, :c{f,g,b,l}
-  " TODO: 'tpope/vim-unimpaired' also does :cpfile and :cnfile,
-  "   which the helppages aren't enough for me to decipher.
   nnoremap <expr> <leader>zq ':<C-u>copen ' . (v:count ? v:count : '') . '<CR>'
   nnoremap        <leader>dq  :<C-u>cclose<CR>
 
@@ -1500,6 +1536,10 @@ if has('quickfix')
   nnoremap <expr> ]l          wrengr#qf#BracketExpr(1, 'lnext')
   nnoremap <expr> [L          wrengr#qf#BracketExpr(0, 'lfirst')
   nnoremap <expr> ]L          wrengr#qf#BracketExpr(0, 'llast')
+  nnoremap <expr> [.l         wrengr#qf#BracketExpr(1, 'labove')
+  nnoremap <expr> ].l         wrengr#qf#BracketExpr(1, 'lbelow')
+  nnoremap <expr> [.L         wrengr#qf#BracketExpr(1, 'lpfile')
+  nnoremap <expr> ].L         wrengr#qf#BracketExpr(1, 'lnfile')
   nnoremap <expr> <leader>zl ':<C-u>lopen ' . (v:count ? v:count : '') . '<CR>'
   nnoremap        <leader>dl  :<C-u>lclose<CR>
   " TODO: ditto everything from above (though it's :ll ~ :cc because

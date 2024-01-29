@@ -1,7 +1,7 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " Name:     autoload/wrengr.vim
-" Modified: 2021-09-22T23:10:14-07:00
-" Version:  2a
+" Modified: 2024-01-28T20:16:33-08:00
+" Version:  2c
 " Author:   wren romano
 " Summary:  Assorted common-use functions extracted from my ~/.vimrc
 " License:  [0BSD] Permission to use, copy, modify, and/or distribute
@@ -16,6 +16,9 @@
 "           negligence or other tortious action, arising out of or
 "           in connection with the use or performance of this software.
 "
+" Version 2c: added SetBackground()
+" Version 2b: fixed bug in CtrlMap() where we were putting @a instead
+"   of @", also switched to using :new in lieu of :vnew
 " Version 2a: updated commentary, silenced ClearUndoHistory(), moved
 "   s:error/s:warn to wrengr#utils#, and moved OpenPlugURL() to wrengr#plug#,
 "   added WIP: mkdir
@@ -473,8 +476,10 @@ fun! wrengr#CtrlMap()
     " TODO: replace :vnew by wrengr#Page() instead!  Since that'll
     "   mark the buffer as boring, so vim doesn't complain when you
     "   try to close it.
-    vnew
-    put a
+    " TODO: perhaps this function should take an argument to decide
+    "   between using :new vs :vnew
+    new
+    put "
     " BUG: need to improve this regex to anchor things at the
     "   beginning of the mapping.  Try using `:filter` (as suggested
     "   by `:h map-listing`)  Also, should use built-in functions
@@ -530,6 +535,29 @@ fun! wrengr#AutoHighlightToggle()
   endif
 endfun
 
+
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+" ~~~~~ Set Vim's &bg based on OSX settings.
+fun! wrengr#SetBackground()
+  let l:getbg = expand('~/local/bin/_getbg')
+  " TODO: Need to adjust this escape route once we adjust the script
+  " to work properly over ssh.
+  if !(has('mac') && executable(l:getbg)) | return | endif
+  silent let l:style = system(l:getbg)
+  " HT: <https://stackoverflow.com/a/4479072>
+  if has('patch-8.0.1630')
+    let l:style = trim(l:style)
+  else
+    " TODO: Harden this against different settings of Magic.
+    let l:style = substitute(l:style, '^\s*\(.\{-}\)\s*$', '\1', '')
+  endif
+  if l:style =~# '^\(light\|dark\)$'
+    " Avoid side-effects when it'd be a no-op.
+    if &bg !=# l:style | let &background = l:style | endif
+  else
+    call wrengr#utils#error('E474: Invalid argument: background=' . l:style)
+  endif
+endfun
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " Note: when isdirectory(a:path), then mkdir() will give no error
