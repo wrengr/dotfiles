@@ -1,9 +1,12 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# wren gayle romano's GNU Screen config             ~ 2024.01.11
+# wren gayle romano's GNU Screen config             ~ 2024-01-30
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# TODO(2023-01-30): Should really migrate to tmux already...
+# E.g., see <https://superuser.com/a/858736>
 #
 # <http://aperiodic.net/screen/appearance>
 # <http://aperiodic.net/screen/truncation_padding_escapes>
+# <https://serverfault.com/a/3788> for additional formatting examples.
 # <https://lizdenys.com/journal/articles/understanding-gnu-screens-captions.html>
 #
 # TODO(2021.08.02):
@@ -97,18 +100,21 @@ nethack on
 #           - only show s.windows up to the current one
 #           + only show s.windows after the current one
 #           L show the s.window's flags too (appended to the number)
-#               N.B., this will alter the coloration of the caption.
-#               FIXME: so we'll need to use color codes to repair the changes.
+#               NOTE, this will alter the coloration of the caption;
+#               and thus will require explicitly setting the color codes
+#               to revert the changes afterwards.  (You can use "%{= dd}"
+#               to get the default colors.)
 #   %u      all other users on this window
 #           <https://www.gnu.org/software/screen/manual/html_node/Multiuser-Session.html>
 #   %=  a~la latex \hfill
 #   %l  loadaverages
 #   %?...%? only display this if some %-escape inside expands to nonempty string
 #
-# N.B., even with defutf8 on, the caption really doesn't like having unicode!
-# Alas, I'm not sure where that default grey background came from, so I can't recover it vs the changes %w makes; but we can embrace the black background and color in general.
-# TODO: Need to also have a variant of this for light backgrounds...
-caption always "%{= kw}  %{+b c}%H%{-}:%{+b g}%S%{-}:%{+b M}%2n*%f %t%{-}%{y}%?(%u)%?%{-}  [%?%-Lw%?||%?%+Lw%?]%=<%{r}%l%{-}>  %{c}%M %d (%D) %0c%{-}  "
+# NOTE: even with defutf8 on, the caption really doesn't like having unicode!
+# TODO(2024-01-30): Can we hack together some way to choose between
+# "%{= wk}" vs "%{= kw}" conditional on some environment variable, so that
+# we can get it to match the OSX setting our scripts forward over ssh?
+caption always "%{= wk}  %{+b c}%H%{-}:%{+b g}%S%{-}:%{+b M}%2n*%f %t%{-}%{y}%?(%u)%?%{-}  [%?%-Lw%?||%?%+Lw%?]%=<%{r}%l%{-}>  %{c}%M %d (%D) %0c%{-}  "
 
 # Aha! That's how we change it:
 # <https://www.gnu.org/software/screen/manual/html_node/Sorendition.html>
