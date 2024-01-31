@@ -1,60 +1,182 @@
 #!/bin/bash
-# Print Vim &background value for the current OSX Light/Dark mode.
-# wren gayle romano <wren@cpan.org>                 ~ 2024.01.28
+# Figure out background colors.
+# wren gayle romano <wren@cpan.org>                 ~ 2024-01-30
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# FIXME: We'll need to figure out some way to adjust our script
-# to somehow cache the results of the client-machine and then forward
-# them across ssh so that the host-machine's vim can keep the right setting!
+# For guidance on `COLORFGBG` and similar mechanisms used by various terminals
+# (and other programs), see: <https://unix.stackexchange.com/a/245568>
 
-# TODO: Should we `set -e` or no?
+SHOW_VIM=1
+[[ "$(uname)" != 'Darwin' ]]; ASK_OSX=$?
 
-# Get MacOS version info:
-# HT: <https://superuser.com/a/75206> <https://superuser.com/a/1259034>
-product_version=$(sw_vers -productVersion)
-os_vers=( ${product_version//./ } )
-os_vers_major="${os_vers[0]}"
-os_vers_minor="${os_vers[1]}"
-os_vers_patch="${os_vers[2]}"
-os_vers_build=$(sw_vers -buildVersion)
+# TODO: Adjust the usage message to display which of --ask-{osx,env}
+# is the local-machine's default.
+_usage() {
+>&2 cat << __END_USAGE__
+Usage: ${0##*/} [options]
 
-# MacOS<10.14 doesn't have dark-mode.
-if [[ ${os_vers_major} -lt 10 ]] || [[ ${os_vers_minor} -lt 14 ]]; then
-  echo 'light'
-  exit 0
-fi
+Figure out whether the terminal is in light/dark mode.
 
-# We discard errors since this setting uses NIL as a legit value.
-style=$(defaults read -g AppleInterfaceStyle 2>/dev/null)
+Options:
 
-# MacOS-10.15 adds `AppleInterfaceStyleSwitchesAutomatically` which
-# when TRUE swaps the interpretation of NIL `AppleInterfaceStyle`.
-# HT: <https://stackoverflow.com/a/57429660>
-# TODO: Should check for TRUE, instead of checking for not-NIL...
-if [[ ${os_vers_minor} -ge 15 ]] \
-&& [[ ! -z $(defaults read -g AppleInterfaceStyleSwitchesAutomatically 2>/dev/null) ]]; then
+    --ask-osx           Query MacOS settings.         (default on MacOS)
+    --ask-env           Query the COLORFGBG env var.  (default on non-MacOS)
+    --show-vim          Print as value for Vim's &background.  (default)
+    --show-env          Print as value for the COLORFGBG.
+    --help | -h | -?    Display this message.
+
+
+The options regarding COLORFGBG are to facilitate forwarding things
+over ssh.  Doing so requires four steps:
+(1) On the client side
+  (a) Add the \`SendEnv COLORFGBG\` command to your ~/.ssh/config
+  (b) Run a command like \`export COLORFGBG=\$(${0##*/} --show-env)\`
+      before ssh-ing (ideally adding that command to your shell profile,
+      or as an Exec command in your ~/.ssh/config).
+(2) On the host side,
+  (a) Add \`AcceptEnv COLORFGBG\` to the global /etc/ssh/sshd_config
+  (b) Run \`${0##*/} --ask-env\` whenever necessary.  Note, you only
+      need the \`--ask-env\` flag if the remote machine is also MacOS.
+
+__END_USAGE__
+}
+
+_info()  { >&2 echo -e "\033[1;32m#\033[0m \033[1m$*\033[0m"; }
+_warn()  { >&2 echo -e "\033[1;33m#\033[0m \033[1m$*\033[0m"; }
+_error() { >&2 echo -e "\033[1;31m${0##*/}:\033[0m \033[1m$*\033[0m"; }
+
+for arg in "$@"; do
+  case "$arg" in
+  --show-vim) SHOW_VIM=1; shift ;;
+  --show-env) SHOW_VIM=0; shift ;;
+  --ask-osx)  ASK_OSX=1; shift ;;
+  --ask-env)  ASK_OSX=0; shift ;;
+  --help | -h | -\?) _usage; exit 0 ;;
+  *) _error "Unknown option: $arg\n"; _usage; exit 1 ;;
+  esac
+done
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Lightweight enum, to help improve code legibility.
+declare -r -i LIGHT=0
+declare -r -i DARK=1
+
+# Some data arrays that are indexed by LIGHT/DARK
+declare -r -a VIM_values=( 'light' 'dark' )
+declare -r -a COLORFGBG_std_values=( '0;7' '7;0' )
+declare -r -a COLORFGBG_bright_values=( '0;15' '15;0' )
+
+# Factoring this code out as a function so that we can return early;
+# to avoid excessive indentation.
+_ask_osx() {
+  if [[ "$(uname)" != 'Darwin' ]]; then
+    _error 'Cannot --ask-osx on non-MacOS machines'
+    exit 1
+  fi
+
+  # ~~~~~ Get MacOS version info
+  # HT: <https://superuser.com/a/75206> <https://superuser.com/a/1259034>
+  if ! command -v sw_vers &>/dev/null; then
+    _error 'Cannot find `sw_vers` command.'
+    exit 1
+  fi
+  local product_version=$(sw_vers -productVersion)
+  local os_vers=( ${product_version//./ } )
+  local os_vers_major="${os_vers[0]}"
+  local os_vers_minor="${os_vers[1]}"
+  local os_vers_patch="${os_vers[2]}"
+  local os_vers_build=$(sw_vers -buildVersion)
+
+  # ~~~~~ MacOS<10.14 doesn't have dark-mode.
+  if [[ ${os_vers_major} -lt 10 ]] || [[ ${os_vers_minor} -lt 14 ]]; then
+    echo $LIGHT; return
+  fi
+
+  if ! command -v defaults &>/dev/null; then
+    _error 'Cannot find `defaults` command.'
+    exit 1
+  fi
+  # Discard errors since this setting uses NIL as a legit value.
+  local style=$(defaults read -g AppleInterfaceStyle 2>/dev/null)
+
+  # ~~~~~ MacOS-10.15 adds `AppleInterfaceStyleSwitchesAutomatically`
+  # which when TRUE swaps the interpretation of NIL `AppleInterfaceStyle`.
+  # HT: <https://stackoverflow.com/a/57429660>
+  # TODO: Should check for TRUE, instead of checking for not-NIL...
+  if [[ ${os_vers_minor} -ge 15 ]] \
+  && [[ ! -z $(defaults read -g AppleInterfaceStyleSwitchesAutomatically 2>/dev/null) ]]; then
     # Here, NIL=>dark and non-NIL=>light; though I'm not sure
     # that the non-NIL value actually is the string 'Light'...
-    # TODO: Check on a newer system.
-    if [[ -z "$style" ]]; then
-        echo 'dark'
-    else
-        echo 'light'
+    # TODO: Check the behavior on a newer system.
+    if [[ -z "$style" ]]; then echo $DARK; else echo $LIGHT; fi; return
+  fi
+
+  # ~~~~~ Default path: for 10.14, and for >=10.15 when
+  # `AppleInterfaceStyleSwitchesAutomatically` is NIL.
+  #
+  # Here, NIL=>light and 'Dark'=>dark.
+  #
+  # NOTE: Bash-3.2.57(1)-release(x86_64-apple-darwin18) doesn't
+  # have the `-l` flag for `declare`; so we must LC things manually.
+  case "$(echo "${style:-light}" | tr '[:upper:]' '[:lower:]')" in
+  light) echo $LIGHT; return ;;
+  dark)  echo $DARK; return ;;
+  *)
+    _error "Unknown AppleInterfaceStyle=${style}"
+    exit 1
+  ;;
+  esac
+
+  # TODO: Also see this snippet regarding various other settings:
+  # <https://stackoverflow.com/a/58448816>
+}
+
+# Factoring this code out as a function so that we can return early;
+# since we can't `break` due to the sequential loops.
+_ask_env() {
+  # TODO: use a hashmap to make this more efficient?  Or something else?
+  for i in "${!COLORFGBG_std_values[@]}"; do
+    if [[ "${COLORFGBG_std_values[$i]}" = "${COLORFGBG}" ]]; then
+      echo $i; return
     fi
-    exit 0
-fi
-
-# Default path: for 10.14, and for 10.15 when NIL
-# `AppleInterfaceStyleSwitchesAutomatically`.
-#
-# Here, NIL=>light and 'Dark'=>dark.
-echo "${style:-light}" | tr '[:upper:]' '[:lower:]'
-exit 0
-
-# TODO: Also see this snippet regarding various other settings:
-# <https://stackoverflow.com/a/58448816>
-
+  done
+  for i in "${!COLORFGBG_bright_values[@]}"; do
+    if [[ "${COLORFGBG_bright_values[$i]}" = "${COLORFGBG}" ]]; then
+      echo $i; return
+    fi
+  done
+  _error "Unknown COLORFGBG=${COLORFGBG}"
+  exit 1
+}
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~ Main
+
+if [[ $ASK_OSX -eq 1 ]]; then
+  STYLE=$(_ask_osx)
+else
+  STYLE=$(_ask_env)
+fi
+
+# Sanitization checks, making sure to avoid conversion from strings to numbers.
+case "$STYLE" in
+  [01]) : ;;
+  '') _error 'Internal Error: got null style'; exit 1 ;;
+  *) _error "Internal Error: got invalid style: $STYLE"; exit 1 ;;
+esac
+
+if [[ $SHOW_VIM -eq 1 ]]; then
+  echo "${VIM_values[$STYLE]}"
+else
+  # TODO: if the original value was in COLORFGBG_bright_values,
+  # should we normalize it like this or return the original?
+  # Or add a flag to choose between the two?
+  echo "${COLORFGBG_std_values[$STYLE]}"
+fi
+exit 0
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~ Additional commentary
+#
 # * For ways to access that setting from within Cocoa/Swift/etc, see:
 #   <https://stackoverflow.com/q/25207077>
 # * Supposedly, the default path should still work for the 'Auto' mode:
@@ -62,7 +184,6 @@ exit 0
 # * If it doesn't then see the following about using KVO:
 #   <https://www.jessesquires.com/blog/2020/01/08/observing-appearance-changes-on-ios-and-macos/>
 #   <https://groups.google.com/g/wx-dev/c/1vXBqmsHBEw/m/5Zj6xkPyBgAJ>
-#
 #
 # * And for generalizing this script to work for other OSes:
 #   <https://github.com/weisJ/auto-dark-mode>
@@ -72,3 +193,5 @@ exit 0
 # `windows/src/main/cpp/DarkModeWindows.cpp`
 # And I'm not quite sure re `linux/gtk` and `linux/xdg`.)
 # * Also see: <https://stackoverflow.com/q/65294987>
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ fin.
