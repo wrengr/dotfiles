@@ -1,6 +1,6 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " Name:     autoload/wrengr.vim
-" Modified: 2024-01-28T20:16:33-08:00
+" Modified: 2024-02-01T17:33:35-08:00
 " Version:  2c
 " Author:   wren romano
 " Summary:  Assorted common-use functions extracted from my ~/.vimrc
@@ -537,24 +537,16 @@ endfun
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" ~~~~~ Set Vim's &bg based on OSX settings.
+" ~~~~~ Set Vim's &bg based on OSX settings (or the COLORFGBG env variable)
 fun! wrengr#SetBackground()
-  let l:getbg = expand('~/local/bin/_getbg')
-  " TODO: Need to adjust this escape route once we adjust the script
-  " to work properly over ssh.
-  if !(has('mac') && executable(l:getbg)) | return | endif
-  silent let l:style = system(l:getbg)
-  " HT: <https://stackoverflow.com/a/4479072>
-  if has('patch-8.0.1630')
-    let l:style = trim(l:style)
-  else
-    " TODO: Harden this against different settings of Magic.
-    let l:style = substitute(l:style, '^\s*\(.\{-}\)\s*$', '\1', '')
-  endif
+  let l:style = wrengr#utils#system(expand('~/local/bin/_getbg'))
+  if l:style is# v:null | return | endif
+  let l:style = wrengr#utils#trim(l:style)
   if l:style =~# '^\(light\|dark\)$'
     " Avoid side-effects when it'd be a no-op.
     if &bg !=# l:style | let &background = l:style | endif
   else
+    " TODO: Might should add a special errormsg for null values.
     call wrengr#utils#error('E474: Invalid argument: background=' . l:style)
   endif
 endfun

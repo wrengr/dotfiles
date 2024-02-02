@@ -1,7 +1,7 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " Name:     autoload/wrengr/utils.vim
-" Modified: 2021-10-09T16:58:30-07:00
-" Version:  5
+" Modified: 2024-02-01T18:05:15-08:00
+" Version:  6
 " Author:   wren romano
 " Summary:  Utility functions for writing plugins.
 " License:  [0BSD] Permission to use, copy, modify, and/or distribute
@@ -16,6 +16,7 @@
 "           negligence or other tortious action, arising out of or
 "           in connection with the use or performance of this software.
 "
+" Version 5: added system(), trim()
 " Version 5: added shellescape(), moved IncludeSyntax() and
 "   MarkdownIncludeCodeblock() off to wrengr#syntax# instead.
 " Version 4: Major bugfixing in vlet()
@@ -228,6 +229,57 @@ fun! wrengr#utils#shellescape(path)
   return l:path
 endfun
 
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+" ~~~~~ A backwards-compatible trim()
+" HT: <https://stackoverflow.com/a/4479072>
+fun! wrengr#utils#trim(str)
+  if has('patch-8.0.1630')
+    return trim(a:str)
+  else
+    " The leading `\m` is for hardening this regex, to ensure that
+    " it is robust against thanges to the user's &magic setting.
+    return substitute(a:str, '\m^\s*\(.\{-}\)\s*$', '\1', '')
+  endif
+endfun
+
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+" ~~~~~ A system() with verbose error messages.
+"
+" On success, returns the result of the `:silent system()` call;
+" on failure, returns `v:null`.  Note that you can distinguish the
+" empty string from `v:null` by using the `is#` or `==#` operators.
+"
+" NOTE: The command is run in `:silent` mode, which is the correct
+" thing to do for non-interactive commands.  If you need to run an
+" interactive command, then you prolly need a different solution
+" anyways.
+"
+" NOTE: `system()` captures both stdout and stderr together!
+" If you want to try disentangling them, see 'shellredir'.
+"
+" As far as Vim error-codes go, I couldn't immediately find anything
+" that seemed right in <https://github.com/vim/vim/blob/master/src/errors.h>.
+fun! wrengr#utils#system(cmd)
+  if !executable(a:cmd)
+    call wrengr#utils#error(
+      \ 'ERROR(wrengr#utils#system): Is not executable(' . a:cmd . ')')
+    return v:null
+  endif
+  silent let l:output = system(a:cmd)
+  if v:shell_error != 0
+    if v:shell_error == -1
+      call wrengr#utils#error(
+        \ 'ERROR(wrengr#utils#system): system(' . a:cmd
+        \ . ') could not be executed')
+    else
+      call wrengr#utils#error(
+        \ 'ERROR(wrengr#utils#system): system(' . a:cmd
+        \ . ') failed with exit code: ' . v:shell_error)
+    endif
+    return v:null
+  endif
+  return l:output
+endfun
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Autovivification for `:let`
