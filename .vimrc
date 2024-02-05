@@ -895,6 +895,9 @@ Plug 'bfrg/vim-cpp-modern'
 "   " and removed that warning, though it's for SpaceVim rather
 "   " than plain Vim.
 
+" ~~~~~ {for: tablegen}  ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{3
+" TODO: find a decent syntax highlghter for LLVM/MLIR (namely the tablegen/.td language)
+
 " ~~~~~ {for: clojure} ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{3
 " All of this was copied from junegunn's vimrc
 "Plug 'kovisoft/paredit', { 'for': 'clojure' } " [#jg]
@@ -2173,6 +2176,13 @@ set magic
 " addition to the `zz`.)
 "nnoremap n nzzzv
 "nnoremap N Nzzzv
+
+" TODO: figure out exactly what this does (and how) before enabling it
+" Clear the search register.
+"nnoremap <leader>cs :let @/=''<CR>
+" The above is intended to be used together with:
+"set hlsearch
+"let @/ = ""
 
 " Search for character under cursor.
 " (Mainly for use with CJK unicode, probably not so useful otherwise.)
