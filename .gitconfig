@@ -326,6 +326,8 @@
     top   = log --stat -1
     # List the files modified by a given commit (defaults to HEAD)
     # TODO: use perl/sed/awk to translate repo-absolute paths to relative paths.
+    # TODO: For scripting purposes, we should instead prefer using something
+    # like `git diff-tree --no-commit-id --name-only $COMMIT_RANGE -r`
     show-files = show --name-only --format=''
     unpushed = log @{u}..
     # Show all untracked files.
@@ -336,6 +338,9 @@
     ci    = commit --patch
     # For when we're lazy or singleminded.
     ca    = commit --all
+    # NOTE: When we want to add only part of a new file, see:
+    # <https://stackoverflow.com/a/6440500>
+    #
     # N.B., we do *not* pass the --all flag here! Instead we use --patch
     # to selectively choose changes.
     # TODO: do we want to add the --no-edit flag?
@@ -407,6 +412,14 @@
     #   form. The manpage doesn't show it as an option, but if --onto
     #   supports that sytax, then we should use it here.
     rop   = "!git rebase --onto $(git-parent)"
+    # TODO: Also consider setting up the following script for
+    # performing non-interactive `rebase -i` changes:
+    # <https://stackoverflow.com/a/19267103>
+    # (for more inspiration, see: <https://stackoverflow.com/a/12395245>)
+    #
+    # TODO: Try to recover our old 'rediff' alias for verifying
+    # that rebases worked correctly.
+    #
     wdiff = diff --color-words
     # For when you want orphan branches
     unparent = branch --unset-upstream
