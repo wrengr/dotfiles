@@ -189,7 +189,8 @@ esac
 # either.
 #
 # One way to check if the current $TERM has a terminfo entry is to run:
-# `toe -a | awk -v TERM="$TERM" '$1 == TERM {print $1}'`
+# `toe -a | awk '$1 == ENVIRON["TERM"] { print $1 }'
+# (Or for passing in non-env variables, you can use `-v varname=value`)
 # The question is, whenever that fails, then what should we do?
 
 # N.B., some people like <https://blog.sanctum.geek.nz/term-strings/>
