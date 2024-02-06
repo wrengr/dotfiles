@@ -1,0 +1,27 @@
+This directory is just a place for me to store non-compiled terminfo files
+(i.e., it's not any standard location); whereas, ~/.terminfo is where the
+compiled files should be stored.  Note that when you run `tic`, it will
+automatically place the results into ~/.terminfo for you; however, beware
+that OSX and Linux use different directory structures underneath that (e.g.,
+~/.terminfo/x/xterm* vs ~/.terminfo/78/xterm*) which is why we do not check
+those files into the github repo.  See <https://stackoverflow.com/a/55644975>
+regarding the fact that this approach is the correct, robust, long-term
+solution to things; in lieu of directly messing around with environment
+variables TERM, TERMCAP, TERMINFO, etc.  (If you need to use termcap in lieu
+of terminfo, then ~/.termcap is the corresponding place to put the compiled
+files.)
+
+For adding italics support to iTerm2:
+    https://alex.pearwin.com/2014/05/italics-in-iterm2-vim-tmux/
+
+For more info about:
+  - inverse of running `tic`: <https://unix.stackexchange.com/a/736912>
+  - terminfo vs termcap: <https://aplawrence.com/Unixart/termcap.html>
+
+TODO: Add variants for:
+  - `*-bce` for supporting BCE
+  - `*-s` for supporting dsl/fsl/tsl (see `man 5 terminfo` for what that means)
+
+TODO: To avoid needing separate files for each of our configurations,
+consider writing a script that uses the `cat <<EOF|tic -x -` idiom described
+in the iTerm2 link above.

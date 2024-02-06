@@ -178,6 +178,20 @@ esac
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ Configure TERM to be (more) correct
 #
+# TODO: The correct, robust, long-term solution to this sort of
+# thing is described at <https://stackoverflow.com/a/55644975>.
+# So we should migrate everything to using that approach instead
+# of messing around with TERM!  In particular, if we want to support
+# italics a la <https://alex.pearwin.com/2014/05/italics-in-iterm2-vim-tmux/>
+# then we need to make sure not to stomp on iTerm2's initial setting
+# of `TERM=xterm-256color-italic`!  We'll also need to update our
+# GNUScreen and tmux settings to make sure they don't stomp on TERM
+# either.
+#
+# One way to check if the current $TERM has a terminfo entry is to run:
+# `toe -a | awk -v TERM="$TERM" '$1 == TERM {print $1}'`
+# The question is, whenever that fails, then what should we do?
+
 # N.B., some people like <https://blog.sanctum.geek.nz/term-strings/>
 # think that this whole approach is totally wrongheaded.  In principle
 # I agree, however in practice it's terribly convoluted to do the
