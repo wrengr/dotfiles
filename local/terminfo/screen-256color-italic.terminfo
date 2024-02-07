@@ -1,7 +1,15 @@
 # A screen-256color based TERMINFO that adds the escape sequences for italic.
 # HT: <https://alex.pearwin.com/2014/05/italics-in-iterm2-vim-tmux/>
-# BUG: This is setting reverse-mode or something like that, rather than
-# actually setting italics!!
-screen-256color-italic|GNU-Screen with 256 colors and italic,
+# 
+# NOTE: The underlying screen-256color uses "standout" (aka reverse)
+# in lieu of italics.  So we need to reconfigure `sgr` and `smso`/`rmso`.
+# HT: <https://superuser.com/a/891337>
+# FIXME: We really do need to use the `sed -e 's/%?%p1%t;3%/%?%p1%t;7%/'`
+# part for updating the `sgr` settings.  So it seems like we need to do
+# this in a script rather than in a static file.
+# BUG: Even after doing that update, it's still using standout in lieu of italics...
+# See also <https://unix.stackexchange.com/a/240147>
+screen-256color-italic|screen with 256-colors and italics support,
+  smso=\E[7m, rmso=\E[27m,
   sitm=\E[3m, ritm=\E[23m,
   use=screen-256color,

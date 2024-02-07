@@ -1133,6 +1133,10 @@ if &term =~? '^screen'
     set t_ut=
   endif
 
+  " FIXME: Since we can't get italics to work within GNUScreen (i.e., as
+  " actual italics, rather than as standout), we're disabling them for now.
+  let g:overmorrow#cterm_italic = ''
+
   " NOTE: We use the `exe "set foo=\<esc>bar"` idiom to avoid needing
   " to type literal escape characters (since those don't copy-paste well).
 
