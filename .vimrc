@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" wren gayle romano's vim config                    ~ 2024-02-05
+" wren gayle romano's vim config                    ~ 2024-02-06
 "
 " This file uses &foldmethod=marker, but I refuse to add a modeline
 " to say that; because modelines are evil.
@@ -1102,28 +1102,54 @@ endif
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Terminal Configuration ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {{{1
+" NOTE: Vim has both `$TERM` (for the env var) and `&term` (for internal use).
+" The example at `:h term-dependent-settings` suggests we should
+" be checking `&term` rather than `$TERM`.
+
+" WARNING: Some people like <https://blog.sanctum.geek.nz/term-strings/>
+" think that this whole approach is totally wrongheaded.  In principle
+" I agree; however in practice it's terribly convoluted to do the
+" right thing.  See also <https://gist.github.com/KevinGoodsell/744284/717b220f7c168725748781d58609dce5d7cf8603>
+" which offers some particular solutions for dealing with screen.
+" Another source of hints on debugging this kind of stuff is
+" <https://github.com/vim-syntastic/syntastic/issues/822>
+" (while that bug is old and closed, it has helpful info.)
+
 " ~~~~~ GNU Screen integration ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{2
 " <http://vim.wikia.com/wiki/GNU_Screen_integration>
-" <https://github.com/mileszs/dotfiles/blob/master/screenrc>
-" Actually that got deleted, so go back to this commit:
+" <https://vim.fandom.com/wiki/GNU_Screen_integration>
 " <https://github.com/mileszs/dotfiles/blob/3883ca1d8f54b858f9c28599b5304eadae184743/screenrc>
 
-"if $TERM =~? '^screen'
+" If our ~/.screenrc has changed the TERM env var, then we'll need
+" to adjust some things because Vim doesn't understand/like that.
+" NOTE: Our ~/.bash_profile etc may end up re-resetting TERM, so can't
+" rely on this for detecting whether we are in fact inside screen.
+if &term =~? '^screen'
   " Disable Background Color Erase (BCE) so that color schemes
   " render properly when inside 256-color tmux and GNU screen.
-  " Cf., <http://snk.tuxfamily.org/log/vim-256color-bce.html>
-  " (which now redirects to: <https://sunaku.github.io/vim-256color-bce.html>)
-  "if &term =~? '256color'
-  "  set t_ut=
-  "endif
+  " HT: <https://sunaku.github.io/vim-256color-bce.html>
+  " TODO: Shouldn't we really be checking for the '-bce' suffix instead?
+  if &term =~? '256color'
+    set t_ut=
+  endif
+
+  " NOTE: We use the `exe "set foo=\<esc>bar"` idiom to avoid needing
+  " to type literal escape characters (since those don't copy-paste well).
 
   " Fix <S-Tab> on GNU screen.  HT: <https://superuser.com/a/196162>
   " terminfo 'cbt' == vim &t_bt; terminfo 'kcbt' == vim &t_kB
-  "set t_kB=[Z
+  "exe "set t_kB=\<Esc>[Z"
+
+  " TODO: Frankly, if we're going to do these two, then we might
+  " as well set them in the ~/.screenrc itself.
+  if has('title')
+    exe "set t_ts=\<Esc>k"
+    exe "set t_fs=\<Esc>\\"
+  endif
 
   " Disable <C-a> when in GNU screen (not that we use it much anyways).
   "nnoremap <C-a> <Nop>
-"endif
+endif
 
 " TODO: the altscreen thing seems to occasionally fail and leave
 " gibberish on the screen when we quit vim (especially after using
@@ -1131,17 +1157,7 @@ endif
 " around with &t_te (and &t_ti).  See `:help xterm-screens` and
 " <https://invisible-island.net/xterm/xterm.faq.html#xterm_tite>
 
-" Note On TERM: some people like <https://blog.sanctum.geek.nz/term-strings/>
-" think that this whole approach is totally wrongheaded.  In principle
-" I agree, however in practice it's terribly convoluted to do the
-" right thing.  See also <https://gist.github.com/KevinGoodsell/744284/717b220f7c168725748781d58609dce5d7cf8603>
-" which offers some particular solutions for dealing with screen.
-" Another source of hints on debugging this kind of stuff is
-" <https://github.com/vim-syntastic/syntastic/issues/822>
-" (while that bug is old and closed, it has helpful info.)
-
-
-" Extend <C-l> to also stop highlighting the current search.
+" ~~~~~ Extend <C-l> to also stop highlighting the current search.
 " N.B., the default <C-l> can also be lazy (both with and without
 " &lazyredraw), so this is (I think) stricter about ensuring the
 " redraw happens immediately.
@@ -1151,20 +1167,10 @@ endif
 nnoremap <silent> <C-l> :<C-u>noh<Bar>redraw!<CR>
 " Note: there also exists commands :redrawstatus[!] and :redrawtabline
 
-
 " ~~~~~ Terminal title ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{2
 " <http://vim.wikia.com/wiki/Automatically_set_screen_title>
 " <http://usevim.com/2012/06/13/set-title/>
 if has('title')
-  " BUG: many times screen doesn't set TERM to say that; and
-  " even when it does, our ~/.bash_profile changes it.  Frankly,
-  " if we're going to do this then we might as well set these in
-  " the ~/.screenrc itself.
-  " See also the [Note On TERM] above.
-  if &term =~? '^screen'
-    set t_ts=^[k
-    set t_fs=^[\
-  endif
   set title
   " BUG: how do we cause &modified to be formatted like it is in
   " the default?  (as opposed to being formatted like "[+]" plus

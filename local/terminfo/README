@@ -12,7 +12,9 @@ of terminfo, then ~/.termcap is the corresponding place to put the compiled
 files.)
 
 For adding italics support to iTerm2:
-    https://alex.pearwin.com/2014/05/italics-in-iterm2-vim-tmux/
+  https://alex.pearwin.com/2014/05/italics-in-iterm2-vim-tmux/
+To test that you did everything right:
+  $> echo "$(tput sitm)${TERM}$(tput ritm)"
 
 For more info about:
   - inverse of running `tic`: <https://unix.stackexchange.com/a/736912>

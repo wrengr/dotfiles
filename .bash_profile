@@ -1,4 +1,4 @@
-# wren gayle romano's bash login script             ~ 2024.12.08
+# wren gayle romano's bash login script             ~ 2024-02-06
 #
 # It's fairly generic (with weirder things at the bottom),
 # but it's designed to be usable for all my accounts with no(!)
@@ -223,22 +223,22 @@ esac
 # TODO: also <https://lists.gnu.org/archive/html/bug-ncurses/2017-04/msg00032.html>
 # though we don't actually have any "iterm" entry.
 
-# Google's `screen` is annoying.
-if [ "${_hostname}" = 'google' ]; then
-    # N.B., Goobuntu's `screen` sets TERM='screen-bce' rather than TERM='screen'.
-    # BUG: apparently this no longer catches things on gLinux...
-    if [ "${TERM}" = 'screen-bce' ]; then
-        # TODO: it used to be the version of `screen` on Goobuntu
-        # only supported 8-colors, but that seems to have been
-        # miraculously fixed somehow.
-        export TERM='screen-256color'
-    else
-        # When using the local terminal on Goobuntu, we have
-        # TERM='xterm' by default. (Whereas, when sshing in we
-        # already have TERM='xterm-256color'.)
-        export TERM='xterm-256color'
-    fi
-fi
+# (2024-02-06): Disabling this for now, to check that our new setup works.
+#if [ "${_hostname}" = 'google' ]; then
+#    # N.B., Goobuntu's `screen` sets TERM='screen-bce' rather than TERM='screen'.
+#    # BUG: apparently this no longer catches things on gLinux...
+#    if [ "${TERM}" = 'screen-bce' ]; then
+#        # TODO: it used to be the version of `screen` on Goobuntu
+#        # only supported 8-colors, but that seems to have been
+#        # miraculously fixed somehow.
+#        export TERM='screen-256color'
+#    else
+#        # When using the local terminal on Goobuntu, we have
+#        # TERM='xterm' by default. (Whereas, when sshing in we
+#        # already have TERM='xterm-256color'.)
+#        export TERM='xterm-256color'
+#    fi
+#fi
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

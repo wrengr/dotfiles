@@ -1,7 +1,7 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " Name:     colors/overmorrow.vim
-" Modified: $$
-" Version:  2
+" Modified: 2024-02-06T17:18:43-08:00
+" Version:  2a
 " Author:   wren romano
 " Summary:  My own personal colorscheme.
 " License:  This program is free software; you can redistribute it and/or
@@ -15,6 +15,7 @@
 " made various changes to that palette, and the actual code (per se)
 " is entirely new.
 "
+" Version 2a: Added italics to the 'Comment' group.
 " Version 2: Added preliminary support for &background=light
 "   For now, I'm just copying the palette from
 "   <https://github.com/NLKNguyen/papercolor-theme>
@@ -967,7 +968,7 @@ call s:HiLink('diffRemoved', 'DiffDelete')
 " Statement (or similar).
 
 " ~~~ Comment-like
-call s:Hi('Comment',   s:comment,  s:bg,   {}, {})
+call s:Hi('Comment',   s:comment,  s:bg,   {}, 'italic')
 call s:Hi('Title',     s:lavender, s:bg,   {}, {})
 call s:Hi('Todo',      s:yellow,   s:bg,   {}, {})
 " N.B., for vimscript, first the whole line gets vimLineComment
