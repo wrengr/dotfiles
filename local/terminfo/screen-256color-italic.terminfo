@@ -1,5 +1,7 @@
 # A screen-256color based TERMINFO that adds the escape sequences for italic.
 # HT: <https://alex.pearwin.com/2014/05/italics-in-iterm2-vim-tmux/>
+# BUG: This is setting reverse-mode or something like that, rather than
+# actually setting italics!!
 screen-256color-italic|GNU-Screen with 256 colors and italic,
   sitm=\E[3m, ritm=\E[23m,
   use=screen-256color,

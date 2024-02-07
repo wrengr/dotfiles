@@ -311,9 +311,10 @@ let s:selection =
             " NOTE: I'm  using  papercolor's popupmenu_bg here; though we use  this color in several places not quite matching their scheme.  Also, they have a different popup_fg rather than reusing the usual fg.
 let s:comment =
             \ {'dark':  {'hex':'969896', 'cterm256':245}
-            \ ,'light': {'hex':'3a3a3a', 'cterm256':237}}
+            \ ,'light': {'hex':'4e4e4e', 'cterm256':239}}
             " dark  ~ 58.82% ; TODO: 969896 -> 246 == 949494 (58.03%); 245 == 8a8a8a (54.11%)
             " FIXME: This doesn't line up to anything in papercolor
+            " (2024-02-06): Using 237 is too close to black, and thus doesn't look comment-like enough; using 239 is a lot better, though starts getting a bit washed out against the 255 background.
 let s:window =
             \ {'dark':  {'hex':'4d5057', 'cterm256':59}
             \ ,'light': {'hex':'005f87', 'cterm256':24}}

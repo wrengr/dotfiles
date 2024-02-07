@@ -1142,10 +1142,12 @@ if &term =~? '^screen'
 
   " TODO: Frankly, if we're going to do these two, then we might
   " as well set them in the ~/.screenrc itself.
-  if has('title')
-    exe "set t_ts=\<Esc>k"
-    exe "set t_fs=\<Esc>\\"
-  endif
+  " BUG: This is setting GNUScreen's `:title` rather than the actual
+  " iTerm2 window's title.
+  "if has('title')
+  "  exe "set t_ts=\<Esc>k"
+  "  exe "set t_fs=\<Esc>\\"
+  "endif
 
   " Disable <C-a> when in GNU screen (not that we use it much anyways).
   "nnoremap <C-a> <Nop>
@@ -1184,6 +1186,10 @@ if has('title')
   set titlestring=VIM\ \ %t\ (%{expand(\"%:~:.:h\")})\ %a%r%m
   set titlelen=70
 endif
+
+" ~~~~~ Set up terminal colors, etc. ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{2
+" TODO: see the help pages for &termguicolors, 'xterm-true-color',
+" 'tmux-integration'.
 
 " ~~~~~ Mouse support  ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{2
 " Setting this will make it so that selecting things with the mouse

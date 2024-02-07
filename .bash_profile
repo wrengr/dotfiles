@@ -225,19 +225,11 @@ esac
 
 # (2024-02-06): Disabling this for now, to check that our new setup works.
 #if [ "${_hostname}" = 'google' ]; then
-#    # N.B., Goobuntu's `screen` sets TERM='screen-bce' rather than TERM='screen'.
-#    # BUG: apparently this no longer catches things on gLinux...
-#    if [ "${TERM}" = 'screen-bce' ]; then
-#        # TODO: it used to be the version of `screen` on Goobuntu
-#        # only supported 8-colors, but that seems to have been
-#        # miraculously fixed somehow.
-#        export TERM='screen-256color'
-#    else
-#        # When using the local terminal on Goobuntu, we have
-#        # TERM='xterm' by default. (Whereas, when sshing in we
-#        # already have TERM='xterm-256color'.)
-#        export TERM='xterm-256color'
-#    fi
+#   case "${TERM}" in
+#   screen | screen-color)  export TERM='screen-256color' ;;
+#   screen-bce)             export TERM='screen-256color-bce' ;;
+#   xterm | xterm-color)    export TERM='xterm-256color' ;;
+#   esac
 #fi
 
 

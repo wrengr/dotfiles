@@ -23,16 +23,16 @@ autodetach on          # Detach screen on hangup (saves running programs)
 startup_message off    # Disable copyright & silly warning splash screen
 shell $SHELL           # The shell to use (prepend `-` to make it a login-shell)
 #shelltitle $SHELL     # The default %t when creating new shell windows.
-term "screen-256color-bce" # The $TERM used inside screen.
+
 # BUG: really we should set term based on whatever the incoming $TERM is,
 # or use some other sort of color autodetection capability.
-#
-# N.B., if you want to support BCE (background color erase) then
-# you should use "screen-256color-bce" instead.  And if you want
-# to additionally support dsl/fsl/tsl then use "screen-256color-bce-s"
-# (use `man 5 terminfo` to see what the heck those mean).
-# And for italics (sitm/ritm), we may have to roll our own terminfo; cf:
-# <https://alex.pearwin.com/2014/05/italics-in-iterm2-vim-tmux/>
+# BUG(2024-02-05): All of a sudden BCE broke!  So we shouldn't set it here!
+term "screen-256color-bce" # The $TERM used inside screen.
+# NOTE: To additionally support dsl/fsl/tsl then use "screen-256color-bce-s"
+# (see `man 5 terminfo` for what the heck those mean).
+# NOTE: We've built our own "screen-256color-italic" terminfo for
+# supporting italics (sitm/ritm); however, currently, it's buggily
+# presenting italics with reverse-mode or similar instead.
 #
 # For Vim, beware that if your $TERM starts with "xterm" then vim'll
 # assume various things without consulting termcap/terminfo:
@@ -162,6 +162,9 @@ rendition so "=b" "KW"
 #
 # Remap 'bold' to use "high-intensity background color".
 attrcolor b ".I"
+# TODO: Configure things to support underline correctly; or else add
+# another thing here to remap it to something that is supported.
+
 # Tell screen:
 #   (Co) we have 256 colors
 #   (AB) how to set background colors
