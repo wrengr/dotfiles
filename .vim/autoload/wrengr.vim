@@ -501,7 +501,7 @@ endfun
 "   powerful variant of this idea (albeit, solving a somewhat
 "   different problem).
 " TODO: Should also really have a variant of this which just runs the
-"   commend to set @/ but without the whole augroup stuff to continuously
+"   command to set @/ but without the whole augroup stuff to continuously
 "   reupdate it.
 " TODO: Really ought to provide a <Plug> for this...
 " TODO: should we be using echomsg in lieu of plain echo?
