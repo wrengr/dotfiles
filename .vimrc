@@ -1739,8 +1739,8 @@ inoremap <S-Down> <ESC>10j10<C-e>zzi
 "   :execute "keepjumps normal! \<lt>C-d>M"<CR>
 " ) and that works.  But only the `M` needs to be wrapped in :keepjumps,
 " not the <C-u>; so it's easier to just say exactly that :)
-nnoremap  <C-Up>   <C-u>:keepjumps normal! M<CR>
-nnoremap  <C-Down> <C-d>:keepjumps normal! M<CR>
+nnoremap <C-Up>   <C-u>:keepjumps normal! M<CR>
+nnoremap <C-Down> <C-d>:keepjumps normal! M<CR>
 " TODO: imaps for <C-Up> and <C-Down>?
 
 " ~~~~~ Move by display-lines rather than by file-lines.
@@ -1748,15 +1748,23 @@ nnoremap  <C-Down> <C-d>:keepjumps normal! M<CR>
 " exclusive.  (Though exclusive makes more sense to me, so I'm cool
 " with that.)  Fwiw, you can still use <C-n>/<C-p> to get the old
 " file-linewise.
-" TODO: we may want to spruce these up by checking v:count, cf:
-" <https://www.hillelwayne.com/post/intermediate-vim/> (They also
-" have the very nice hack of using <;> as the <leader> for i-maps,
-" since one seldom wants to type non-whitespace characters immediately
-" after a semicolon.)
-noremap <Up>   gk
-noremap k      gk
-noremap <Down> gj
-noremap j      gj
+" HT: <https://vi.stackexchange.com/a/22576> re insertmode
+noremap  <Up>   gk
+inoremap <Up>   <C-\><C-o>gk
+noremap  <Down> gj
+inoremap <Down> <C-\><C-o>gj
+
+" Simple `k`/`j` move by display-lines; whereas when providing a count,
+" then uses file-lines and stores the motion in the jumplist (so you can
+" cycle through them with <C-o> and <C-i>).
+" HT: <https://www.reddit.com/r/vim/comments/4ifnbo/comment/d2y6zij/?context=3>
+" HT: <https://www.hillelwayne.com/post/intermediate-vim/>
+"     TODO: They also have a bunch of other nice hacks, like using <;>
+"     as the <leader> for i-maps, since one seldom wants to type
+"     non-whitespace characters immediately after a semicolon.
+noremap <expr> k (v:count > 1 ? 'm`' . v:count . 'k' : 'gk')
+noremap <expr> j (v:count > 1 ? 'm`' . v:count . 'j' : 'gj')
+
 " I swap these two because: (a) `0` is so much easier to reach than
 " `^`; (b) because '^' means the true BOL in regexes, so the discrepancy
 " always struck me as odd.
