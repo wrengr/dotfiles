@@ -1,7 +1,7 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " Name:     autoload/wrengr/qf.vim
-" Modified: $$
-" Version:  0
+" Modified: 2024-02-17T12:49:55-08:00
+" Version:  1
 " Author:   wren romano
 " Summary:  Enhancing quickfix/loclist stuff.
 " License:  [0BSD] Permission to use, copy, modify, and/or distribute
@@ -22,6 +22,8 @@
 " ex-commands for make/grep is better handled elsewhere (since it'll
 " we used less often and so we don't want to load it too soon).
 "
+" Version 1:
+"   * Fixed the bug about BracketExpr() not evaluating things.
 " Version 0:
 "   * CL()                              moved here from after/ftplugin/qf.vim
 "   * BracketExpr()                     factored out from ~/.vimrc
@@ -154,12 +156,15 @@ endfun
 " appends is all.  Though I suppose we could set up an autocommand
 " to redefine the mappings whenever &foldopen is changed; that would
 " enable precomputing a lot more...
+" Note: We must use the "\<>" syntax for special characters (i.e., not '<>')
+" in order for `:nnoremap <expr>` to actually interpret them as
+" special characters (rather than as a sequence of normal characters).
 fun! wrengr#qf#BracketExpr(wantcount, cmd)
   return join(
-    \ [ ':<C-u>'
-    \ , (a:wantcount && v:count ? v:count : '')
+    \ [ ":\<C-u>"
+    \ , ((a:wantcount && v:count) ? v:count : '')
     \ , a:cmd
-    \ , '<CR>'
+    \ , "\<CR>"
     \ , (&foldopen =~# 'quickfix' ? 'zv' : '')
     \ , 'zz'
     \ ], '')

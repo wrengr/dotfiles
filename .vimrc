@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" wren gayle romano's vim config                    ~ 2024-02-06
+" wren gayle romano's vim config                    ~ 2024-02-17
 "
 " This file uses &foldmethod=marker, but I refuse to add a modeline
 " to say that; because modelines are evil.
@@ -1513,12 +1513,6 @@ set splitbelow          " :sp puts the new window (and focus!) to the bottom.
 
 if has('quickfix')
   " ~~~~~ Quickfix/errors                                        {{{3
-  " BUG: (2023-01-03) All of a sudden my BracketExpr() isn't working
-  "   anymore!  Instead of interpreting/executing the string (and
-  "   hence the <C-u> and <CR> codes as well), it just prints it to
-  "   the cmdline!
-  " TODO: see also 'vim-qf' for nicer wrappers around the builtin
-  "   :c{*} commands that don't error when they reach end of list.
   " Note: these understand v:count=0 just fine; it's just a bit
   "   unsightly to be echoed that way.
   nnoremap <expr> [q  wrengr#qf#BracketExpr(1, 'cprev')
@@ -1539,7 +1533,9 @@ if has('quickfix')
   nnoremap <expr> ].Q  wrengr#qf#BracketExpr(1, 'cnfile')
   " TODO: should we also have stuff for :c{older,newer}?
   "   For a handly reference, see <https://stackoverflow.com/a/55117681>
-  "   Re :c{older,newer} beware of getting E380; cf., <https://vimways.org/2018/colder-quickfix-lists/>
+  "   Re :c{older,newer} beware of getting E380;
+  "   cf., <https://vimways.org/2018/colder-quickfix-lists/>
+  "   Also see <https://github.com/romainl/vim-qf/blob/master/autoload/qf/history.vim>
   " TODO: others we might consider just to avoid using the cmdline
   "   so much include :cc, :cclose, :c{f,g,b,l}
   nnoremap <expr> <leader>zq ':<C-u>copen ' . (v:count ? v:count : '') . '<CR>'
