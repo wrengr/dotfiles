@@ -133,10 +133,10 @@ call plug#begin(s:vimplug_dir)
   " bug where saving modified files causes them to be saved as binary
   " in spite of the *.asc suffix.
   let g:GPGPreferArmor=1
-  " Debugging Note: If you install a new version of gpg and are running
-  " into issues with vim-gnupg, then you probably need to re-import
-  " your secret keys.  For more info on how to do so (and how to check
-  " if that's the issue), see: <https://stackoverflow.com/q/43513817>
+  " Debugging Note: Whenever you install a new version of gpg,
+  " you're likely to run into issues with it not finding your keys,
+  " and hence will run into issues with vim-gnupg not being able to
+  " decrypt files.  To fix that, see: <https://stackoverflow.com/a/55220936>
 
 
 " ~~~~~ Unicode  ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{2
@@ -1794,7 +1794,7 @@ nnoremap <C-Down> <C-d>:keepjumps normal! M<CR>
 " exclusive.  (Though exclusive makes more sense to me, so I'm cool
 " with that.)  Fwiw, you can still use <C-n>/<C-p> to get the old
 " file-linewise.
-" HT: <https://vi.stackexchange.com/a/22576> re insertmode
+" HT: <https://vi.stackexchange.com/a/22576> re insertmode (:h i_CTRL-\_CTRL-O)
 noremap  <Up>   gk
 inoremap <Up>   <C-\><C-o>gk
 noremap  <Down> gj
