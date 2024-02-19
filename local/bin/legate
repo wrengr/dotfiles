@@ -115,6 +115,11 @@ unset SSH_DIR
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~ Check if an agent is already running.
+# TODO: If (and only if!) SSH_AGENT_PID is already set, then we
+# might consider using `ssh-add -l | grep ${USER} > /dev/null 2>&1`
+# to detect whether that pid is still valid.  So, might should integrate
+# that with the current ps hacking to help guarantee cohesion if folks
+# call ssh-agent outside of this script.
 SSH_AGENT_PID=0
 IS_RUNNING=0
 if [[ -r "$AGENT_FILE" ]]; then
