@@ -159,6 +159,13 @@ endfun
 " Note: We must use the "\<>" syntax for special characters (i.e., not '<>')
 " in order for `:nnoremap <expr>` to actually interpret them as
 " special characters (rather than as a sequence of normal characters).
+" This has something to do with being factored out into a function,
+" since when the string is written inline in the `:nnoremap <expr>`
+" command itself, then that requires using the '<>' syntax instead.
+"
+" TODO: Generalize this to a version that doesn't have the zv/zz
+" stuff, so that we can use it for the <leader>z family of mappings
+" and for the non-qf bracketoids as well.
 fun! wrengr#qf#BracketExpr(wantcount, cmd)
   return join(
     \ [ ":\<C-u>"
