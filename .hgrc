@@ -44,7 +44,8 @@ oo = update
 # ignored) files.
 st = status -q
 # Diff HEAD against a given change, considering only those files in that change
-rediff = !$HG diff -r $1 -- $($HG status --change $1 -n)
+# FIXME: How to get these to default to '.' when no argument is provided?
+rediff = !$HG diff -r $1 -- $($HG status --no-status --change $1)
 # Note: there's also (apparently) an alias 'record'='commit --interactive'
 # BUG: hg normally has `ci` mean the equivalent of `git commit -a`;
 #   not sure if this alias will override that or no.
@@ -96,6 +97,25 @@ show = !$HG diff -c ${1:-'.'}
 # N.B., there's also an 'uncommit' extension that adds both `uncommit`
 # and `unamend`; overriding the commands from the 'evolve' extension.
 unmerge = update -C -r.
+
+# N.B., we may prefer to use `pstatus` in lieu of `status` (or have
+# separate aliases for each).
+# TODO: Need to update this to automatically select the correct BASE ref.
+#whatsout = status --no-status --rev BASE
+
+# Copypasta from <google-aliases.rc>
+## A command to rewrite the message of a changeset without modifying
+## any of the files in the changeset.
+#reword = commit --amend 're:^$'
+#reword:help = [-m MSG]
+#reword:doc = edit commit message without changing its contents
+#reword:category = management
+## shows the modified files in the current revision (parent of the working
+## directory) relative to the cwd. Does NOT include any uncommitted changes.
+#revstatus = status --change .
+#revstatus:doc = show changed files in the current revision
+#revstatus:category = wdir
+# {end copypasta}
 
 # This points to our local copy of fig_status.py.  We do not directly
 # use the version in Piper because that would entail performance loss

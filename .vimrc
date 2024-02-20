@@ -3016,6 +3016,8 @@ augroup END
 " Enable echo under cursor when in normal mode.
 "let g:lsp_diagnostics_echo_cursor = 1
 
+" TODO: we may want to :set lsp_hover_conceal=0
+
 "let g:lsp_format_sync_timeout = 1000
 "autocmd wrengr_vimrc BufWritePre *.rs,*.go call execute('LspDocumentFormatSync')
 "
