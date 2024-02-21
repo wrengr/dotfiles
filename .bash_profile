@@ -1185,7 +1185,14 @@ shopt -s checkwinsize
 export HISTCONTROL=ignoredups
 
 # Colon-seperated patterns to not store in histfile
-export HISTIGNORE='ls:l:ll:la:lla:l.:ll.:cl:cll:q:x:cd:ghci'
+#
+# The "[ \t]*" is so that we can ignore any specific command on an ad-hoc
+# basis by just prepending a space.
+# HT: <http://www.talug.org/events/20030709/cmdline_history.html>
+#
+# FIXME: Should improve our handling of ~/.bash.d/histignore to avoid
+# various issues (cf., the section above re "Sanitize paths").
+export HISTIGNORE="[ \t]*:$(tr '\n' ':' < ~/.bash.d/histignore | sed 's/:$//')"
 
 # Colon-seperated dirs where `cd` manoeuvres from
 #export CDPATH='.:~'
