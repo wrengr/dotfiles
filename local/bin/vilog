@@ -1,0 +1,30 @@
+#!/usr/bin/env perl
+# BUG: This is not currently working!  Something got messed up in my translation.
+use warnings;
+use strict;
+use Time::HiRes qw(time);
+
+# N.B., there's also just `vim --startuptime vim_startup.log` to try
+# before running this script (if I ever get this script working).
+
+my $cmd = "vim -V @ARGV -c :q 2>&1";
+my @output;
+open my $FH, '-|', $cmd or die "Cannot fork process: $!";
+while (<$FH>) {
+    chomp;
+    $_ = time . ": $_\n";
+    push @output, $_;
+    print $_;
+}
+close $FH;
+
+my $lt = 0;
+foreach (@output) {
+    $_ =~ m/([0-9.]+)(:.*)/;
+    $_ = ($lt ? $1 - $lt : 0) . $2;
+    $lt = $1;
+}
+@output = sort {$a <=> $b} @output;
+open $FH, '>', 'vilog-output' or die "Cannot open vilog-output: $!";
+print $FH $_ foreach @output;
+close $FH;

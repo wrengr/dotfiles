@@ -1,0 +1,484 @@
+#!/bin/bash
+# My helper script for reconfiguring/rebuilding MLIR via cmake.
+#                                                   ~ 2022.03.22
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ObTangent: If you're wanting to build things via Bazel (e.g.,
+# for integrate) then the way you get bazel installed is just
+# `sudo apt update && sudo apt install bazel-6.1.2` (already done
+# as of 2023-06-06) and then you'll need to `cd utils/bazel &&
+# bazel-6.1.2 build --config=generic_clang @llvm-project//...` (per
+# <https://github.com/llvm/llvm-project/blob/main/utils/bazel/README.md#quick-start>)
+# N.B., aptitude doesn't install a symlink for "`bazel`" so you'll need
+# to either add one ourself, or else spell out the version number.
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# 0:Black, 1:Red, 2:Green, 3:Yellow, 4:Blue, 5:Magenta, 6:Cyan, 7:White.
+_error()  { >&2 echo -e "\033[1;31m${0##*/}:\033[0m \033[1m$*\033[0m"; }
+_warn()   { >&2 echo -e "\033[1;33m${0##*/}:\033[0m \033[1m$*\033[0m"; }
+_info()   { printf "\e[1;32m#\e[0m $*\n"; }
+# WARNING: we use "$@" in lieu of $* in the commands being executed,
+# so that these functions do the correct/safe thing and re-quote the
+# arguments to avoid an additional layer of interpretation by the shell;
+# e.g., re-tokenizing things if an argument contains spaces.  However,
+# beware that the string being printed no longer exactly matches the string
+# being executed; e.g., if any argument contains spaces then the printed
+# string will not display as quoting the argument (nor backslash escaping
+# the spaces).
+_do()     { printf "\e[1;34m\$\e[0m $*\n"; "$@" || exit $?; }
+_cd()     { printf "\e[1;34m⮕\e[0m $*\n"; cd "$@" || exit $?; }
+_export() { printf "\e[1;34m\$ export\e[0m $*\n"; export $*; }
+_source() { printf "\e[1;34m\$ source\e[0m $*\n"; source "$*"; }
+bool_to_cmakeEnable() { if $1; then echo 'ON'; else echo 'OFF'; fi }
+
+_usage() {
+  echo "Usage: ${0##*/} [flags]"
+  echo '    --help      Show this information'
+  echo '    --clean     Clean and re-configure'
+  echo '    --goma      Use GOMA'
+  echo '    --python    Enable Python bindings, and their tests'
+  echo '    --avx       Enable AVX512 testing. (Currently unused)'
+  echo '    --asan      Enable Asan. (N.B., disables Python and AVX)'
+}
+
+# ~~~~~ Configurable settings
+want_clean=false
+want_goma=false
+want_python=false
+# Currently unused, because we need to install the emulator.
+want_avx=false
+want_asan=false
+for arg in "$@"; do
+    case $arg in
+    --clean)    want_clean=true; ;;
+    --goma)     want_goma=true; ;;
+    --python)   want_python=true; ;;
+    --avx)      want_avx=true; ;;
+    --asan)     want_asan=true; ;;
+    --help)     _usage; exit 0; ;;
+    *)          _error "Unrecognized flag: $arg"; echo; _usage; exit 1; ;;
+    esac
+done
+# What <https://mlir.llvm.org/getting_started/> says to use:
+#LLVM_TARGETS_TO_BUILD='X86;NVPTX;AMDGPU'
+# What Aart uses:
+LLVM_TARGETS_TO_BUILD='host'
+
+
+# N.B., if we enable ASan, then that'll disable various other things
+# (BUILD_SHARED_LIBS, $want_python, $want_avx,...) because they're
+# incompatible.
+# TODO: should we really use `_warn` here, or is `_info` sufficient?
+if $want_asan; then
+    if $want_python; then
+        _warn 'Disabling Python because it'\''s incompatible with ASan'
+    fi
+    want_python=false
+    if $want_avx; then
+        _warn 'Disabling AVX because it'\''s incompatible with ASan'
+    fi
+    want_avx=false
+fi
+# BUG: When $want_clean is false, the other flags are gonna be bogus,
+# or else require being the same as the last time we did the clean!
+# Can we look the up from the current cmake'ed files somehow?
+_info 'CLI settings:'
+_info "    clean =$(bool_to_cmakeEnable $want_clean)"
+_info "    goma  =$(bool_to_cmakeEnable $want_goma)"
+_info "    python=$(bool_to_cmakeEnable $want_python)"
+_info "    avx   =$(bool_to_cmakeEnable $want_avx)"
+_info "    asan  =$(bool_to_cmakeEnable $want_asan)"
+echo
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~ My paths. These shouldn't need any modification.
+dir_depottools="${HOME}/src/depot_tools"
+dir_chromeclang="${HOME}/src/chromeclang"
+# $dir_chromeclang_bin is for GOMA
+dir_chromeclang_bin="${dir_chromeclang}/third_party/llvm-build/Release+Asserts/bin"
+dir_goma="$(_abspath -k "${HOME}/goma")"
+dir_llvmproject="${HOME}/src/llvm-project"
+if $want_goma; then
+    reldir_build='build-goma'
+elif $want_asan; then
+    reldir_build='build-asan'
+else
+    reldir_build='build'
+fi
+dir_build="${dir_llvmproject}/${reldir_build}"
+# Alas, we can't help but specify this manually.
+python='/usr/bin/python3.10'
+python_venv="${dir_build}/venv"
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~ Get Python dev paths
+# None of this is used anymore, just here for reference/future.
+# Also, there's some confusion about whether:
+# * the "Python3" part should instead be spelled "PYTHON" or "PYTHON3"
+#   * the "PYTHON" variant was used here:
+#     <https://stackoverflow.com/q/24174394>
+#     <https://stackoverflow.com/a/38121972>
+#   * the "PYTHON3" variant was suggested here:
+#     <https://stackoverflow.com/q/24174394#comment121790774_38121972>
+# * the "LIBRARY"/"DIR" should instead be spelled "LIBRARIES"/"DIRS"
+#   <https://gitlab.kitware.com/cmake/cmake/-/issues/20113#note_671565>
+#   * The singular seems to be correct, even though cmake suggests the
+#     plural when it's complaining about things being missing:
+#     <https://stackoverflow.com/a/29657288>
+
+
+# Prints the value for -DPython3_LIBRARY to use.
+# HT: <https://stackoverflow.com/a/38121972>
+get_Python3_LIBRARY() {
+    "$python" -c 'import distutils.sysconfig as sc; from os import path; print(path.join(sc.get_config_var("LIBDIR"),sc.get_config_var("LDLIBRARY")))'
+}
+
+# Prints the value for -DPython3_INCLUDE_DIR to use.
+# HT: <https://stackoverflow.com/a/38121972>
+# NOTE: You need to `sudo apt-get install python3-dev` in order to
+#   actually have all the necessary headers in here.
+get_Python3_INCLUDE_DIR() {
+    "$python" -c 'import distutils.sysconfig as sc; print(sc.get_python_inc())'
+}
+
+# Prints the value for -DPython3_NumPy_INCLUDE_DIR to use.
+# HT: <https://stackoverflow.com/a/64224599>
+get_Python3_NumPy_INCLUDE_DIR() {
+    "$python" -c 'import numpy as np; print(np.get_include())'
+}
+
+# TODO: code for getting -DPYBIND_DIR and/or the include dir, which the
+# config step currently reports as being:
+#   ${python_venv}/lib/python3.9/site-packages/pybind11/include
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# FIXME: I think this part is all a one-time deal, so shouldn't be done here...
+#echo
+#_info "Setup cloud SDK (for GOMA)"
+#_do sudo apt install google-cloud-sdk
+#_do gcloud auth login
+#_info "(go to the URL it displays, get the token and paste it here)"
+#_do gsutil ls gs://cxx-compiler-service-releases
+#
+#echo
+#_info "Logging into GOMA"
+#_info "(go to the URL it displays, get the token and paste it here)"
+#_do "$dir_depottools/goma_auth" login
+#_info "Making convenience symlink"
+#_do ln -s "$dir_depottools/.cipd_bin/" "$dir_goma"
+#
+###
+### Warning: my extant $dir_goma is not a symlink to $dir_depottools/.cipd_bin
+###     It's a real directory. Don't know if this will break things or what.
+###
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+if $want_goma; then
+    echo
+    _info 'Starting up GOMA'
+    # Workaround 404 errors
+    # <https://groups.google.com/a/google.com/g/goma-users/c/qpucOjEqfD8/m/Lpb72kSYBAAJ>
+    _export GOMACTL_PROXY_PORT=19080
+    # Migration fallback
+    # <https://groups.google.com/a/google.com/g/goma-users/c/wEwpuKonO0o/m/WMeBPxZZBQAJ>
+    #export GOMA_SERVER_HOST=clients5.google.com
+    _do "$dir_goma/goma_ctl.py" ensure_start
+    # TODO: ought to register a hook to ensure_stop goma whenever we exit this script.
+
+    ## To keep the compiler proxy up-to-date
+    #_do "$dir_goma/goma_ctl.py" update_hook
+    #_do "$dir_goma/goma_ctl.py" restart
+
+    _info 'You can watch GOMA progress by running the following locally'
+    _info "$> ssh $(uname -n) -L ${GOMACTL_PROXY_PORT}:localhost:${GOMACTL_PROXY_PORT}"
+    _info "And then opening http://localhost:${GOMACTL_PROXY_PORT}/ locally"
+fi
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+echo
+_cd "$dir_llvmproject"
+
+if $want_clean; then
+    _info 'Cleaning LLVM/MLIR build files...'
+    _do rm -rf "$reldir_build"
+fi
+# Either $want_clean or the dir is missing
+if [[ ! -d "$reldir_build" ]]; then
+    want_configure=true
+else
+    want_configure=false
+fi
+if $want_configure; then
+    _info 'Initializing build directory...'
+    _do mkdir "$reldir_build"
+fi
+_cd "$dir_build"
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+if $want_python; then
+    # If $python_venv is inside $dir_build, then we need to do this check
+    # down here after removing $dir_build.
+    if [[ ! -e "$python_venv" ]]; then
+        echo
+        _info 'Initializing Python venv'
+        _do "$python" -m venv "$python_venv"
+        want_install_venv=true
+    else
+        want_install_venv=false
+    fi
+    # Must come after initialising $python_venv (obviously).
+    # Must come before the cmake configuration.
+    echo
+    python_venv_activate="${python_venv}/bin/activate"
+    if [[ ! -e "$python_venv_activate" ]]; then
+        _error "Can't find Python venv activation script: $python_venv_activate"
+        exit 1
+    fi
+    _source "$python_venv_activate"
+    # Now we must correct $python to point at the venv
+    # (the $PATH is already set to find the right one, but we want to make
+    # it explicit that we're calling the right one.)
+    python="${python_venv}/bin/$(basename "$python")"
+    # BUG: $python_venv_activate doesn't actually update $PYTHONPATH
+    export PYTHONPATH="${dir_build}/tools/mlir/python_packages/mlir_core:${dir_build}/lib/python3.9/site-packages"
+    _info 'Now using:'
+    _info "    VIRTUAL_ENV=${VIRTUAL_ENV}"
+    _info "    python     =${python}"
+    _info "    PYTHONHOME =${PYTHONHOME}"
+    _info "    PYTHONPATH =${PYTHONPATH}"
+    # Of course, these three aren't actually set by $python_venv_activate;
+    # instead, we have them here for debugging purposes.
+    _info "    Python3_LIBRARY=$(get_Python3_LIBRARY)"
+    _info "    Python3_INCLUDE_DIR=$(get_Python3_INCLUDE_DIR)"
+    _info "    Python3_NumPy_INCLUDE_DIR=$(get_Python3_NumPy_INCLUDE_DIR)"
+    # Must come after sourcing $python_venv_activate, but only whenever we
+    # had to reinitialize $python_venv
+    #
+    # Finally found something worthwhile, fucking-A!
+    # <https://mlir.llvm.org/docs/Bindings/Python/#cmake-variables>
+    if $want_install_venv; then
+        echo
+        _info 'Upgrade pip'
+        _do "$python" -m pip install --upgrade pip
+        echo
+        _info 'Installing MLIR'\''s Python requirements'
+        _do "$python" -m pip install \
+            -r "${dir_llvmproject}/mlir/python/requirements.txt"
+        # TODO: may also want to install these things which the config step says it can't find:
+        #   pyaml                   the llvm-premerge-checks uses ==20.4.0
+        #   pygments
+        #   pygments.lexers.c_cpp
+    fi
+fi
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Finally, the actual cmake configuration step.
+if $want_configure; then
+    declare -a cmake_flags
+    # TODO: -Wdev -Werror=dev
+    # <https://mlir.llvm.org/getting_started/>
+    cmake_flags+=('-DLLVM_ENABLE_PROJECTS=mlir')
+    cmake_flags+=('-DLLVM_BUILD_EXAMPLES=ON')
+    cmake_flags+=("-DLLVM_TARGETS_TO_BUILD=${LLVM_TARGETS_TO_BUILD}")
+    # Even though the link above says to use Release, that's -O3, so we
+    # may want to use Debug (the default) instead; Or we can try
+    # RelWithDebInfo which is only -O2 and also keeps debugging info around.
+    cmake_flags+=('-DCMAKE_BUILD_TYPE=Release')
+    cmake_flags+=('-DLLVM_ENABLE_WARNINGS=ON')
+    # TODO: does this include `-Wunused-variable`?  If not, then how do we add that?
+    cmake_flags+=('-DLLVM_ENABLE_PEDANTIC=ON')
+    cmake_flags+=('-DLLVM_ENABLE_ASSERTIONS=ON')
+    # Turning this on helps to debug that our CMakeLists.txt files list
+    # all the dependencies.
+    if $want_asan; then
+        # Aart disables this here, but I'm not sure if that's because
+        # they're strictly incompatible, or just as an optimization.
+        cmake_flags+=('-DBUILD_SHARED_LIBS=OFF')
+    else
+        cmake_flags+=('-DBUILD_SHARED_LIBS=ON')
+    fi
+    #
+    # ~~~~~ Supposedly these things can speed up builds...
+    cmake_flags+=('-DLLVM_ENABLE_LLD=ON')
+    # <https://llvm.org/docs/GettingStarted.html#for-developers-to-commit-changes-from-git>
+    # <https://llvm.org/docs/CMake.html>
+    # Prettymuch equivalent to -DLLVM_ENABLE_LLD=ON; and can't use both at once.
+    #cmake_flags+=('-DLLVM_USE_LINKER=/usr/bin/lld')
+    # E.g., 10 jobs per cpu (ciruela has 8 cpus * 2 threads/cpu)
+    cmake_flags+=('-DLLVM_PARALLEL_COMPILE_JOBS=80')
+    # E.g., one job per 15GB (ciruela has 32GB)
+    cmake_flags+=('-DLLVM_PARALLEL_LINK_JOBS=2')
+    #cmake_flags+=('-DCLANG_ENABLE_STATIC_ANALYZER=OFF')
+    #cmake_flags+=('-DLLVM_USE_SPLIT_DWARF=ON')
+    # only useful if -DCMAKE_BUILD_TYPE=Debug
+    #cmake_flags+=('-DLLVM_OPTIMIZED_TABLEGEN=ON')
+    #
+    # ~~~~~ Make ninja marginally more verbose
+    # TODO: see if this'll work
+    # <https://github.com/ninja-build/ninja/issues/900#issuecomment-417917630>
+    # vs <https://cmake.org/cmake/help/latest/command/set.html#set-cache-entry>
+    #cmake_flags+=('-DCMAKE_VERBOSE_MAKEFILE=ON')
+    #
+    # ~~~~~ Must explicitly request integration tests.
+    cmake_flags+=('-DMLIR_INCLUDE_INTEGRATION_TESTS=ON')
+    # Just to be excedingly certain (Aart does this)
+    cmake_flags+=('-DMLIR_INCLUDE_TESTS=ON')
+    #
+    # ~~~~~ Use GOMA, or not.
+    if $want_goma; then
+        cmake_flags+=("-DCMAKE_C_COMPILER=${dir_chromeclang_bin}/clang")
+        cmake_flags+=("-DCMAKE_CXX_COMPILER=${dir_chromeclang_bin}/clang++")
+        cmake_flags+=("-DCMAKE_C_COMPILER_LAUNCHER=${dir_goma}/gomacc")
+        cmake_flags+=("-DCMAKE_CXX_COMPILER_LAUNCHER=${dir_goma}/gomacc")
+    else
+        cmake_flags+=('-DCMAKE_C_COMPILER=clang')
+        cmake_flags+=('-DCMAKE_CXX_COMPILER=clang++')
+    fi
+    #
+    # ~~~~~ Enable ASan
+    if $want_asan; then
+        cmake_flags+=('-DLLVM_USE_SANITIZER=Address')
+    fi
+    #
+    # ~~~~~ Enable AVX512 testing
+    # TODO: <https://mlir.llvm.org/getting_started/TestingGuide/#emulator>
+    # N.B., we're phrasing these with `bool_to_cmakeEnable` so that
+    # they're guaranteed to be disabled when $want_asan.
+    #cmake_flags+=("-DMLIR_RUN_X86VECTOR_TESTS=$(bool_to_cmakeEnable $want_avx)")
+    #cmake_flags+=("-DMLIR_RUN_AMX_TESTS=$(bool_to_cmakeEnable $want_avx)")
+    # It's fine to provide this when the above two are disabled; but
+    # you can't enable the above and leave this one un-provided.
+    #cmake_flags+=("-DINTEL_SDE_EXECUTABLE=${emulator_path}")
+    #
+    # TODO: this one should only be enabled if the current machine has A100 GPU;
+    # cf., <https://reviews.llvm.org/D147863>
+    #cmake_flags+=("-DMLIR_RUN_CUDA_SM80_TESTS=$(bool_to_cmakeEnable $want_avx)")
+    #
+    # ~~~~~ Enable Python testing
+    # <https://mlir.llvm.org/docs/Bindings/Python/>
+    # <https://mlir.llvm.org/docs/Bindings/Python/#cmake-variables>
+    cmake_flags+=("-DMLIR_ENABLE_BINDINGS_PYTHON=$(bool_to_cmakeEnable $want_python)")
+    #   Some of the links say to pass -DPython3_EXECUTABLE, but Aart
+    #   doesn't.  And so long as I don't, everything seems to work out
+    #   fine; whereas if I do pass it, then everything breaks horribly.
+    #cmake_flags+=("-DPython3_EXECUTABLE=${python}")
+    #   While there's confusion about what exactly to call all the various
+    #   python flags, at least -DPython3_EXECUTABLE is indeed supposed
+    #   to be spelled that way:
+    #   <https://gitlab.kitware.com/cmake/cmake/-/issues/22084#note_952892>
+    #
+    # ...and if we do pass it then we get problems with all this crap:
+    ## BUG: the cmake code isn't finding Python3_INCLUDE_DIRS (for NumPy, &c.)
+    ## Trying to set them manually, but that's not working either...
+    #cmake_flags+=("-DPython3_INCLUDE_DIR=$(get_Python3_INCLUDE_DIR)")
+    #cmake_flags+=("-DPython3_LIBRARY=$(get_Python3_LIBRARY)")
+    ## TODO: see also <https://cmake.org/cmake/help/v3.21/module/FindPython.html> and <https://gitlab.kitware.com/cmake/cmake/-/issues/20113>
+    #cmake_flags+=('-DPython3_FIND_VIRTUALENV=ONLY')
+    ## <https://stackoverflow.com/a/64667791>
+    #cmake_flags+=("-DPython3_NumPy_INCLUDE_DIR=$(get_Python3_NumPy_INCLUDE_DIR)")
+    ##
+    ## But the others have some confusion about singular vs plural...
+    ## <https://gitlab.kitware.com/cmake/cmake/-/issues/20113#note_671565>
+    #cmake_flags+=("-DPython3_INCLUDE_DIRS=$(get_Python3_INCLUDE_DIR)")
+    #cmake_flags+=("-DPython3_LIBRARIES=$(get_Python3_LIBRARY)")
+    #cmake_flags+=("-DPython3_NumPy_INCLUDE_DIRS=$(get_Python3_NumPy_INCLUDE_DIR)")
+    ##
+    ## Some more links that might have something worthwhile in them...
+    ## <https://llvm.discourse.group/t/mlir-python-bindings-test-problem/1361>
+    ## <https://github.com/ros2/rosidl_python/issues/66>
+    ##
+    ## This one is mentioned at llvm-project/mlir/CMakeLists.txt:104
+    ##cmake_flags+=('-DPYBIND_DIR=${}")
+    #
+    # ~~~~~ Override the default '-sv --no-progress-bar' to make llvm-lit more verbose.
+    # <https://llvm.org/docs/TestSuiteGuide.html>
+    #declare -a lit_flags
+    # Print all the commands and output, not just what fails!
+    #lit_flags+=('-a')
+    # Timing (mainly for the stress-test)
+    #lit_flags+=('--time-tests')
+    # Show more things
+    #lit_flags+=('--show-excluded')
+    #lit_flags+=('--show-skipped')
+    #lit_flags+=('--show-unsupported')
+    #lit_flags+=('--show-pass')
+    #lit_flags+=('--show-flakypass')
+    #lit_flags+=('--show-xfail')
+    # BUG: I can't seem to get anything here to escape the spaces correctly...
+    # BUG: so, doing this works fine as far as the config step not dying; but it does give a warning that the flag is unused by the project. So, dunno if it's llvm only, or what.
+    #cmake_flags+=('-DLLVM_LIT_ARG=-a')
+    # TODO: aha! you can't pass these directly to cmake, apparently; but you can pass them indirectly by setting the $LIT_OPTS environment variable for the `cmake --build . --target check-mlir` step.
+    # <https://mlir.llvm.org/getting_started/TestingGuide/#command-line-incantations>
+    #
+    # ~~~~~ Finally, run the configuration generator.
+    _info 'Configuring...'
+    _do cmake -G Ninja ../llvm "${cmake_flags[@]}"
+fi
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+echo
+_info 'Building prerequisites'
+_info '(This will take a very long time; go get some $BEVERAGE and enjoy the sun)'
+# Eschewing the for-loop, via <https://stackoverflow.com/a/56490428>
+_do cmake --build . --target \
+    llvm-symbolizer FileCheck mlir_c_runner_utils mlir-cpu-runner mlir-opt
+
+# WAS:
+#for t in llvm-symbolizer FileCheck mlir_c_runner_utils mlir-cpu-runner mlir-opt; do
+#    echo
+#    _info "Building $t"
+#    # BUG: I think passing `-j` to ninja will override our -DLLVM_PARALLEL_COMPILE_JOBS
+#    _do ninja "$t" -j 40
+#    # BUG: when we prefix ninja with `time`, all the timing info is all collapsed onto one line...
+#done
+
+if $want_goma; then
+    _do "${dir_goma}/goma_ctl.py" stat
+fi
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# N.B., below we can replace `cmake --build . --target $t` with `ninja $t`
+# <https://llvm.org/docs/GettingStarted.html#for-developers-to-commit-changes-from-git>
+# There's also `ctest`
+# <https://cmake.org/cmake/help/v3.22/guide/user-interaction/index.html#running-tests>
+# <https://githubmemory.com/repo/google/iree/issues/7427>
+
+if $want_asan; then
+    # Don't want to run all the tests here, since a bunch of
+    # non-sparsetensor stuff fails.
+    # TODO: dunno if we want to add mlir-capi-sparse-tensor-test or if we can safely add check-mlir-integration-dialect-sparsetensor-taco
+    for t in 'check-mlir-dialect-sparsetensor' 'check-mlir-integration-dialect-sparsetensor-cpu'; do
+        echo
+        _info "ASan: $t"
+        _do cmake --build . --target $t
+    done
+else
+    echo
+    _info '"Regular" testing'
+    # Afaict from the following link, this will actually run the
+    # integration tests in addition to the regular tests if we have
+    # -DMLIR_INCLUDE_INTEGRATION_TESTS=ON
+    # <https://mlir.llvm.org/getting_started/TestingGuide/#integration-tests>
+    # And indeed it does look to be that way...
+    _do cmake --build . --target check-mlir
+
+    echo
+    _info 'Integration testing'
+    # (requires -DMLIR_INCLUDE_INTEGRATION_TESTS=ON)
+    _do cmake --build . --target check-mlir-integration
+fi
+
+# more-specific targets to consider:
+# (for more, see:
+# $> cmake --build . --target help \
+# $>    | perl -ple 's@^/usr/local/google/home/wrengr/src/llvm-project/build@...@; s@: phony$@@' \
+# $>    | grep mlir | sort | $PAGER
+# Or you can also use `ninja -t targets all` in lieu of the cmake command,
+# to get the same thing.)
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ fin.

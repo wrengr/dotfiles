@@ -1,0 +1,33 @@
+#!/usr/bin/env perl
+# For use with git: <https://github.com/git/git/tree/master/contrib/diff-highlight>
+# BUG: this is no longer picking up on git-diff's colors.
+# BUG: users are forced to manually pipe the output to their pager, and by default `less` will show control characters rather than executing them.
+# Both of those can be fixed via the incantation:
+# $> git diff --color=always ... | diff-highlight | less -isqR
+# (N.B., the -isq flags aren't strictly required, they're just my preferred.)
+# The commentor mentioning diff-so-fancy below suggests using `less -FRXsu --tabs=4` here
+#
+# As commented at <https://stackoverflow.com/a/15149253#comment76619242_15149253>
+# we may rather try to use the last version before it got turned into a module:
+# <https://raw.githubusercontent.com/git/git/fd99e2bda0ca6a361ef03c04d6d7fdc7a9c40b78/contrib/diff-highlight/diff-highlight>
+#
+# TODO: when there are multiple changes on a line the default module will
+# highlight everything between the start of the first and end of the last;
+# we may prefer a heuristic to find smaller diffs.
+#
+# TODO: despite this module being shipped with git these days,
+# we'd probably be better off using something like diff-so-fancy
+# <https://stackoverflow.com/a/39504214> instead.
+use 5.008;
+use warnings FATAL => 'all';
+use strict;
+use lib '/usr/share/doc/git/contrib/diff-highlight/';
+use DiffHighlight;
+package main;
+
+# Some scripts may not realize that SIGPIPE is being ignored when
+# launching the pager--for instance scripts written in Python.
+$SIG{PIPE} = 'DEFAULT';
+
+DiffHighlight::highlight_stdin();
+exit 0;
