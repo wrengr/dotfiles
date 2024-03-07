@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" wren gayle romano's vim config                    ~ 2024-02-17
+" wren gayle romano's vim config                    ~ 2024-03-07
 "
 " This file uses &foldmethod=marker, but I refuse to add a modeline
 " to say that; because modelines are evil.
@@ -1731,6 +1731,21 @@ set sidescrolloff=10    " Keep N columns between cursor and window left/right.
 " It also shows how to use autocmd for the OptionSet event, to
 " automatically run some code whenever someone changes an option.
 
+" ~~~~~ Remap <Home>/<End> keys to DWIM.
+" I'm using <C-Home>/<C-End> in lieu of gg/G, because the former already
+" exist and DWIM.  Also, beware that G goes to the first-column whereas
+" <C-End> goes to one-past-the-last.
+" NOTE: The relevant helppage spellings are: i_<C-Home>, i_<C-End>
+"
+" TODO: See <https://vi.stackexchange.com/a/15530> for a fancier variation
+" on the theme (though it's not actually the behavior I want).  The relevant
+" helppage spellings here are: i_CTRL-O, i_CTRL-\_CTRL-O, i_CTRL-\_CTRL-N
+" And, of course, be sure to reread `:help :map-modes`
+noremap  <Home> <C-Home>
+inoremap <Home> <C-Home>
+
+noremap  <End> <C-End>
+inoremap <End> <C-End>
 
 " ~~~~~ Gentler scrolling with Shift-Up/Down.  [non-jump]
 " (Because they should not be synonymous with <PageUp>/<PageDown>!)
