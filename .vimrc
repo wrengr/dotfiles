@@ -1741,6 +1741,13 @@ set sidescrolloff=10    " Keep N columns between cursor and window left/right.
 " on the theme (though it's not actually the behavior I want).  The relevant
 " helppage spellings here are: i_CTRL-O, i_CTRL-\_CTRL-O, i_CTRL-\_CTRL-N
 " And, of course, be sure to reread `:help :map-modes`
+" There's also <https://vim.fandom.com/wiki/Smart_home> which is similar
+"
+" FIXME(2024-03-08): Ever since adding this, vim has been occasionally
+" doing weird things whenever I accidentally hit the wrong modifier key
+" on the LHS of the keyboard...
+" (2023-03-26): Aha, actually the problem is that I've started hitting
+" the F1 key when I mean to be hitting <Esc>.  So we should unbind that key.
 noremap  <Home> <C-Home>
 inoremap <Home> <C-Home>
 

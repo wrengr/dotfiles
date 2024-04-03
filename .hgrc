@@ -65,6 +65,12 @@ ec = !$HG resolve --mark && $HG evolve --continue
 ma = merge --abort
 mc = !$HG resolve --mark && $HG merge --continue
 
+# This gets the short hash of the current revision (for scripting
+# purposes).  There are various methods for getting the long hash,
+# but all of them come with their own problems; cf.,
+# <https://stackoverflow.com/q/2485651>
+shorthash = id -i
+
 # Note: this is quite different from `hg summary`, but you may be
 #   interested in that command too.
 # Warning: for some reason this seems to take a long time to finish
@@ -97,6 +103,11 @@ show = !$HG diff -c ${1:-'.'}
 # N.B., there's also an 'uncommit' extension that adds both `uncommit`
 # and `unamend`; overriding the commands from the 'evolve' extension.
 unmerge = update -C -r.
+
+# TODO: We may want an alias for the following command (or we may just
+# want to leave this here as a note-to-self):
+## backport the result of a merge as a single commit:
+# `hg graft -r 123 --base 123^`
 
 # N.B., we may prefer to use `pstatus` in lieu of `status` (or have
 # separate aliases for each).

@@ -1,6 +1,6 @@
 #!/bin/bash
 # My helper script for reconfiguring/rebuilding MLIR via cmake.
-#                                                   ~ 2022.03.22
+#                                                   ~ 2024.04.03
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ObTangent: If you're wanting to build things via Bazel (e.g.,
 # for integrate) then the way you get bazel installed is just
@@ -12,9 +12,15 @@
 # to either add one ourself, or else spell out the version number.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+# TODO: Should move all this header stuff into a shared library,
+# to avoid redundancy and maintenance issues.
+
+# <https://bosker.wordpress.com/2012/02/12/bash-scripters-beware-of-the-cdpath/>
+unset CDPATH; export CDPATH
+
 # 0:Black, 1:Red, 2:Green, 3:Yellow, 4:Blue, 5:Magenta, 6:Cyan, 7:White.
-_error()  { >&2 echo -e "\033[1;31m${0##*/}:\033[0m \033[1m$*\033[0m"; }
-_warn()   { >&2 echo -e "\033[1;33m${0##*/}:\033[0m \033[1m$*\033[0m"; }
+_error()  { >&2 printf "\e[1;31m${0##*/}:\e[0m \e[1m$*\e[0m\n"; }
+_warn()   { >&2 printf "\e[1;33m${0##*/}:\e[0m \e[1m$*\e[0m\n"; }
 _info()   { printf "\e[1;32m#\e[0m $*\n"; }
 # WARNING: we use "$@" in lieu of $* in the commands being executed,
 # so that these functions do the correct/safe thing and re-quote the
@@ -25,10 +31,23 @@ _info()   { printf "\e[1;32m#\e[0m $*\n"; }
 # string will not display as quoting the argument (nor backslash escaping
 # the spaces).
 _do()     { printf "\e[1;34m\$\e[0m $*\n"; "$@" || exit $?; }
-_cd()     { printf "\e[1;34m⮕\e[0m $*\n"; cd "$@" || exit $?; }
+# CAVEAT: <https://mywiki.wooledge.org/BashFAQ/028>
+# <https://bosker.wordpress.com/2012/02/12/bash-scripters-beware-of-the-cdpath/>
+# and for more gotchas: <https://stackoverflow.com/q/59895>
+_cd()     { printf "\e[1;34m⮕\e[0m $*\n"; cd -- "$@" >/dev/null 2>&1 || exit $?; }
 _export() { printf "\e[1;34m\$ export\e[0m $*\n"; export $*; }
 _source() { printf "\e[1;34m\$ source\e[0m $*\n"; source "$*"; }
 bool_to_cmakeEnable() { if $1; then echo 'ON'; else echo 'OFF'; fi }
+
+# Move to the directory where this script is.  This should only matter
+# for calling $(p4 g4d)...
+#
+# CAVEAT: <https://mywiki.wooledge.org/BashFAQ/028>
+# <https://bosker.wordpress.com/2012/02/12/bash-scripters-beware-of-the-cdpath/>
+# and for more commentary on gotchas: <https://stackoverflow.com/q/59895>
+if [[ $BASH_SOURCE = */* ]]; then
+  _cd "$(~/local/bin/_abspath -k "${BASH_SOURCE%/*}/")"
+fi
 
 _usage() {
   echo "Usage: ${0##*/} [flags]"
