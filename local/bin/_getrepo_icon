@@ -13,6 +13,16 @@
 if hg root >/dev/null 2>/dev/null ; then
 	echo '☿'
 elif git branch >/dev/null 2>/dev/null ; then
+    # Would surely be better to use:
+    # `git rev-parse --is-inside-work-tree >/dev/null 2>&1`
+    # Or if we actually want the root/base directory itself:
+    # `git rev-parse --git-dir 2> /dev/null`
+    # <https://stackoverflow.com/a/2180367>
+    # <https://stackoverflow.com/a/53367550>
+    # <https://stackoverflow.com/a/39518382>
+    # <https://www.reddit.com/r/vim/comments/dwd5vj/how_to_know_if_i_am_within_a_git_repo/>
+    # <https://stackoverflow.com/q/47459371>
+    # <https://stackoverflow.com/q/38818918>
 	echo '±' # For lack of a better symbol; could also use '🐙'
 elif darcs show repo >/dev/null 2>/dev/null ; then
 	# We have to check this last because we have ~/ be a repo...
