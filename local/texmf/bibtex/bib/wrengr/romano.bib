@@ -1,10 +1,21 @@
-% wren gayle romano, <wren -at- cpan.org>           ~ 2016.02.07
-% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+% wren gayle romano, <wren -at- cpan.org>           ~ 2019.09.20
 % All the publications and presentations I'm author or co-author on.
-% TODO: use -at-String{id = "..."} to clean things up
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+% BUG: I'd like to use -at-String{id="..."} to clean things up, but
+% alas bibtex2html or my hakyll thing doesn't understand those.
 %
 % The editors, publishers, and addresses have been removed per:
 % <http://freedom-to-tinker.com/blog/dwallach/public-service-rant-please-fix-your-bibliography>
+
+% Conferences, Workshops, etc.
+%string { PBML = "Prague Bulletin of Mathematical Linguistics" }
+%string { ACL = "Association for Computational Linguistics" }
+%string { WMT = "Workshop on Statistical Machine Translation" }% (E)ACL
+%string { AMMCS = "Applied Mathematics, Modeling, and Computational Science" }
+%string { LICS = "ACM/IEEE Symposium on Logic in Computer Science" }
+%string { FLoC = "Federated Logic Conference (FLoC)" }
+%string { NLCS = "Natural Language and Computer Science (NLCS)" }
+%string { FLOPS = "Functional and Logic Programming (FLOPS)" }
 
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 % ~~~~~ Reed BA
@@ -12,7 +23,7 @@
 % BUG: bibtex2html does not interpret blank lines as paragraph breaks. And if we insert an explicit \par it is translated as "<p>" which is unbalanced and therefore illegal XHTML
 % Not a master's, using the `type' to override calling it that
 @MastersThesis{ Thornton2003:performative-gender,
-    author = "Thornton, Wren N. G.",
+    author = "Thornton, Wren N.G.",
     title  = "Performative Differences of Gender on the Prosody
               of {A}merican {E}nglish Speech",
     school = "Reed College",
@@ -20,13 +31,20 @@
     month  = may,
     year   = 2003,
     pages  = 59,
-    abstract = {In this thesis I investigate evidence of differential performance between males and females in the area of phonology. The study looks at the use of prosody for syntactic disambiguation based on Ilse Lehiste's 1973 non-gender based study of the same phenomenon.
+    abstract = {In this thesis I investigate evidence of differential
+    performance between males and females in the area of phonology.
+    The study looks at the use of prosody for syntactic disambiguation
+    based on Ilse Lehiste's 1973 non-gender based study of the same
+    phenomenon.
     
-    Eight speakers (4m, 4f) read through nine ambiguous sentences three times: once prior to being informed that the sentences were ambiguous, and twice afterwards, attempting to evoke each reading. Twenty-four listeners (12m, 12f) then listened to four of the speakers (2m, 2f). After each token they
-    identified the intended meaning of the speaker, and after
-    each block of tokens by a single speaker they answered
-    questions about the speaker including identifying their
-    gender.
+    Eight speakers (4m, 4f) read through nine ambiguous sentences
+    three times: once prior to being informed that the sentences
+    were ambiguous, and twice afterwards, attempting to evoke each
+    reading. Twenty-four listeners (12m, 12f) then listened to four
+    of the speakers (2m, 2f). After each token they identified the
+    intended meaning of the speaker, and after each block of tokens
+    by a single speaker they answered questions about the speaker
+    including identifying their gender.
     
     A very strong bias was found for the listeners labeling all
     speakers as male; what effect the speaker's gender had on
@@ -49,7 +67,7 @@
 
 % 600.425 final paper, ancillary to the project
 @TechReport{ Thornton2008:hetero-unify,
-    author = "Thornton, Wren N. G.",
+    author = "Thornton, Wren N.G.",
     title  = "Heterogeneous Strategies for Unification:
              Variable--Value Ordering and Optimized Structures",
     institution = "Johns Hopkins University",
@@ -77,7 +95,7 @@
 
 % Technically a "project" not a "thesis"
 @MastersThesis{ Thornton2008:typed-unify,
-    author = "Thornton, Wren N. G.",
+    author = "Thornton, Wren N.G.",
     title  = "Typed Unification in {D}yna: An Exploration of
              the Design Space",
     school = "Johns Hopkins University",
@@ -106,11 +124,14 @@
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 % ~~~~~ Joshua
 
+% Old official but now-dead
+% url = {http://versita.metapress.com/content/773u7260303w7g20/}
+% pdf = {http://versita.metapress.com/content/773u7260303w7g20/fulltext.pdf}
 @Article{ JOSHUA:mt-marathon2009,
     author  = "Li, Zhifei and
         Callison-Burch, Chris and
         Khudanpur, Sanjeev and
-        Thornton, Wren N. G.",
+        Thornton, Wren N.G.",
     title   = "Decoding in {J}oshua: Open Source Parsing-Based
               Machine Translation",
     pages   = "47--56",
@@ -119,13 +140,12 @@
     month   = jan,
     year    = 2009,
     note = "Special Issue: Open Source Tools for Machine
-    Translation. In conjunction with \textit{Third Machine
-    Translation Marathon Open Source Convention}, ACL 2009
-    Workshop on Statistical Machine Translation.",
+        Translation.  In conjunction with \textit{Third Machine
+        Translation Marathon Open Source Convention}, ACL 2009
+        Workshop on Statistical Machine Translation.",
     issn = {1804-0462},
     doi = {10.2478/v10108-009-0015-5},
-    url = {http://versita.metapress.com/content/773u7260303w7g20/},
-    pdf = {http://versita.metapress.com/content/773u7260303w7g20/fulltext.pdf},
+    pdf = {http://wrengr.org/pubs/joshua_mt-marathon2009.pdf},
     abstract = {We describe a scalable decoder for parsing-based
     machine translation. The decoder is written in Java and
     implements all the essential algorithms described in (Chiang,
@@ -146,16 +166,18 @@
         Ganitkevitch, Juri and
         Khudanpur, Sanjeev and
         Schwartz, Lane and
-        Thornton, Wren N. G. and
+        Thornton, Wren N.G. and
         Weese, Jonathan and
         Zaidan, Omar F.",
-    title     = "{J}oshua: An open source toolkit for parsing-based machine translation",
+    title     = "{J}oshua: An open source toolkit for parsing-based
+                machine translation",
     pages     = "135--139",
-    booktitle = "Proceedings of the Fourth ACL Workshop on Statistical Machine Translation",
+    booktitle = "Proceedings of the Fourth ACL Workshop on Statistical
+                Machine Translation",
     location  = "Athens, Greece",
     month     = mar,
     year      = 2009,
-    url = {http://www.aclweb.org/anthology/W/W09/W09-0424.pdf},
+    pdf = {http://www.aclweb.org/anthology/W09-0424.pdf},
     abstract = {We describe Joshua, an open source toolkit for
     statistical machine translation. Joshua implements all of
     the algorithms required for synchronous context free grammars
@@ -167,7 +189,7 @@
     the toolkit achieves state of the art translation performance
     on the WMT09 French--English translation task.}
 }
-%    publisher = "Association for Computational Linguistics",
+%    publisher = ACL,
 
 @InProceedings{ JOSHUA:acl2009demo,
     author    = "Li, Zhifei and
@@ -176,7 +198,7 @@
         Ganitkevitch, Juri and
         Khudanpur, Sanjeev and
         Schwartz, Lane and
-        Thornton, Wren N. G. and
+        Thornton, Wren N.G. and
         Weese, Jonathan and
         Zaidan, Omar F.",
     title     = "Demonstration of {J}oshua: An open source
@@ -187,11 +209,14 @@
     note = "Please cite \cite{JOSHUA:wmt2009poster} instead.",
 }
 
+% Old official but now-dead:
+% url = {http://versita.metapress.com/content/a2551h6k301w13v2/}
+% pdf = {http://versita.metapress.com/content/a2551h6k301w13v2/fulltext.pdf}
 @Article{ JOSHUA:mt-marathon2010transliteration,
     author  = "Irvine, Ann and
         Kayser, Mike and
         Li, Zhifei and
-        Thornton, Wren N. G. and
+        Thornton, Wren N.G. and
         Callison-Burch, Chris",
     title   = "Integrating Output from Specialized Modules in
               Machine Translation: Transliterations in {J}oshua",
@@ -202,8 +227,7 @@
     year    = 2010,
     issn = {1804-0462},
     doi  = {10.2478/v10108-010-0009-3},
-    url  = {http://versita.metapress.com/content/a2551h6k301w13v2/},
-    pdf  = {http://versita.metapress.com/content/a2551h6k301w13v2/fulltext.pdf},
+    pdf  = {http://wrengr.org/pubs/joshua_mt-marathon2010transliteration.pdf},
     abstract = {In many cases in SMT we want to allow specialized
     modules to propose translation fragments to the decoder and
     allow them to compete with translations contained in the
@@ -223,37 +247,48 @@
         Irvine, Ann K. and
         Khudanpur, Sanjeev and
         Schwartz, Lane and
-        Thornton, Wren N. G. and
+        Thornton, Wren N.G. and
         Wang, Ziyuan and
         Weese, Jonathan and
         Zaidan, Omar F.",
     title     = "{J}oshua 2.0: A Toolkit for Parsing-Based
                 Machine Translation with Syntax, Semirings,
                 Discriminative Training, and Other Goodies.",
-    booktitle = "Proceedings of the Joint Fifth Workshop on
-                Statistical Machine Translation and MetricsMATR",
+    booktitle = "Proceedings of the Joint Fifth Workshop on Statistical
+                Machine Translation and MetricsMATR",
     location  = "Uppsala, Sweden",
     month     = jul,
     year      = 2010,
     pages     = "133--137",
-    url       = {http://www.aclweb.org/anthology-new/W/W10/W10-1718.pdf},
-    url       = {http://www.aclweb.org/anthology/W10-1718},
-    abstract = {We describe the progress we have made in the past year on Joshua, an open source toolkit for parsing based machine translation. The new functionality includes: support for translation grammars with a rich set of syntactic nonterminals, the ability for external modules to posit constraints on how spans in the input sentence should be translated, lattice parsing for dealing with input uncertainty, a semiring framework that provides a unified way of doing various dynamic programming calculations, variational decoding for approximating the intractable MAP decoding, hypergraph-based discriminative training for better feature engineering, a parallelized MERT module, document-level and tail-based MERT, visualization of the derivation trees, and a cleaner pipeline for MT experiments.}
+    pdf       = {http://www.aclweb.org/anthology/W10-1718.pdf},
+    abstract = {We describe the progress we have made in the past
+    year on Joshua, an open source toolkit for parsing based machine
+    translation. The new functionality includes: support for
+    translation grammars with a rich set of syntactic nonterminals,
+    the ability for external modules to posit constraints on how
+    spans in the input sentence should be translated, lattice parsing
+    for dealing with input uncertainty, a semiring framework that
+    provides a unified way of doing various dynamic programming
+    calculations, variational decoding for approximating the
+    intractable MAP decoding, hypergraph-based discriminative
+    training for better feature engineering, a parallelized MERT
+    module, document-level and tail-based MERT, visualization of
+    the derivation trees, and a cleaner pipeline for MT experiments.}
 }
-%    publisher = "Association for Computational Linguistics",
+%    publisher = ACL,
 
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 % ~~~~~ IU PhD
 
 % <http://www.indiana.edu/~nasslli/>
 @InProceedings{ Thornton2010:ccgjp-slides,
-    author    = "Thornton, Wren N. G.",
+    author    = "Thornton, Wren N.G.",
     title     = "Constrained Scrambling in {CCG}: A case study in {J}apanese",
     booktitle = "4th NASSLLI student session",
     location  = "Bloomington, Indiana, USA",
     month     = jun,
     year      = 2010,
-    pdf  = {http://cl.indiana.edu/~wren/pubs/ccgjp_nasslli2010.pdf},
+    pdf  = {http://wrengr.org/pubs/ccgjp_nasslli2010.pdf},
     abstract = {Combinatory Categorial Grammar has a number of
     desirable properties such as giving a natural account of
     ellipsis, supporting algorithms for on-line and partial
@@ -270,30 +305,32 @@
     accusitive, and dative case marking in Japanese.}
 }
 
-% Applied Mathematics, Modeling, and Computational Science conference
 % http://www.cas.mcmaster.ca/~anand/DSL2011.html
 @InProceedings{ Thornton2011:smoothing-dsl-slides,
-    author    = "Thornton, Wren N. G.",
-    title     = "Probability Smoothing for {NLP}: A case study for functional programming and little languages",
-    booktitle = "AMMCS minisymposium on Progress and Prospects in Model-Based Scientific Software Development (SS-SSD)",
+    author    = "Thornton, Wren N.G.",
+    title     = "Probability Smoothing for {NLP}: A case study for
+                functional programming and little languages",
+    booktitle = "AMMCS minisymposium on Progress and Prospects in
+                Model-Based Scientific Software Development (SS-SSD)",
     location  = "Waterloo, Ontario, Canada",
     month     = jul,
     year      = 2011,
-    pdf  = {http://cl.indiana.edu/~wren/pubs/smoothing_ammcs2011.pdf},
-    note = "Also presented at McMaster Workshop on Domain Specific Languages, 13--15 June 2011",
+    pdf  = {http://wrengr.org/pubs/smoothing_ammcs2011.pdf},
+    note = "Also presented at McMaster Workshop on Domain Specific
+           Languages, 13--15 June 2011",
 }
 
 
 % <http://www.indiana.edu/~iulg/nlcs.html>
 % with LICS 2013; endorsed by ACL SIG-Computational Semantics.
 @InProceedings{ Thornton2013:chiastic-nlcs-slides,
-    author    = "Thornton, Wren N. G.",
+    author    = "Thornton, Wren N.G.",
     title     = "Chiastic Lambda-Calculi",
     booktitle = "Natural Language and Computer Science (NLCS) workshop",
     location  = "New Orleans, Louisiana, USA",
     month     = jun,
     year      = 2013,
-    pdf  = {http://cl.indiana.edu/~wren/pubs/chiastic_nlcs2013.pdf},
+    pdf  = {http://wrengr.org/pubs/chiastic_nlcs2013.pdf},
 }
 
 
@@ -312,6 +349,7 @@
     location  = "Montr\'{e}al, Canada",
     month     = dec,
     year      = 2015,
+    pdf = {http://wrengr.org/pubs/blackbox_nips15.pdf},
 }
 
 % <http://www.info.kochi-tech.ac.jp/FLOPS2016/#accepted>
@@ -321,12 +359,14 @@
         Romano, Wren and
         Shan, Chung-chieh and
         Zinkov, Robert",
-    title     = "Probabilistic inference by program transformation in {H}akaru (system description)",
-    booktitle = "13th International Symposium on Functional and Logic Programming (FLOPS)",
+    title     = "Probabilistic inference by program transformation
+                in {H}akaru (system description)",
+    booktitle = "13th International Symposium on Functional and
+                Logic Programming (FLOPS)",
     location  = "Kochi, Japan",
     month     = mar,
     year      = 2016,
-    url = {http://homes.soic.indiana.edu/ccshan/rational/system.pdf},
+    pdf = {http://wrengr.org/pubs/hakaru_flops2016.pdf},
 }
 
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
