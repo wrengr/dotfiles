@@ -1,7 +1,7 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " Name:     autoload/wrengr.vim
-" Modified: 2024-02-01T17:33:35-08:00
-" Version:  2c
+" Modified: 2024-04-15T17:48:21-07:00
+" Version:  2d
 " Author:   wren romano
 " Summary:  Assorted common-use functions extracted from my ~/.vimrc
 " License:  [0BSD] Permission to use, copy, modify, and/or distribute
@@ -16,6 +16,7 @@
 "           negligence or other tortious action, arising out of or
 "           in connection with the use or performance of this software.
 "
+" Version 2d: added LineNrToggle()
 " Version 2c: added SetBackground()
 " Version 2b: fixed bug in CtrlMap() where we were putting @a instead
 "   of @", also switched to using :new in lieu of :vnew
@@ -540,6 +541,26 @@ endfun
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+" HT: <https://github.com/alialliallie/vimfiles/blob/master/vimrc>
+" and <http://jeffkreeftmeijer.com/2013/vims-new-hybrid-line-number-mode/>
+fun! wrengr#LineNrToggle()
+  " TODO: why did we use `==1` instead of just the option's value?
+  if &relativenumber == 1
+    set norelativenumber number
+  else
+    set relativenumber
+    if v:version >= 704 | set number | endif
+  endif
+  " BUG: (2023-01-03) When using CRD>gWindows this gives E117;
+  " whereas when using ssh>gWindows it works fine. So we need to
+  " update some sort of path setting somewhere; dunno if we can do
+  " that from within vim, or if it needs to be done on the gWindows
+  " machine...
+  call OvermorrowRelinkLineNr()
+endfun
+
+
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " ~~~~~ Set Vim's &bg based on OSX settings (or the COLORFGBG env variable)
 fun! wrengr#SetBackground()
   let l:style = wrengr#utils#system(expand('~/local/bin/_getbg'))
@@ -553,6 +574,7 @@ fun! wrengr#SetBackground()
     call wrengr#utils#error('E474: Invalid argument: background=' . l:style)
   endif
 endfun
+
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " Note: when isdirectory(a:path), then mkdir() will give no error

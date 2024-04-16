@@ -1,5 +1,5 @@
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" wren gayle romano's vim config                    ~ 2024-03-07
+" wren gayle romano's vim config                    ~ 2024-04-15
 "
 " This file uses &foldmethod=marker, but I refuse to add a modeline
 " to say that; because modelines are evil.
@@ -1373,27 +1373,9 @@ set laststatus=2
 " ~~~~~ Line numbers                                             {{{3
 " BUG: when editing git commit messages, <C-n> gets overridden by
 "   some sort of autocomplete thing... (possibly the built-in <C-n>)
-" HT: <https://github.com/alialliallie/vimfiles/blob/master/vimrc>
-" and <http://jeffkreeftmeijer.com/2013/vims-new-hybrid-line-number-mode/>
-nnoremap <silent> <C-n> :call <SID>LineNrToggle()<CR>
-fun! s:LineNrToggle()
-  " TODO: why did we use `==1` instead of just the option's value?
-  if &relativenumber == 1
-    set norelativenumber number
-  else
-    set relativenumber
-    if v:version >= 704 | set number | endif
-  endif
-  " BUG: (2023-01-03) When using CRD>gWindows this gives E117;
-  " whereas when using ssh>gWindows it works fine. So we need to
-  " update some sort of path setting somewhere; dunno if we can do
-  " that from within vim, or if it needs to be done on the gWindows
-  " machine...
-  call OvermorrowRelinkLineNr()
-endfun
-
+nnoremap <silent> <C-n> :call wrengr#LineNrToggle()<CR>
 set relativenumber
-call s:LineNrToggle()
+call wrengr#LineNrToggle()
 
 " ~~~~~ Final column                                             {{{3
 " N.B., if this glitches out when using non-ASCII characters that
