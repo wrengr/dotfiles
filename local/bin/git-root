@@ -24,6 +24,8 @@
 # `git_dir_init`, etc.
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+_error() { >&2 printf "\e[1;31m${0##*/}:\e[0m \e[1m$*\e[0m\n"; }
+
 # First, detect if we're in a repo (even a "bare" one).
 # If this passes successfully, then we shouldn't need to bother
 # closing stderr for any of the other checks.
@@ -37,7 +39,7 @@ fi
 # TODO: how should we really handle bare repos?
 if [[ "$(git rev-parse --is-bare-repository)" = "true" ]]; then
   # TODO: add a flag to silence output for this case if requested?
-  >&2 echo -e "\033[1;31m${0##*/}:\033[0m \033[1mCan't handle bare repos\033[0m"
+  _error 'Can'\''t handle bare repos'
   exit 1
 fi
 
@@ -48,13 +50,16 @@ if [[ "$(git rev-parse --is-inside-git-dir)" = "true" ]]; then
   # in this case; it'll return the null string (not even a trailing
   # newline), instead of what we want.  So we'll try to figure
   # it out ourselves:
-  cd "$(git rev-parse --git-dir)/.."
+  #
+  # <https://bosker.wordpress.com/2012/02/12/bash-scripters-beware-of-the-cdpath/>
+  unset CDPATH; export CDPATH
+  cd -- "$(git rev-parse --git-dir)/.." &>/dev/null
 fi
 
 if [[ "z$(git rev-parse --is-inside-work-tree)" != "ztrue" ]]; then
   # This indicates a scripting error on our part, so don't gobble it
   # TODO: add a flag to silence output for this case if requested?
-  >&2 echo -e "\033[1;31m${0##*/}:\033[0m \033[1mThe impossible happened\033[0m"
+  _error 'The impossible happened'
   exit 1
 fi
 

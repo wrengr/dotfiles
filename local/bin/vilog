@@ -6,6 +6,7 @@ use Time::HiRes qw(time);
 
 # N.B., there's also just `vim --startuptime vim_startup.log` to try
 # before running this script (if I ever get this script working).
+# cf., <https://github.com/mhinz/vim-galore?tab=readme-ov-file#profiling-startup-time>
 
 my $cmd = "vim -V @ARGV -c :q 2>&1";
 my @output;

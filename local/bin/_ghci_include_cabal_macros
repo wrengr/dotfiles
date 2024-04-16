@@ -1,17 +1,19 @@
 #!/usr/bin/env bash
 # Print GHCi commands to include cabal_macros.h files
-# wren gayle romano                                 ~ 2021.11.21
+# wren gayle romano                                 ~ 2024-04-14
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # TODO: add flags for the following behaviors:
 #   * if multiple files found, print them all.
 #   * just print the file name instead of the `:set` command.
 
+_error() { >&2 printf "\e[1;31m${0##*/}:\e[0m \e[1m$*\e[0m\n"; }
+
 # The path used by `cabal v1-build`.
-v1='dist/build/autogen/cabal_macros.h'
+readonly v1='dist/build/autogen/cabal_macros.h'
 
 # The glob path used by `cabal v2-build`.
 # (The globs are: arch, compiler+version, package+version)
-v2='dist-newstyle/build/*/*/*/opt/build/autogen/cabal_macros.h'
+readonly v2='dist-newstyle/build/*/*/*/opt/build/autogen/cabal_macros.h'
 # BUG: the above is only for the main library, not for testsuites
 # etc; those instead appear to use:
 # 'dist-newstyle/build/*/*/*/opt/build/${TestSuite}/autogen/cabal_macros.h
@@ -28,12 +30,13 @@ for f in "$v1" $v2 ; do
         paths+=("$f")
     fi
 done
+readonly paths
 
 # If there's more than one, we have no good way to decide which is
 # the right one to include (and including several will just cause
 # problems), so we abort.
 if [[ "${#paths[@]}" -gt 1 ]]; then
-    >&2 echo "${0##*/}: ERROR: Found multiple cabal_macros.h files"
+    _error 'Found multiple cabal_macros.h files'
     # TODO: should we also print all the ones we found?
     exit 1
 fi

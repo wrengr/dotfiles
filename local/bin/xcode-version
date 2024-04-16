@@ -10,12 +10,13 @@
 # (without redundantly installing both), see
 # <https://cutecoder.org/software/get-rid-xcode-command-line-tools/>
 
+_error() { >&2 printf "\e[1;31m${0##*/}:\e[0m \e[1m$*\e[0m\n"; }
 
 # TODO: will this refactoring still work right if we have multiple
 # versions of the same package installed? Is that even possible?
 getPkgVersion() {
     if [ "$#" -ne 1 ]; then
-        >&2 printf "\e[01;31mERROR\e[00m getPkgVersion() requires exactly one argument\n"
+        _error 'getPkgVersion() requires exactly one argument'
         exit 1
     fi
     # TODO: also check against the one argument being empty string!

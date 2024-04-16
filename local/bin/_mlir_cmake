@@ -1,6 +1,6 @@
 #!/bin/bash
 # My helper script for reconfiguring/rebuilding MLIR via cmake.
-#                                                   ~ 2024.04.03
+# wren gayle romano <wren@cpan.org>                 ~ 2024-04-03
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ObTangent: If you're wanting to build things via Bazel (e.g.,
 # for integrate) then the way you get bazel installed is just
@@ -34,7 +34,7 @@ _do()     { printf "\e[1;34m\$\e[0m $*\n"; "$@" || exit $?; }
 # CAVEAT: <https://mywiki.wooledge.org/BashFAQ/028>
 # <https://bosker.wordpress.com/2012/02/12/bash-scripters-beware-of-the-cdpath/>
 # and for more gotchas: <https://stackoverflow.com/q/59895>
-_cd()     { printf "\e[1;34m⮕\e[0m $*\n"; cd -- "$@" >/dev/null 2>&1 || exit $?; }
+_cd()     { printf "\e[1;34m➜\e[0m $*\n"; cd -- "$@" &>/dev/null || exit $?; }
 _export() { printf "\e[1;34m\$ export\e[0m $*\n"; export $*; }
 _source() { printf "\e[1;34m\$ source\e[0m $*\n"; source "$*"; }
 bool_to_cmakeEnable() { if $1; then echo 'ON'; else echo 'OFF'; fi }

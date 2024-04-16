@@ -16,7 +16,7 @@
 # $> wget -qO - http://ipecho.net/plain; echo
 
 dumpIpForInterface() {
-  IT=$(ifconfig "$1")
+  local -r IT=$(ifconfig "$1")
   if [[ "$IT" != *"status: active"* ]]; then
     return
   elif [[ "$IT" != *" broadcast "* ]]; then
@@ -26,11 +26,13 @@ dumpIpForInterface() {
 }
 
 main() {
-  # snagged from here: https://superuser.com/a/627581/38941
-  DEFAULT_ROUTE=$(route -n get 0.0.0.0 2>/dev/null | awk '/interface: / {print $2}')
+  # snagged from here: <https://superuser.com/a/627581/38941>
+  local -r DEFAULT_ROUTE=$(route -n get 0.0.0.0 2>/dev/null | awk '/interface: / {print $2}')
   if [ -n "$DEFAULT_ROUTE" ]; then
     dumpIpForInterface "$DEFAULT_ROUTE"
   else
+    # FIXME: OSX 10.14.6 doesn't support the `-s` flag for `ifconfig`.
+    # TODO: <https://google.github.io/styleguide/shellguide.html#pipes-to-while>
     for i in $(ifconfig -s | awk '{print $1}' | awk '{if(NR>1)print}'); do
       if [[ $i != *"vboxnet"* ]]; then
         dumpIpForInterface "$i"

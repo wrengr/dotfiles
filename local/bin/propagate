@@ -2,6 +2,7 @@
 # Propagate preferences to many servers
 # wren gayle romano <wren@cpan.org>                 ~ 2015.09.10
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# TODO: Remove this, now that it's no longer useful/used.
 
 use strict;
 use warnings;

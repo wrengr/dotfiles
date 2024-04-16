@@ -2,12 +2,17 @@
 # Test every ASCII byte to see if it's allowed in function identifiers.
 # Modified from: <https://stackoverflow.com/a/44041384>
 #
+# wren gayle romano <wren@cpan.org>                 ~ 2024-04-14
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
 # For POSIX-ly correct things, you need to limit yourself to alphanumeric
 # and underscore, but various versions of Bash allow other things as well
 # (provided you use the `function` keyword).
 # This script checks everything to see which ones your current version of
 # /bin/bash supports.  (To check versions installed at other paths, either
 # change the shebang line or source this file instead of executing it.)
+
+_error() { >&2 printf "\e[1;31m${0##*/}:\e[0m \e[1m$*\e[0m\n"; }
 
 # ~~~~~ First, define the ${ASCII[@]} table.
 ASCII=( nul soh stx etx eot enq ack bel bs tab nl vt np cr so si dle \
@@ -22,20 +27,22 @@ ASCII[127]=del
 for((i=128; i < 256; ++i)); do
     ASCII[$i]=$(printf "0X%x" $i)
 done
+readonly ASCII
 
 # ~~~~~ Now define the test function.
-function RunTest() {
-    local MsgPrefix="$1"
-    local NamePrefix="$2"
+RunTest() {
+    # For local+readonly, HT: <https://stackoverflow.com/a/45409823>
+    local -r MsgPrefix="$1"
+    local -r NamePrefix="$2"
     local Illegal=""
     for((i=1; i <= 255; ++i)); do
-        local Name="${NamePrefix}$(printf \\$(printf '%03o' $i))"
+        local -r Name="${NamePrefix}$(printf \\$(printf '%03o' $i))"
         # N.B., technically we can use a few other names (like *), but
         # they have to be properly quoted and may need a space between
         # the $Name and the ().  Still, if quoting is required, then we
         # might as well say they're no good, imo.
         #
-        # Warning: when this exec runs for Name='*', if we are in
+        # WARNING: when this exec runs for Name='*', if we are in
         # a directory with any executable scripts, the first one will
         # be run! (since the * will expand to all files in the current
         # directory.)  We can avoid extraneous output by also redirecting
@@ -61,14 +68,14 @@ function RunTest() {
 # BUG: apparently Cygwin is also borked and doesn't use $TMPDIR (they
 #   use $TMP and $TEMP instead).
 # TODO: maybe try using `mkstemp` to set the template variable to use.
-TDIR="$(mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXX")"
-pushd "$TDIR" >/dev/null 2>&1
-if [[ $? -ne 0 ]]; then
-    errno=$?
-    1>&2 echo "${0##*/}: cannot create/move-to tempdir"
+readonly TDIR="$(mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXX")"
+pushd "$TDIR" &>/dev/null
+errno=$?
+if [[ $errno -ne 0 ]]; then
+    _error 'cannot create/move-to tempdir'
     exit $errno
 fi
-function Finally() { popd >/dev/null; rm -rf "$TDIR"; }
+Finally() { popd >/dev/null; rm -rf "$TDIR"; }
 # SIGINT=<C-c> SIGTERM=<C-z>
 trap 'Finally' SIGINT SIGQUIT SIGTERM EXIT
 

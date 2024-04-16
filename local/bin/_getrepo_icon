@@ -10,9 +10,9 @@
 # Another fun character to use: ⚘
 
 
-if hg root >/dev/null 2>/dev/null ; then
+if hg root &>/dev/null ; then
 	echo '☿'
-elif git branch >/dev/null 2>/dev/null ; then
+elif git branch &>/dev/null ; then
     # Would surely be better to use:
     # `git rev-parse --is-inside-work-tree >/dev/null 2>&1`
     # Or if we actually want the root/base directory itself:
@@ -24,7 +24,7 @@ elif git branch >/dev/null 2>/dev/null ; then
     # <https://stackoverflow.com/q/47459371>
     # <https://stackoverflow.com/q/38818918>
 	echo '±' # For lack of a better symbol; could also use '🐙'
-elif darcs show repo >/dev/null 2>/dev/null ; then
+elif darcs show repo &>/dev/null ; then
 	# We have to check this last because we have ~/ be a repo...
 	echo '❉' # U+2749
 else

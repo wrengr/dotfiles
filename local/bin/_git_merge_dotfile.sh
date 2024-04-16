@@ -1,7 +1,6 @@
 #!/bin/bash
 # A quick script for merging my actual homedir file into the repo.
-#
-# wren gayle romano <wren@cpan.org>                 ~ 2022.09.11
+# wren gayle romano <wren@cpan.org>                 ~ 2024-04-14
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # (I don't use the git repo directly on my main machine, to avoid
 # issues about things like irssi's cleartext passwords ending up
@@ -9,32 +8,37 @@
 # pattern everywhere. Perhaps we could use something like this to
 # help: <https://github.com/oohlaf/dotsecrets>)
 
+_error() { >&2 printf "\e[1;31m${0##*/}:\e[0m \e[1m$*\e[0m\n"; }
+
 if [[ "$#" -ne 1 ]]; then
     echo "Usage: ${0##*/} <relative-path-from-root>"
     exit 1
 fi
-relfile="$1"
+readonly relfile="$1"
 
 # This script must be run from the git root directory; so we try
 # to ensure that here.  First we check that we're in a repo, and
 # then we `cd` to the root of that repo.
-# TODO: maybe inline the logic of the `git-root` script in order
-# to simplify the error-message munging.
-# TODO: see `cd_to_toplevel` in <https://github.com/git/git/blob/master/git-sh-setup.sh>
-gitroot="$(git-root)"
+readonly gitroot="$(git-root)"
 if [[ "$?" -ne 0 ]]; then
-  >&2 echo -e "\033[1;31m${0##*/}:\033[0m \033[1mMust run from within a git repo\033[0m"
+  _error 'Must run from within a git repo'
   exit 1
 fi
-cd "$gitroot"
+# <https://bosker.wordpress.com/2012/02/12/bash-scripters-beware-of-the-cdpath/>
+unset CDPATH; export CDPATH
+cd -- "$gitroot" &>/dev/null
+if [[ "$?" -ne 0 ]]; then
+  _error "Could not \`cd $gitroot\`"
+  exit 1
+fi
 
 # Some basic error checking beforehand.
 if [[ ! -f ./"$relfile" ]]; then
-  >&2 echo -e "\033[1;31m${0##*/}:\033[0m \033[1mFile doesn't exist in repo:\033[0m ./$relfile"
+  _error "File doesn't exist in repo: ./$relfile"
   exit 1
 fi
 if [[ ! -f ~/"$relfile" ]]; then
-  >&2 echo -e "\033[1;31m${0##*/}:\033[0m \033[1mFile doesn't exist in homedir:\033[0m ~/$relfile"
+  _error "File doesn't exist in homedir: ~/$relfile"
   exit 1
 fi
 
