@@ -349,12 +349,13 @@ Plug 'mhinz/vim-startify'
   "   (defeating my purpose for using startify) rather than just
   "   disabling the IO checks.
   " TODO: easiest way to add a custom directory to g:startify_lists?
-  " TODO: also, see the help of g:startify_lists for an idea about listing recent git (or other vcs) commits.
+  " TODO: also, see the help of g:startify_lists for an idea about
+  "   listing recent git (or other vcs) commits.
   let g:startify_padding_left=10
   "let g:startify_fortune_use_unicode=1     " For headers; iff it doesn't offend
   let g:startify_custom_header=['', '', ''] " Very boring header.
-    " TODO: maybe keep the startify#fortune#quote() or even the
-    " #boxed(); it's just that the #cowsay() was too huge!
+  " TODO: maybe keep the startify#fortune#quote() or even the
+  "   #boxed(); it's just that the #cowsay() was too huge!
   "
   " TODO: update our colorscheme to handle `:h startify-colors`
   " TODO: (unrelated to startify per se, but: update our colorscheme to
@@ -491,7 +492,7 @@ Plug 'mhinz/vim-startify'
 " Make &fdm faster by only updating folds as needed (instead of far
 " too often).  This also provides enhancements for `:windo` and
 " corrects several bugs therein.
-"Plug 'Konfekt/FastFold'
+"Plug 'Konfekt/FastFold'    " TODO: Actually use this one!
 "Plug 'Konfekt/FoldText'    " Fancy &foldtext
 "Plug 'zhimsel/vim-stay'    " Automatically call `:mkview` and `:loadview`
 "Plug 'wsdjeg/vim-fetch'    " (has integration with vim-stay)
@@ -1187,15 +1188,25 @@ endif
 " around with &t_te (and &t_ti).  See `:help xterm-screens` and
 " <https://invisible-island.net/xterm/xterm.faq.html#xterm_tite>
 
-" ~~~~~ Extend <C-l> to also stop highlighting the current search.
-" N.B., the default <C-l> can also be lazy (both with and without
-" &lazyredraw), so this is (I think) stricter about ensuring the
-" redraw happens immediately.
+" ~~~~~ Extend <C-l> to also...  ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{2
+" * Stop highlighting the current search
+" * Update syntax when making within-line and other complex changes
+" * Update syntax even when in diff-mode
+" * Be stricter about ensuring the redraw happens immediately (iiuc);
+"   because the default <C-l> can be lazy, both with and without &lazyredraw.
+" HT: <https://github.com/mhinz/vim-galore?tab=readme-ov-file#saner-ctrl-l>
+"
+" FIXME: I can't get the `syntax sync fromstart` part to work right!
+" The helppage spelling to search for is `:syn-sync-first` (consider also `:syn-sync-fourth`)
+" (Also, we should really guard that part to only apply when `has('syntax')`;
+" which means we should factor this whole thing out into a function...)
+"
+" TODO: Consider adding `:redrawstatus[!]` and `:redrawtabline`
+"
 " Note: see `:h map_bar` about the different spellings of bar.
 " However, I can't find anywhere that says anything about when to
-" use `<Bar>` vs `<CR>:` (both work just fine here).
-nnoremap <silent> <C-l> :<C-u>noh<Bar>redraw!<CR>
-" Note: there also exists commands :redrawstatus[!] and :redrawtabline
+" use `<Bar>` vs `<CR>:` (both seem to work just fine here).
+nnoremap <silent> <C-l> :<C-u>nohlsearch<Bar>diffupdate<Bar>redraw!<CR>
 
 " ~~~~~ Terminal title ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ {{{2
 " <http://vim.wikia.com/wiki/Automatically_set_screen_title>
@@ -1345,7 +1356,8 @@ if has('syntax')
   "endif
 endif
 
-" TODO: something fancy like <http://vim.wikia.com/wiki/Configuring_the_cursor>.
+" TODO: <https://github.com/mhinz/vim-galore?tab=readme-ov-file#change-cursor-style-dependent-on-mode>
+" (or similarly <http://vim.wikia.com/wiki/Configuring_the_cursor>)
 " N.B., setting &t_SI and &t_EI tends to cause the cursor to glitch out
 " (using <C-l> fixes it). And it's highly terminal-dependent, so...
 
@@ -1434,6 +1446,7 @@ if has('diff')
   if has('patch-8.2.2490') " <https://groups.google.com/g/vim_dev/c/fHjMJxVnSRg>
     set diffopt+=followwrap         " leave &wrap alone
   endif
+  " TODO: Also consider adding `context:3` to &diffopt
   " see also *fold-diff*, *diff-diffexpr*, &diffexpr, &vimdiff, &cursorbind
 endif
 
@@ -1713,6 +1726,12 @@ set sidescrolloff=10    " Keep N columns between cursor and window left/right.
 " It also shows how to use autocmd for the OptionSet event, to
 " automatically run some code whenever someone changes an option.
 
+" ~~~~~ Unbind i_<F1>
+" I keep accidentally hitting this (in lieu of <Esc>), and it's annoying.
+" TODO: Need we unbind <Help> too?  Or is that just a pseudokey?
+noremap  <F1> <Nop>
+inoremap <F1> <Nop>
+
 " ~~~~~ Remap <Home>/<End> keys to DWIM.
 " I'm using <C-Home>/<C-End> in lieu of gg/G, because the former already
 " exist and DWIM.  Also, beware that G goes to the first-column whereas
@@ -1724,12 +1743,6 @@ set sidescrolloff=10    " Keep N columns between cursor and window left/right.
 " helppage spellings here are: i_CTRL-O, i_CTRL-\_CTRL-O, i_CTRL-\_CTRL-N
 " And, of course, be sure to reread `:help :map-modes`
 " There's also <https://vim.fandom.com/wiki/Smart_home> which is similar
-"
-" FIXME(2024-03-08): Ever since adding this, vim has been occasionally
-" doing weird things whenever I accidentally hit the wrong modifier key
-" on the LHS of the keyboard...
-" (2023-03-26): Aha, actually the problem is that I've started hitting
-" the F1 key when I mean to be hitting <Esc>.  So we should unbind that key.
 noremap  <Home> <C-Home>
 inoremap <Home> <C-Home>
 
@@ -1782,6 +1795,8 @@ inoremap <Up>   <C-\><C-o>gk
 noremap  <Down> gj
 inoremap <Down> <C-\><C-o>gj
 
+" TODO: <https://github.com/mhinz/vim-galore?tab=readme-ov-file#saner-command-line-history>
+
 " Simple `k`/`j` move by display-lines; whereas when providing a count,
 " then uses file-lines and stores the motion in the jumplist (so you can
 " cycle through them with <C-o> and <C-i>).
@@ -1820,6 +1835,7 @@ noremap ^      g0
 "xnoremap <silent> <C-j> :move'>+<CR>gv
 " TODO: consider using `:h :map-cmd` in lieu of the x_`:` to avoid
 "   needing the `gv` trick.
+" TODO: See also <https://github.com/mhinz/vim-galore?tab=readme-ov-file#dont-lose-selection-when-shifting-sidewards>
 
 
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2228,11 +2244,15 @@ set ignorecase      " Make search commands ignore case.
 " (Also note that `:h *Vim9-script*` will always pretend this is on.)
 set magic
 
-" TODO: consider these, if we'd like to recenter the cursor every
-" time.  (Not sure why my source for this trick added the `zv` in
-" addition to the `zz`.)
-"nnoremap n nzzzv
-"nnoremap N Nzzzv
+" Make <n>/<N> always search forward/backward, regardless of whether
+" we started the search with </> vs <?>; also recenter things and open folds.
+" HT: <https://github.com/mhinz/vim-galore#saner-behavior-of-n-and-n>
+" HT: <https://www.reddit.com/r/vim/comments/oyqkkd/comment/h7wxygv/>
+" TODO: Both of those sources exclude the smap (and the reddit one
+" also excludes the omap); why did they?  Should we do so too?
+" TODO: Make sure these handle counts correctly!
+noremap <expr> n  'Nn'[v:searchforward] . 'zzzv'
+noremap <expr> N  'nN'[v:searchforward] . 'zzzv'
 
 " TODO: figure out exactly what this does (and how) before enabling it
 " Clear the search register.
